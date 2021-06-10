@@ -1,114 +1,130 @@
+import APIRequest from "common/APIRequest";
+import storage from "common/storage";
 import React from "react";
 import {
     Button,
-    Form
+    Form,
+    Image
 } from "react-bootstrap";
-import storage from "storage";
 import "./login.scss";
 
 type LoginProps = {};
 
-export default class Login extends React.Component<LoginProps> {
+type LoginState = {
+    username: string,
+    password: string,
+    remember: boolean,
+}
+
+export default class Login extends React.Component<LoginProps, LoginState> {
     public constructor(props: LoginProps) {
         super(props);
         this.state = {
-            username: ""
+            username: "",
+            password: "",
+            remember: false
         }
-    }
-
-    private _remember: string = "";
-
-    public get remember(): string {
-        return this._remember;
-    }
-
-    public set remember(value: string) {
-        this._remember = value;
-    }
-
-    private _username: string = "";
-
-    public get username(): string {
-        return this._username;
-    }
-
-    public set username(value: string) {
-        this._username = value;
-    }
-
-    private _password: string = "";
-
-    public get password(): string {
-        return this._password;
-    }
-
-    public set password(value: string) {
-        this._password = value;
     }
 
     public render(): React.ReactNode {
         return (
-            <main className={"login"}>
-                <div className={"form-signin"}>
+            <div className={"text-center"}>
+                <main className={"login form-signin"}>
                     <Form onSubmit={this._handleSubmit}>
+                        <Image
+                            className={"mb-4"}
+                            src={"static/res/logo.svg"}
+                            alt={"Logo"}
+                        />
+                        <h1 className={"h3 mb-3 fw-normal"}>
+                            Veuillez vous connecter
+                        </h1>
                         <Form.Group controlId={"username"} className={"form-floating"}>
-                            <Form.Label>
-                                Nom d'utilisateur
-                            </Form.Label>
                             <Form.Control
                                 autoFocus
                                 name={"username"}
                                 type={"text"}
                                 placeholder={"username"}
-                                value={this.username}
-                                onChange={(e) => this.username = e.target.value}
+                                defaultValue={this.state.username}
+                                onChange={
+                                    (e) => this.setState({username: e.target.value})
+                                }
                             />
+                            <Form.Label>
+                                Nom d'utilisateur
+                            </Form.Label>
                         </Form.Group>
                         <Form.Group controlId={"password"} className={"form-floating"}>
-                            <Form.Label>
-                                Mot de passe
-                            </Form.Label>
                             <Form.Control
                                 type={"password"}
                                 name={"password"}
                                 placeholder={"password"}
-                                value={this.password}
-                                onChange={(e) => this.password = e.target.value}
+                                defaultValue={this.state.password}
+                                onChange={
+                                    (e) => this.setState({password: e.target.value})
+                                }
                             />
-                        </Form.Group>
-                        <Form.Group controlId={"remember"} className={"checkbox mb-3"}>
                             <Form.Label>
-                                Se souvenir de moi
+                                Mot de passe
                             </Form.Label>
-                            <Form.Switch
-                                type={"checkbox"}
-                                name={"remember"}
-                                placeholder={"password"}
-                                value={"Se souvenir de moi"}
-                                onChange={(e) => this.remember = e.target.value}
-                            />
+                        </Form.Group>
+                        <Form.Group controlId={"remember"} className={"mb-3"}>
+                            <Form.Label>
+                                <Form.Check
+                                    type={"checkbox"}
+                                    label={"Se souvenir de moi"}
+                                    onChange={
+                                        (e) => {
+                                            this.setState({remember: e.target.checked})
+                                        }
+                                    }
+                                />
+                            </Form.Label>
                         </Form.Group>
                         <Button
-                            block
-                            size={"lg"}
+                            className={"w-100 btn btn-lg btn-primary"}
                             type={"submit"}
                             disabled={!this._validForm()}
                         >
                             Se connecter
                         </Button>
                     </Form>
-                </div>
-            </main>
+                </main>
+            </div>
         );
     }
 
-    private _validForm() {
-        return this.username.length > 0 && this.password.length > 0;
+    private _validForm(): boolean {
+        return this.state.username.length > 0 && this.state.password.length > 0;
     }
 
-    private _handleSubmit(e: React.FormEvent) {
+    private _handleSubmit(e: React.FormEvent): void {
         e.preventDefault();
-        console.log(e);
+
+        APIRequest
+            .get("https://jsonplaceholder.typicode.com/tgodos")
+            .onProgress((evt) => {
+                if (evt.lengthComputable) {
+                    console.log(evt.loaded / evt.total * 100);
+                } else {
+                    console.log("not computable");
+                }
+                console.log(evt);
+            })
+            .onSuccess((status, data) => {
+                console.log("complete");
+                console.log(status, data);
+            })
+            .onFailure((status, data, evt) => {
+                console.log("failure");
+                console.log(status, data);
+            })
+            .send()
+            .then(() => {
+            });
+
+        // this.state.username;
+
         storage.setItem("token", "my_token");
     }
 }
