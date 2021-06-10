@@ -7,18 +7,16 @@ import {
     Switch
 } from "react-router-dom";
 
-class App extends React.Component {
+export default class Routes extends React.Component {
     render() {
         return (
             <div>
                 <Header appName="LAMediaServer"/>
                 <Switch>
                     <Route exact path="/" component={Home}/>
-                    <Route path="/login" component={Login}/>
+                    <Route exact path="/login" component={Login}/>
                 </Switch>
             </div>
         );
     }
 }
-
-export default App;

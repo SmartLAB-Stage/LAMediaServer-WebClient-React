@@ -1,6 +1,8 @@
-import App from "app";
+import Routes from "routes";
 import React from "react";
 import ReactDOM from "react-dom";
+import "bootstrap.scss";
+import "main.scss";
 
 import {
     BrowserRouter as Router,
@@ -11,7 +13,7 @@ import {
 ReactDOM.render((
     <Router>
         <Switch>
-            <Route path="/" component={App}/>
+            <Route path="/" component={Routes}/>
         </Switch>
     </Router>
 ), document.getElementById("root"));
