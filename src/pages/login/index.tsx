@@ -1,11 +1,13 @@
 import APIRequest from "common/APIRequest";
 import storage from "common/storage";
+
 import React from "react";
 import {
-    Button,
     Form,
     Image
 } from "react-bootstrap";
+
+import Button from "react-bootstrap-button-loader";
 import "./login.scss";
 
 type LoginProps = {};
@@ -14,6 +16,7 @@ type LoginState = {
     username: string,
     password: string,
     remember: boolean,
+    loading: boolean,
 }
 
 export default class Login extends React.Component<LoginProps, LoginState> {
@@ -23,6 +26,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
             username: "",
             password: "",
             remember: false,
+            loading: false,
         }
     }
 
@@ -30,7 +34,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
         return (
             <div className={"text-center"}>
                 <main className={"login form-signin"}>
-                    <Form onSubmit={this._handleSubmit}>
+                    <Form onSubmit={(e) => this._handleSubmit(e)}>
                         <Image
                             className={"mb-4"}
                             src={"static/res/logo.png"}
@@ -85,6 +89,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
                             className={"w-100 btn btn-lg btn-primary"}
                             type={"submit"}
                             disabled={!this._validForm()}
+                            loading={this.state.loading}
                         >
                             Se connecter
                         </Button>
@@ -101,6 +106,8 @@ export default class Login extends React.Component<LoginProps, LoginState> {
     private async _handleSubmit(e: React.FormEvent): Promise<void> {
         e.preventDefault();
 
+        this.setState({loading: true});
+
         await APIRequest
             .get("https://jsonplaceholder.typicode.com/todos/1")
             .onSuccess((status, data) => {
@@ -111,9 +118,10 @@ export default class Login extends React.Component<LoginProps, LoginState> {
                 console.log("failure");
                 console.log(status, data);
             })
+            .minTime(500)
             .send();
 
-        console.log("end");
+        this.setState({loading: false});
 
         // this.state.username;
 

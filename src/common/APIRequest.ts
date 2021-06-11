@@ -1,6 +1,8 @@
 /**
  * Méthodes de requête
  */
+import {sleep} from "common/utils";
+
 enum RequestMethod {
     /**
      * Récupération, listing. Cacheable
@@ -44,12 +46,14 @@ class APIRequest {
     private readonly _url: string;
     private _request: XMLHttpRequest;
     private _payload: Object;
+    private _minTime: number;
 
     private constructor(method: RequestMethod, url: string) {
         this._method = method;
         this._url = url;
         this._request = new XMLHttpRequest();
         this._payload = {};
+        this._minTime = 0;
     }
 
     public static get(url: string): APIRequest {
@@ -84,8 +88,15 @@ class APIRequest {
         return this;
     }
 
+    public minTime(time: number): APIRequest {
+        this._minTime = time;
+        return this;
+    }
+
     public async send(): Promise<void> {
-        return new Promise((resolve, reject) => {
+        const start = Date.now();
+
+        await new Promise<void>((resolve, reject) => {
             this._request.addEventListener("progress", (evt) => {
                 if (evt.lengthComputable) {
                     this._onProgress(evt.loaded, evt.total, evt);
@@ -115,6 +126,12 @@ class APIRequest {
             this._request.open(this._method as string, this._url);
             this._request.send(JSON.stringify(this._payload));
         });
+
+        const duration = Date.now() - start;
+
+        if (duration < this._minTime) {
+            await sleep(this._minTime - duration);
+        }
     }
 
     private _onProgress: ProgressCallback = (_loaded, _total, _evt) => undefined;
