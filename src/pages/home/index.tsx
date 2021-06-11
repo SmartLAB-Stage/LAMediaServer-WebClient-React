@@ -1,5 +1,5 @@
 import React from "react";
-import "components/home/home.scss";
+import "./home.scss";
 
 type HomeProps = {};
 

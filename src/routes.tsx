@@ -1,11 +1,11 @@
-import Header from "components/header";
-import Home from "components/home";
-import Login from "components/login";
 import React from "react";
 import {
     Route,
     Switch
 } from "react-router-dom";
+import Header from "./components/header";
+import Home from "./pages/home";
+import Login from "./pages/login";
 
 export default class Routes extends React.Component {
     render() {
