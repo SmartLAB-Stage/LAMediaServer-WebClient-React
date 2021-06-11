@@ -22,7 +22,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
         this.state = {
             username: "",
             password: "",
-            remember: false
+            remember: false,
         }
     }
 
@@ -33,7 +33,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
                     <Form onSubmit={this._handleSubmit}>
                         <Image
                             className={"mb-4"}
-                            src={"static/res/logo.svg"}
+                            src={"static/res/logo.png"}
                             alt={"Logo"}
                         />
                         <h1 className={"h3 mb-3 fw-normal"}>
@@ -98,19 +98,11 @@ export default class Login extends React.Component<LoginProps, LoginState> {
         return this.state.username.length > 0 && this.state.password.length > 0;
     }
 
-    private _handleSubmit(e: React.FormEvent): void {
+    private async _handleSubmit(e: React.FormEvent): Promise<void> {
         e.preventDefault();
 
-        APIRequest
-            .get("https://jsonplaceholder.typicode.com/tgodos")
-            .onProgress((evt) => {
-                if (evt.lengthComputable) {
-                    console.log(evt.loaded / evt.total * 100);
-                } else {
-                    console.log("not computable");
-                }
-                console.log(evt);
-            })
+        await APIRequest
+            .get("https://jsonplaceholder.typicode.com/todos/1")
             .onSuccess((status, data) => {
                 console.log("complete");
                 console.log(status, data);
@@ -119,9 +111,9 @@ export default class Login extends React.Component<LoginProps, LoginState> {
                 console.log("failure");
                 console.log(status, data);
             })
-            .send()
-            .then(() => {
-            });
+            .send();
+
+        console.log("end");
 
         // this.state.username;
 

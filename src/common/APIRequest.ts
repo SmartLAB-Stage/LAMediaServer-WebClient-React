@@ -33,6 +33,12 @@ type RequestInfos = {
     data: Object | null,
 }
 
+type ProgressCallback = (loaded: number, total: number, evt: ProgressEvent) => void;
+
+type SuccessCallback = (status: number, data: Object) => void;
+
+type FailureCallback = (status: number, data: Object | null, evt: ProgressEvent) => void;
+
 class APIRequest {
     private readonly _method: RequestMethod;
     private readonly _url: string;
@@ -63,24 +69,31 @@ class APIRequest {
         return this;
     }
 
-    public onProgress(callback: (evt: ProgressEvent) => void): APIRequest {
+    public onProgress(callback: ProgressCallback): APIRequest {
         this._onProgress = callback;
         return this;
     }
 
-    public onSuccess(callback: (status: number, data: Object) => void): APIRequest {
+    public onSuccess(callback: SuccessCallback): APIRequest {
         this._onSuccess = callback;
         return this;
     }
 
-    public onFailure(callback: (status: number, data: Object | null, evt: ProgressEvent) => void): APIRequest {
+    public onFailure(callback: FailureCallback): APIRequest {
         this._onFailure = callback;
         return this;
     }
 
     public async send(): Promise<void> {
         return new Promise((resolve, reject) => {
-            this._request.addEventListener("progress", this._onProgress);
+            this._request.addEventListener("progress", (evt) => {
+                if (evt.lengthComputable) {
+                    this._onProgress(evt.loaded, evt.total, evt);
+                } else {
+                    this._onProgress(NaN, NaN, evt);
+                }
+            });
+
             this._request.addEventListener("load", (evt: any) => {
                 const infos = this._getRequestInfos(evt);
                 if (infos.data === null || Math.floor(infos.status / 100) !== 2) {
@@ -91,6 +104,7 @@ class APIRequest {
                     resolve();
                 }
             });
+
             this._request.addEventListener("error", (evt) => {
                 const infos = this._getRequestInfos(evt);
                 this._onFailure(infos.status, infos.data, evt);
@@ -103,14 +117,11 @@ class APIRequest {
         });
     }
 
-    private _onProgress = (_evt: ProgressEvent) => {
-    };
+    private _onProgress: ProgressCallback = (_loaded, _total, _evt) => undefined;
 
-    private _onSuccess = (_status: number, _data: Object) => {
-    };
+    private _onSuccess: SuccessCallback = (_status, _data) => undefined;
 
-    private _onFailure = (_status: number, _data: Object | null, _evt: ProgressEvent) => {
-    };
+    private _onFailure: FailureCallback = (_status, _data, _evt) => undefined;
 
     private _getRequestInfos(evt: any): RequestInfos {
         let status;
