@@ -1,14 +1,13 @@
-import Routes from "routes";
+import "main.scss";
 import React from "react";
 import ReactDOM from "react-dom";
-import "bootstrap.scss";
-import "main.scss";
 
 import {
     BrowserRouter as Router,
     Route,
     Switch
 } from "react-router-dom";
+import Routes from "routes";
 
 ReactDOM.render((
     <Router>

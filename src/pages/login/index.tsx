@@ -1,5 +1,6 @@
 import APIRequest from "common/APIRequest";
 import storage from "common/storage";
+import {sleep} from "common/utils";
 
 import React from "react";
 import {
@@ -10,6 +11,12 @@ import {
 import Button from "react-bootstrap-button-loader";
 import "./login.scss";
 
+enum LoginStatus {
+    SUCCESS = "success",
+    FAILURE = "danger",
+    NONE = "primary",
+}
+
 type LoginProps = {};
 
 type LoginState = {
@@ -17,6 +24,7 @@ type LoginState = {
     password: string,
     remember: boolean,
     loading: boolean,
+    status: LoginStatus,
 }
 
 export default class Login extends React.Component<LoginProps, LoginState> {
@@ -27,6 +35,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
             password: "",
             remember: false,
             loading: false,
+            status: LoginStatus.NONE,
         }
     }
 
@@ -51,7 +60,10 @@ export default class Login extends React.Component<LoginProps, LoginState> {
                                 placeholder={"username"}
                                 defaultValue={this.state.username}
                                 onChange={
-                                    (e) => this.setState({username: e.target.value})
+                                    (e) => this.setState({
+                                        username: e.target.value,
+                                        status: LoginStatus.NONE,
+                                    })
                                 }
                             />
                             <Form.Label>
@@ -65,14 +77,17 @@ export default class Login extends React.Component<LoginProps, LoginState> {
                                 placeholder={"password"}
                                 defaultValue={this.state.password}
                                 onChange={
-                                    (e) => this.setState({password: e.target.value})
+                                    (e) => this.setState({
+                                        password: e.target.value,
+                                        status: LoginStatus.NONE,
+                                    })
                                 }
                             />
                             <Form.Label>
                                 Mot de passe
                             </Form.Label>
                         </Form.Group>
-                        <Form.Group controlId={"remember"} className={"mb-3"}>
+                        <Form.Group controlId={"remember"} className={"mb-2"}>
                             <Form.Label>
                                 <Form.Check
                                     type={"checkbox"}
@@ -86,13 +101,25 @@ export default class Login extends React.Component<LoginProps, LoginState> {
                             </Form.Label>
                         </Form.Group>
                         <Button
-                            className={"w-100 btn btn-lg btn-primary"}
+                            className={`w-100 btn btn-lg btn-${this.state.status}`}
                             type={"submit"}
                             disabled={!this._validForm()}
                             loading={this.state.loading}
                         >
                             Se connecter
                         </Button>
+                        <div
+                            className={`alert alert-${this.state.status} alert-dismissible fade show`}
+                            role={"alert"}
+                            hidden={this.state.status === LoginStatus.NONE}
+                        >
+                            <strong>{this.state.status === LoginStatus.SUCCESS ? "Succès" : "Échec"}</strong>
+                            <button type="button"
+                                    className="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Close"
+                            />
+                        </div>
                     </Form>
                 </main>
             </div>
@@ -108,22 +135,36 @@ export default class Login extends React.Component<LoginProps, LoginState> {
 
         this.setState({loading: true});
 
+        let success, resStatus, resData;
+
         await APIRequest
             .get("https://jsonplaceholder.typicode.com/todos/1")
             .onSuccess((status, data) => {
-                console.log("complete");
-                console.log(status, data);
+                success = true;
+                resStatus = status;
+                resData = data;
             })
             .onFailure((status, data, evt) => {
-                console.log("failure");
-                console.log(status, data);
+                success = false;
+                resStatus = status;
+                resData = data;
             })
             .minTime(500)
             .send();
 
         this.setState({loading: false});
 
+        console.log(resStatus, resData);
+
+        if (success) {
+            this.setState({status: LoginStatus.SUCCESS});
+            await sleep(1000);
+        } else {
+            this.setState({status: LoginStatus.FAILURE});
+        }
+
         // this.state.username;
+
 
         storage.setItem("token", "my_token");
     }
