@@ -4,6 +4,9 @@
 import {sleep} from "common/utils";
 import APIRequestConfig from "config/APIRequestConfig";
 
+/**
+ * Méthodes de requête
+ */
 enum RequestMethod {
     /**
      * Récupération, listing. Cacheable
@@ -31,24 +34,76 @@ enum RequestMethod {
     DELETE = "DELETE",
 }
 
+/**
+ * Informations de requête
+ */
 type RequestInfos = {
+    /**
+     * Statut HTTP
+     */
     status: number,
+
+    /**
+     * Data
+     */
     data: Object | null,
 }
 
+/**
+ * Callback de progrès
+ */
 type ProgressCallback = (loaded: number, total: number, evt: ProgressEvent) => void;
 
+/**
+ * Callback de succès
+ */
 type SuccessCallback = (status: number, data: Object) => void;
 
+/**
+ * Callback d'échec
+ */
 type FailureCallback = (status: number, data: Object | null, evt: ProgressEvent) => void;
 
+/**
+ * Requête API
+ */
 class APIRequest {
+    /**
+     * Méthode
+     * @private
+     */
     private readonly _method: RequestMethod;
+
+    /**
+     * Route
+     * @private
+     */
     private readonly _route: string;
+
+    /**
+     * Requête
+     * @private
+     */
     private _request: XMLHttpRequest;
+
+    /**
+     * Payload
+     * @private
+     */
     private _payload: Object;
+
+    /**
+     * Temps d'exécution minimal
+     * @private
+     */
     private _minTime: number;
 
+    /**
+     * Constructeur
+     * @param method Méthode
+     * @param route Route
+     * @private
+     */
     private constructor(method: RequestMethod, route: string) {
         const fullRoute = "" +
             `${APIRequestConfig.API_PROTOCOL}://${APIRequestConfig.API_WEBSITE}:${APIRequestConfig.API_PORT}/` +
@@ -62,18 +117,36 @@ class APIRequest {
         this._minTime = 0;
     }
 
+    /**
+     * Effectue une requête GET
+     * @param route Route
+     */
     public static get(route: string): APIRequest {
         return new APIRequest(RequestMethod.GET, route);
     }
+
+    /**
+     * Effectue une requête POST
+     * @param route Route
+     */
 
     public static post(route: string): APIRequest {
         return new APIRequest(RequestMethod.POST, route);
     }
 
+    /**
+     * Effectue une requête DELETE
+     * @param route Route
+     */
     public static delete(route: string): APIRequest {
         return new APIRequest(RequestMethod.DELETE, route);
     }
 
+    /**
+     * Récupère les informations d'une requête
+     * @param evt Event
+     * @private
+     */
     private static _getRequestInfos(evt: any): RequestInfos {
         let status;
         let data;
@@ -98,31 +171,54 @@ class APIRequest {
         }
     }
 
+    /**
+     * Set le payload
+     * @param payload Payload
+     */
     public withPayload(payload: Object = {}): APIRequest {
         this._payload = payload;
         return this;
     }
 
+    /**
+     * Set le callback de progrès
+     * @param callback Callback
+     */
     public onProgress(callback: ProgressCallback): APIRequest {
         this._onProgress = callback;
         return this;
     }
 
+    /**
+     * Set le callback de succès
+     * @param callback Callback
+     */
     public onSuccess(callback: SuccessCallback): APIRequest {
         this._onSuccess = callback;
         return this;
     }
 
+    /**
+     * Set le callback d'échec
+     * @param callback Callback
+     */
     public onFailure(callback: FailureCallback): APIRequest {
         this._onFailure = callback;
         return this;
     }
 
+    /**
+     * Set le temps minimum de la requête
+     * @param time Temps minimum en ms
+     */
     public minTime(time: number): APIRequest {
         this._minTime = time;
         return this;
     }
 
+    /**
+     * Envoie la requête
+     */
     public async send(): Promise<void> {
         const start = Date.now();
 

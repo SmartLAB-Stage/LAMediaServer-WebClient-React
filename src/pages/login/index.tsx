@@ -12,21 +12,53 @@ import Button from "react-bootstrap-button-loader";
 import {RouteComponentProps} from "react-router-dom";
 import "./login.scss";
 
+/**
+ * Statut du login
+ */
 enum LoginStatus {
     SUCCESS = "success",
     FAILURE = "danger",
     NONE = "primary",
 }
 
+/**
+ * Props
+ */
 interface LoginProps extends RouteComponentProps {
 }
 
+/**
+ * État
+ */
 interface LoginState {
+    /**
+     * Nom d'utilisateur
+     */
     username: string,
+
+    /**
+     * Mot de passe
+     */
     password: string,
+
+    /**
+     * Case "rester connecté"
+     */
     remember: boolean,
+
+    /**
+     * En train de charger ou non
+     */
     loading: boolean,
+
+    /**
+     * Statut de la connexion
+     */
     status: LoginStatus,
+
+    /**
+     * Message d'erreur
+     */
     errorMessage: string,
 }
 
@@ -133,10 +165,19 @@ export default class Login extends React.Component<LoginProps, LoginState> {
         );
     }
 
+    /**
+     * Form valide ou non
+     * @private
+     */
     private _validForm(): boolean {
         return this.state.username.length > 0 && this.state.password.length > 0;
     }
 
+    /**
+     * Soumission
+     * @param e Event
+     * @private
+     */
     private async _handleSubmit(e: React.FormEvent): Promise<void> {
         e.preventDefault();
 
