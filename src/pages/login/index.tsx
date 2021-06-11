@@ -7,8 +7,9 @@ import {
     Form,
     Image
 } from "react-bootstrap";
-
 import Button from "react-bootstrap-button-loader";
+
+import {RouteComponentProps} from "react-router-dom";
 import "./login.scss";
 
 enum LoginStatus {
@@ -17,14 +18,16 @@ enum LoginStatus {
     NONE = "primary",
 }
 
-type LoginProps = {};
+interface LoginProps extends RouteComponentProps {
+}
 
-type LoginState = {
+interface LoginState {
     username: string,
     password: string,
     remember: boolean,
     loading: boolean,
     status: LoginStatus,
+    errorMessage: string,
 }
 
 export default class Login extends React.Component<LoginProps, LoginState> {
@@ -36,7 +39,8 @@ export default class Login extends React.Component<LoginProps, LoginState> {
             remember: false,
             loading: false,
             status: LoginStatus.NONE,
-        }
+            errorMessage: "",
+        };
     }
 
     public render(): React.ReactNode {
@@ -112,14 +116,17 @@ export default class Login extends React.Component<LoginProps, LoginState> {
                             className={`alert alert-${this.state.status} alert-dismissible fade show`}
                             role={"alert"}
                             hidden={this.state.status === LoginStatus.NONE}
-                        >
-                            <strong>{this.state.status === LoginStatus.SUCCESS ? "Succès" : "Échec"}</strong>
-                            <button type="button"
-                                    className="btn-close"
-                                    data-bs-dismiss="alert"
-                                    aria-label="Close"
-                            />
-                        </div>
+                        >{
+                            this.state.status === LoginStatus.SUCCESS ? (
+                                <strong>Succès</strong>
+                            ) : (
+                                <div>
+                                    <strong>Échec de la connexion</strong>
+                                    <br/>
+                                    <span>{this.state.errorMessage}</span>
+                                </div>
+                            )
+                        }</div>
                     </Form>
                 </main>
             </div>
@@ -135,18 +142,20 @@ export default class Login extends React.Component<LoginProps, LoginState> {
 
         this.setState({loading: true});
 
-        let success, resStatus, resData;
+        let success, resData;
 
         await APIRequest
-            .get("https://jsonplaceholder.typicode.com/todos/1")
+            .post("/me/login")
+            .withPayload({
+                username: this.state.username,
+                password: this.state.password,
+            })
             .onSuccess((status, data) => {
                 success = true;
-                resStatus = status;
                 resData = data;
             })
-            .onFailure((status, data, evt) => {
+            .onFailure((status, data, _evt) => {
                 success = false;
-                resStatus = status;
                 resData = data;
             })
             .minTime(500)
@@ -154,18 +163,20 @@ export default class Login extends React.Component<LoginProps, LoginState> {
 
         this.setState({loading: false});
 
-        console.log(resStatus, resData);
+        let message = "Une erreur est survenue.";
+        if (resData !== null) {
+            message = resData.message;
+        }
+
+        this.setState({errorMessage: message});
 
         if (success) {
             this.setState({status: LoginStatus.SUCCESS});
+            storage.setItem("_token", resData.payload.token);
             await sleep(1000);
+            this.props.history.push("/home");
         } else {
             this.setState({status: LoginStatus.FAILURE});
         }
-
-        // this.state.username;
-
-
-        storage.setItem("token", "my_token");
     }
 }

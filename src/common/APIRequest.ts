@@ -2,6 +2,7 @@
  * Méthodes de requête
  */
 import {sleep} from "common/utils";
+import APIRequestConfig from "config/APIRequestConfig";
 
 enum RequestMethod {
     /**
@@ -43,32 +44,61 @@ type FailureCallback = (status: number, data: Object | null, evt: ProgressEvent)
 
 class APIRequest {
     private readonly _method: RequestMethod;
-    private readonly _url: string;
+    private readonly _route: string;
     private _request: XMLHttpRequest;
     private _payload: Object;
     private _minTime: number;
 
-    private constructor(method: RequestMethod, url: string) {
+    private constructor(method: RequestMethod, route: string) {
+        const fullRoute = "" +
+            `${APIRequestConfig.API_PROTOCOL}://${APIRequestConfig.API_WEBSITE}:${APIRequestConfig.API_PORT}/` +
+            `${APIRequestConfig.API_ENDPOINT_PREFIX.replace(/^(.*)\/$/, "$1").replace(/^\/(.*)$/, "$1")}/` +
+            `${route.replace(/^\/(.*)$/, "$1")}`
+
         this._method = method;
-        this._url = url;
+        this._route = fullRoute;
         this._request = new XMLHttpRequest();
         this._payload = {};
         this._minTime = 0;
     }
 
-    public static get(url: string): APIRequest {
-        return new APIRequest(RequestMethod.GET, url);
+    public static get(route: string): APIRequest {
+        return new APIRequest(RequestMethod.GET, route);
     }
 
-    public static post(url: string): APIRequest {
-        return new APIRequest(RequestMethod.POST, url);
+    public static post(route: string): APIRequest {
+        return new APIRequest(RequestMethod.POST, route);
     }
 
-    public static delete(url: string): APIRequest {
-        return new APIRequest(RequestMethod.DELETE, url);
+    public static delete(route: string): APIRequest {
+        return new APIRequest(RequestMethod.DELETE, route);
     }
 
-    public setPayload(payload: Object): APIRequest {
+    private static _getRequestInfos(evt: any): RequestInfos {
+        let status;
+        let data;
+        const target: XMLHttpRequest | null = evt.target;
+
+        if (target === null) {
+            console.debug(evt);
+            status = 500;
+            data = null;
+        } else {
+            status = target.status;
+            try {
+                data = JSON.parse(target.response);
+            } catch (e) {
+                data = null;
+            }
+        }
+
+        return {
+            status: status,
+            data: data,
+        }
+    }
+
+    public withPayload(payload: Object = {}): APIRequest {
         this._payload = payload;
         return this;
     }
@@ -106,7 +136,7 @@ class APIRequest {
             });
 
             this._request.addEventListener("load", (evt: any) => {
-                const infos = this._getRequestInfos(evt);
+                const infos = APIRequest._getRequestInfos(evt);
                 if (infos.data === null || Math.floor(infos.status / 100) !== 2) {
                     this._onFailure(infos.status, infos.data, evt);
                     resolve();
@@ -117,13 +147,14 @@ class APIRequest {
             });
 
             this._request.addEventListener("error", (evt) => {
-                const infos = this._getRequestInfos(evt);
+                const infos = APIRequest._getRequestInfos(evt);
                 this._onFailure(infos.status, infos.data, evt);
                 resolve();
             });
             // this._request.addEventListener("abort", transferCanceled);
 
-            this._request.open(this._method as string, this._url);
+            this._request.open(this._method as string, this._route); // FIXME: Utiliser le 3e paramètre ?
+            this._request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
             this._request.send(JSON.stringify(this._payload));
         });
 
@@ -139,30 +170,6 @@ class APIRequest {
     private _onSuccess: SuccessCallback = (_status, _data) => undefined;
 
     private _onFailure: FailureCallback = (_status, _data, _evt) => undefined;
-
-    private _getRequestInfos(evt: any): RequestInfos {
-        let status;
-        let data;
-        const target: XMLHttpRequest | null = evt.target;
-
-        if (target === null) {
-            console.debug(evt);
-            status = 500;
-            data = null;
-        } else {
-            status = target.status;
-            try {
-                data = JSON.parse(target.response);
-            } catch (e) {
-                data = null;
-            }
-        }
-
-        return {
-            status: status,
-            data: data,
-        }
-    }
 }
 
 export default APIRequest;
