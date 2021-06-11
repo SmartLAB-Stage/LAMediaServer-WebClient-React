@@ -1,4 +1,4 @@
-import App from "app";
+import "main.scss";
 import React from "react";
 import ReactDOM from "react-dom";
 
@@ -7,11 +7,12 @@ import {
     Route,
     Switch
 } from "react-router-dom";
+import Routes from "routes";
 
 ReactDOM.render((
     <Router>
         <Switch>
-            <Route path="/" component={App}/>
+            <Route path="/" component={Routes}/>
         </Switch>
     </Router>
 ), document.getElementById("root"));
