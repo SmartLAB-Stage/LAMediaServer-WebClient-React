@@ -1,0 +1,22 @@
+@import "../../colors";
+
+.message-list {
+    .svg-align {
+        text-align: center;
+    }
+
+    .svg-align-container {
+        height: 40px;
+        width: 20px;
+        position: relative;
+
+        .svg-align-center {
+            width: 30px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+        }
+    }
+}
