@@ -1,15 +1,13 @@
 import React from "react";
 import "./messageList.scss";
 
-interface MessageListProps {
-}
+interface MessageListProps {}
 
-interface MessageListState {
-}
+interface MessageListState {}
 
-export default class MessageList extends React.Component<MessageListProps, MessageListState> {
+class MessageList extends React.Component<MessageListProps, MessageListState> {
     public render(): React.ReactNode {
-        let messages: unknown[] = [];
+        const messages: React.ReactNode[] = [];
 
         messages.push(
             <div className={"media w-50 mb-3"}>
@@ -101,3 +99,5 @@ export default class MessageList extends React.Component<MessageListProps, Messa
         );
     }
 }
+
+export {MessageList};

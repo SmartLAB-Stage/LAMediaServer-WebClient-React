@@ -1,15 +1,13 @@
 import React from "react";
 import "./roomList.scss";
 
-interface RoomListProps {
-}
+interface RoomListProps {}
 
-interface RoomListState {
-}
+interface RoomListState {}
 
-export default class RoomList extends React.Component<RoomListProps, RoomListState> {
+class RoomList extends React.Component<RoomListProps, RoomListState> {
     public render(): React.ReactNode {
-        let rooms: unknown[] = [];
+        const rooms: React.ReactNode[] = [];
 
         for (let i = 0; i < 10; ++i) {
             rooms.push(
@@ -61,3 +59,5 @@ export default class RoomList extends React.Component<RoomListProps, RoomListSta
         );
     }
 }
+
+export {RoomList};

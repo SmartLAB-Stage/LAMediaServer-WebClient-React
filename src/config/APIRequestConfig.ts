@@ -1,24 +1,26 @@
 /**
  * Configuration
  */
-export default abstract class APIRequestConfig {
+abstract class APIRequestConfig {
     /**
      * Protocole
      */
-    public static API_PROTOCOL = "http";
+    public static API_PROTOCOL: string = "http";
 
     /**
      * Site accédé
      */
-    public static API_WEBSITE = "localhost";
+    public static API_WEBSITE: string = "localhost";
 
     /**
      * Port accédé
      */
-    public static API_PORT = "8080";
+    public static API_PORT: string = "8080";
 
     /**
      * Préfixe des routes
      */
-    public static API_ENDPOINT_PREFIX = "/api/v1/";
+    public static API_ENDPOINT_PREFIX: string = "/api/v1/";
 }
+
+export {APIRequestConfig};

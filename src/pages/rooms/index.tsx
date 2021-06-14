@@ -1,19 +1,16 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import MessageList from "components/messageList";
-import RoomList from "components/roomList";
+import {MessageList} from "components/messageList";
+import {RoomList} from "components/roomList";
 import React from "react";
 import "./rooms.scss";
 import colors from "../../colors.module.scss";
 
-interface RoomsProps {
-}
+interface RoomsProps {}
 
-interface RoomsState {
-}
+interface RoomsState {}
 
-export default class Rooms extends React.Component<RoomsProps, RoomsState> {
+class Rooms extends React.Component<RoomsProps, RoomsState> {
     public render(): React.ReactNode {
-        console.log(colors);
         return (
             <main className={"rooms container-fluid py-5 px-4"}>
                 <div className={"row rounded-lg overflow-hidden shadow"}>
@@ -44,3 +41,5 @@ export default class Rooms extends React.Component<RoomsProps, RoomsState> {
         );
     }
 }
+
+export {Rooms};

@@ -1,11 +1,11 @@
-import APIRequest from "common/APIRequest";
+import {APIRequest} from "common/APIRequest";
 import storage from "common/storage";
 import {sleep} from "common/utils";
 
 import React from "react";
 import {
     Form,
-    Image
+    Image,
 } from "react-bootstrap";
 import Button from "react-bootstrap-button-loader";
 
@@ -16,9 +16,9 @@ import "./login.scss";
  * Statut du login
  */
 enum LoginStatus {
-    SUCCESS = "success",
     FAILURE = "danger",
     NONE = "primary",
+    SUCCESS = "success",
 }
 
 /**
@@ -32,9 +32,14 @@ interface LoginProps extends RouteComponentProps {
  */
 interface LoginState {
     /**
-     * Nom d'utilisateur
+     * Message d'erreur
      */
-    username: string,
+    errorMessage: string,
+
+    /**
+     * En train de charger ou non
+     */
+    loading: boolean,
 
     /**
      * Mot de passe
@@ -47,31 +52,26 @@ interface LoginState {
     remember: boolean,
 
     /**
-     * En train de charger ou non
-     */
-    loading: boolean,
-
-    /**
      * Statut de la connexion
      */
     status: LoginStatus,
 
     /**
-     * Message d'erreur
+     * Nom d'utilisateur
      */
-    errorMessage: string,
+    username: string,
 }
 
-export default class Login extends React.Component<LoginProps, LoginState> {
+class Login extends React.Component<LoginProps, LoginState> {
     public constructor(props: LoginProps) {
         super(props);
         this.state = {
-            username: "",
+            errorMessage: "",
+            loading: false,
             password: "",
             remember: false,
-            loading: false,
             status: LoginStatus.NONE,
-            errorMessage: "",
+            username: "",
         };
     }
 
@@ -131,7 +131,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
                                 label={"Se souvenir de moi"}
                                 onChange={
                                     (e) => {
-                                        this.setState({remember: e.target.checked})
+                                        return this.setState({remember: e.target.checked});
                                     }
                                 }
                             />
@@ -169,13 +169,13 @@ export default class Login extends React.Component<LoginProps, LoginState> {
      * Édite le CSS.
      * Impossible de changer les propriétés du body sans le changer sur toutes les pages, d'où cette fonction
      */
-    componentWillMount(): void {
+    public componentWillMount(): void {
         document.body.style.display = "flex";
         document.body.style.alignItems = "center";
         document.body.style.justifyContent = "center";
     }
 
-    componentWillUnmount(): void {
+    public componentWillUnmount(): void {
         /*
         document.body.style.display = null;
         document.body.style.alignItems = null;
@@ -239,3 +239,5 @@ export default class Login extends React.Component<LoginProps, LoginState> {
         }
     }
 }
+
+export {Login};

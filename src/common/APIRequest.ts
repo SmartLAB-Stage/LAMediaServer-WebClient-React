@@ -2,21 +2,21 @@
  * Méthodes de requête
  */
 import {sleep} from "common/utils";
-import APIRequestConfig from "config/APIRequestConfig";
+import {APIRequestConfig} from "config/APIRequestConfig";
 
 /**
  * Méthodes de requête
  */
 enum RequestMethod {
     /**
+     * Supprime
+     */
+    DELETE = "DELETE",
+
+    /**
      * Récupération, listing. Cacheable
      */
     GET = "GET",
-
-    /**
-     * Update, remplace complètement
-     */
-    PUT = "PUT",
 
     /**
      * Update, remplace partiellement
@@ -29,9 +29,9 @@ enum RequestMethod {
     POST = "POST",
 
     /**
-     * Supprime
+     * Update, remplace complètement
      */
-    DELETE = "DELETE",
+    PUT = "PUT",
 }
 
 /**
@@ -46,7 +46,7 @@ type RequestInfos = {
     /**
      * Data
      */
-    data: Object | null,
+    data: any | null,
 }
 
 /**
@@ -90,7 +90,7 @@ class APIRequest {
      * Payload
      * @private
      */
-    private _payload: Object;
+    private _payload: any;
 
     /**
      * Temps d'exécution minimal
@@ -108,7 +108,7 @@ class APIRequest {
         const fullRoute = "" +
             `${APIRequestConfig.API_PROTOCOL}://${APIRequestConfig.API_WEBSITE}:${APIRequestConfig.API_PORT}/` +
             `${APIRequestConfig.API_ENDPOINT_PREFIX.replace(/^(.*)\/$/, "$1").replace(/^\/(.*)$/, "$1")}/` +
-            `${route.replace(/^\/(.*)$/, "$1")}`
+            `${route.replace(/^\/(.*)$/, "$1")}`;
 
         this._method = method;
         this._route = fullRoute;
@@ -166,16 +166,16 @@ class APIRequest {
         }
 
         return {
-            status: status,
-            data: data,
-        }
+            status,
+            data,
+        };
     }
 
     /**
      * Set le payload
      * @param payload Payload
      */
-    public withPayload(payload: Object = {}): APIRequest {
+    public withPayload(payload: any = {}): APIRequest {
         this._payload = payload;
         return this;
     }
@@ -222,7 +222,7 @@ class APIRequest {
     public async send(): Promise<void> {
         const start = Date.now();
 
-        await new Promise<void>((resolve, reject) => {
+        await new Promise<void>((resolve) => {
             this._request.addEventListener("progress", (evt) => {
                 if (evt.lengthComputable) {
                     this._onProgress(evt.loaded, evt.total, evt);
@@ -261,11 +261,11 @@ class APIRequest {
         }
     }
 
-    private _onProgress: ProgressCallback = (_loaded, _total, _evt) => undefined;
+    private _onProgress: ProgressCallback = (_loaded, _total, _evt) => (void null);
 
-    private _onSuccess: SuccessCallback = (_status, _data) => undefined;
+    private _onSuccess: SuccessCallback = (_status, _data) => (void null);
 
-    private _onFailure: FailureCallback = (_status, _data, _evt) => undefined;
+    private _onFailure: FailureCallback = (_status, _data, _evt) => (void null);
 }
 
-export default APIRequest;
+export {APIRequest};
