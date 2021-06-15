@@ -4,9 +4,8 @@ import {
     Route,
     Switch,
 } from "react-router-dom";
-import {Home} from "./pages/home";
-import {Login} from "./pages/login";
-import {Rooms} from "./pages/rooms";
+import {Login} from "pages/login";
+import {Home} from "pages/home";
 
 class Routes extends React.Component {
     public render(): React.ReactNode {
@@ -16,7 +15,6 @@ class Routes extends React.Component {
                     <Route exact path="/" component={Home}/>
                     <Route exact path="/login" component={Login}/>
                     <Route exact path="/home" component={Home}/>
-                    <Route exact path="/rooms" component={Rooms}/>
                 </Switch>
             </BrowserRouter>
         );
