@@ -86,9 +86,8 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                             </p>
                         </div>
                         <p className={"small text-muted"}>
-                            {
-                                message.timestamp === undefined ? "?" : message.timestamp.toString()
-                            }
+                            Le {message.timestamp === undefined ? "?" : message.timestamp.toLocaleDateString()}
+                            , à {message.timestamp === undefined ? "?" : message.timestamp.toLocaleTimeString()}
                         </p>
                     </div>
                 </div>
