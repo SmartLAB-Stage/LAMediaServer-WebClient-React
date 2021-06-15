@@ -84,7 +84,7 @@ class User {
             lastSeen = new Date(lastSeen);
         }
 
-        return new this(id, username, name, <UserStatus>status, lastSeen);
+        return new this(id, username, name, status as UserStatus, lastSeen);
     }
 
     public static fromPartialUser(id: string, username: string, name: string | undefined): User {
