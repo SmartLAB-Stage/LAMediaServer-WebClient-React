@@ -6,7 +6,7 @@ import {Message} from "./message";
 /**
  * Canal
  */
-class Channel {
+class Room {
     /**
      * Canal par défaut ou non
      * @private
@@ -91,4 +91,4 @@ class Channel {
     }
 }
 
-export {Channel};
+export {Room};
