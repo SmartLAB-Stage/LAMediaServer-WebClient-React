@@ -1,7 +1,10 @@
+import {Message} from "model/message";
 import React from "react";
 import "./messageList.scss";
 
-interface MessageListProps {}
+interface MessageListProps {
+    messages: Message[],
+}
 
 interface MessageListState {}
 
@@ -73,19 +76,19 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             </div>
         );
 
-        for (let i = 0; i < 20; ++i) {
+        for (let message of this.props.messages) {
             messages.push(
                 <div className={"media w-50 ml-auto mb-3"}>
                     <div className={"media-body"}>
                         <div className={"bg-accent-color rounded py-2 px-3 mb-2"}>
                             <p className={"text-small mb-0 text-white"}>
-                                Test which is a new approach to have
-                                all
-                                solutions
+                                {message.content}
                             </p>
                         </div>
                         <p className={"small text-muted"}>
-                            12:00 PM | Aug 13
+                            {
+                                message.timestamp === undefined ? "?" : message.timestamp.toString()
+                            }
                         </p>
                     </div>
                 </div>

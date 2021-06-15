@@ -1,7 +1,10 @@
+import {Channel} from "model/channel";
 import React from "react";
 import "./roomList.scss";
 
-interface RoomListProps {}
+interface RoomListProps {
+    rooms: Channel[],
+}
 
 interface RoomListState {}
 
