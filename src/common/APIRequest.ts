@@ -1,6 +1,7 @@
 /**
  * Méthodes de requête
  */
+import {Authentication} from "common/authentication";
 import {sleep} from "common/utils";
 
 /**
@@ -48,6 +49,11 @@ type RequestInfos = {
     data: any | null,
 }
 
+type APIDataType = {
+    message: string,
+    payload: any | any[],
+}
+
 /**
  * Callback de progrès
  */
@@ -56,12 +62,12 @@ type ProgressCallback = (loaded: number, total: number, evt: ProgressEvent) => v
 /**
  * Callback de succès
  */
-type SuccessCallback = (status: number, data: Object) => void;
+type SuccessCallback = (status: number, data: APIDataType) => void;
 
 /**
  * Callback d'échec
  */
-type FailureCallback = (status: number, data: Object | null, evt: ProgressEvent) => void;
+type FailureCallback = (status: number, data: APIDataType | null, evt: ProgressEvent) => void;
 
 /**
  * Requête API
@@ -72,6 +78,18 @@ class APIRequest {
      * @private
      */
     private readonly _method: RequestMethod;
+
+    /**
+     * Temps d'exécution minimal
+     * @private
+     */
+    private _minTime: number;
+
+    /**
+     * Payload
+     * @private
+     */
+    private _payload: object;
 
     /**
      * Route
@@ -85,17 +103,7 @@ class APIRequest {
      */
     private _request: XMLHttpRequest;
 
-    /**
-     * Payload
-     * @private
-     */
-    private _payload: any;
-
-    /**
-     * Temps d'exécution minimal
-     * @private
-     */
-    private _minTime: number;
+    private _token: string | null;
 
     /**
      * Constructeur
@@ -116,10 +124,11 @@ class APIRequest {
             `${route.replace(/^\/(.*)$/, "$1")}`;
 
         this._method = method;
-        this._route = fullRoute;
-        this._request = new XMLHttpRequest();
-        this._payload = {};
         this._minTime = 0;
+        this._payload = {};
+        this._request = new XMLHttpRequest();
+        this._route = fullRoute;
+        this._token = null;
     }
 
     /**
@@ -174,6 +183,15 @@ class APIRequest {
             status,
             data,
         };
+    }
+
+    private static _isGoodStatusCode(statusCode: number): boolean {
+        return [200, 201, 204, 304].includes(statusCode);
+    }
+
+    public authenticate(): APIRequest {
+        this._token = Authentication.getToken();
+        return this;
     }
 
     /**
@@ -238,7 +256,7 @@ class APIRequest {
 
             this._request.addEventListener("load", (evt: any) => {
                 const infos = APIRequest._getRequestInfos(evt);
-                if (infos.data === null || Math.floor(infos.status / 100) !== 2) {
+                if (infos.data === null || !APIRequest._isGoodStatusCode(infos.status)) {
                     this._onFailure(infos.status, infos.data, evt);
                     resolve();
                 } else {
@@ -256,6 +274,11 @@ class APIRequest {
 
             this._request.open(this._method as string, this._route); // FIXME: Utiliser le 3e paramètre ?
             this._request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            if (this._token !== null) {
+                this._request.setRequestHeader("Authorization", `Basic ${this._token}`);
+            }
+
             this._request.send(JSON.stringify(this._payload));
         });
 
