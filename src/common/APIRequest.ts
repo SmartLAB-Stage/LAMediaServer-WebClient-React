@@ -189,6 +189,27 @@ class APIRequest {
         return [200, 201, 204, 304].includes(statusCode);
     }
 
+    /**
+     * Configure le payload des requêtes GET
+     * @param route Route de base
+     * @param payload Payload
+     * @private
+     */
+    private static _setGetPayload(route: string, payload: object): string {
+        const keys = Object.keys(payload);
+        if (keys.length === 0) {
+            return route;
+        } else {
+            let newRoute = route + "?";
+
+            for (const key of keys) {
+                newRoute += `${encodeURIComponent(key)}=${encodeURIComponent(payload[key])}&`;
+            }
+
+            return newRoute.slice(0, -1);
+        }
+    }
+
     public authenticate(): APIRequest {
         this._token = Authentication.getToken();
         return this;
@@ -198,7 +219,7 @@ class APIRequest {
      * Set le payload
      * @param payload Payload
      */
-    public withPayload(payload: any = {}): APIRequest {
+    public withPayload(payload: object): APIRequest {
         this._payload = payload;
         return this;
     }
@@ -272,13 +293,20 @@ class APIRequest {
             });
             // this._request.addEventListener("abort", transferCanceled);
 
-            this._request.open(this._method as string, this._route); // FIXME: Utiliser le 3e paramètre ?
+            if (this._method === RequestMethod.GET) {
+                this._request.open(this._method as string, APIRequest._setGetPayload(this._route, this._payload));
+            } else {
+                this._request.open(this._method as string, this._route);
+            }
+
             this._request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
             if (this._token !== null) {
                 this._request.setRequestHeader("Authorization", `Basic ${this._token}`);
             }
 
+            // NOTE: Aucun payload ne sera set pour GET ou HEAD,
+            //       il faut utiliser une route `...?a=b&c=d`, générée plus au dessus à partir du payload fourni
             this._request.send(JSON.stringify(this._payload));
         });
 
