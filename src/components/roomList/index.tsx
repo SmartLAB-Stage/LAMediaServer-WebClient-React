@@ -6,15 +6,16 @@ interface RoomListProps {
     rooms: Room[],
 }
 
-interface RoomListState {}
+interface RoomListState {
+}
 
 class RoomList extends React.Component<RoomListProps, RoomListState> {
     public render(): React.ReactNode {
-        const rooms: React.ReactNode[] = [];
+        const reactRooms: React.ReactNode[] = [];
 
-        for (let i = 0; i < 5; ++i) {
-            rooms.push(
-                <a href={"/rooms/:id"}
+        for (const room of this.props.rooms) {
+            reactRooms.push(
+                <a href={`/room/${room.id}`}
                    className={"list-group-item list-group-item-action list-group-item-light rounded-0"}>
                     <div className={"media"}>
                         <div className={"svg-align-container"}>
@@ -28,10 +29,14 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
                         <div className={"media-body ml-4"}>
                             <div className={"d-flex align-items-center justify-content-between mb-1"}>
                                 <h6 className={"mb-0"}>
-                                    John Doe
+                                    {room.name}
                                 </h6>
                                 <small className={"small font-weight-bold"}>
-                                    14 Dec
+                                    {room.lastMessage !== undefined
+                                        ? room.lastMessage.content
+                                        : <i>Dernier message non disponible</i>
+                                    }
+                                    xxx
                                 </small>
                             </div>
                             <p className={"font-italic text-muted mb-0 text-small"}>
@@ -45,7 +50,7 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
 
         return (
             <div className={"room-list"}>
-                {rooms}
+                {reactRooms}
             </div>
         );
     }

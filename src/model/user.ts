@@ -8,6 +8,13 @@ enum UserStatus {
     UNKNOWN = "unknown",
 }
 
+interface RawUser {
+    id: string,
+    isMe: boolean,
+    name: string,
+    username: string,
+}
+
 /**
  * Utilisateur
  */
@@ -87,7 +94,7 @@ class User {
         return new this(id, username, name, status as UserStatus, lastSeen);
     }
 
-    public static fromPartialUser(id: string, username: string, name: string | undefined): User {
+    public static fromPartialUser(id: string, isMe: boolean, username: string, name: string | undefined): User {
         if (name === undefined) {
             return new this(id, username, username);
         } else {
@@ -109,4 +116,8 @@ class User {
     }
 }
 
-export {User, UserStatus};
+export {
+    User,
+    UserStatus,
+};
+export type {RawUser};

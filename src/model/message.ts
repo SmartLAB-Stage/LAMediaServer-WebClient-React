@@ -1,26 +1,19 @@
 import {Attachment} from "./attachement";
 import {Reaction} from "./reaction";
-import {User} from "./user";
-
-interface PartialMessageSpecs {
-    _id: string,
-    msg: string,
-    u: {
-        _id: string,
-        username: string,
-        name: string | undefined,
-    },
-}
+import {
+    RawUser,
+    User,
+} from "./user";
 
 /**
  * Message raw
  */
-interface RawMessage extends PartialMessageSpecs {
-    md: unknown, // TODO: gérer ce `md` ?
-    rid: string,
-    ts: Date | string,
-    attachments: object[] | undefined,
-    reactions: object[] | undefined,
+interface RawMessage {
+    content: string,
+    id: string,
+    parentUser: RawUser,
+    roomId: string,
+    timestamp: Date,
 }
 
 /**
@@ -114,54 +107,25 @@ class Message {
         return this._parentUser;
     }
 
-    public static test(content: string): Message {
-        return new this(
-            "?",
-            content,
-            User.fromPartialUser("?", "test", "Test"),
-            ".",
-            new Date(),
-            [],
-            [],
-        );
-    }
-
     /**
-     * Depuis un message complet
+     * Depuis un room complet
      * @param rawMessage Message
      */
     public static fromFullMessage(rawMessage: RawMessage): Message {
         return new this(
-            rawMessage._id,
-            rawMessage.msg,
-            User.fromPartialUser(rawMessage.u._id, rawMessage.u.username, rawMessage.u.name),
-            rawMessage.rid,
-            new Date(rawMessage.ts),
-            Attachment.fromArray(rawMessage.attachments),
-            Reaction.fromObject(rawMessage.reactions),
+            rawMessage.id,
+            rawMessage.content,
+            User.fromPartialUser(
+                rawMessage.parentUser.id,
+                rawMessage.parentUser.isMe,
+                rawMessage.parentUser.name,
+                rawMessage.parentUser.username,
+            ),
+            rawMessage.roomId,
+            new Date(rawMessage.timestamp),
+            undefined,
+            undefined,
         );
-    }
-
-    /**
-     * Depuis un message partiel
-     * @param rawMessage Message
-     */
-    public static fromPartialMessage(rawMessage: object | undefined): Message | undefined {
-        if (rawMessage === undefined || rawMessage.hasOwnProperty("msg")) {
-            // FIXME: Gérer les cas où le dernier message est une réaction
-            return undefined;
-        } else {
-            const partialMessage = rawMessage as PartialMessageSpecs;
-            return new this(
-                partialMessage._id,
-                partialMessage.msg,
-                User.fromPartialUser(partialMessage.u._id, partialMessage.u.username, partialMessage.u.name),
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-            );
-        }
     }
 
     public toJSON(): object {
@@ -178,3 +142,4 @@ class Message {
 }
 
 export {Message};
+export type {RawMessage};
