@@ -1,18 +1,20 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import colors from "colors.module.scss";
+import {APIRequest} from "common/APIRequest";
+import {GroupList} from "components/groupList";
 import {MessageList} from "components/messageList";
-import {RoomList} from "components/roomList";
+import {Group} from "model/group";
 import {Message} from "model/message";
-import {Room} from "model/room";
 import "pages/home/home.scss";
 import React, {FormEvent,} from "react";
 import {Form,} from "react-bootstrap";
 
-interface HomeProps {}
+interface HomeProps {
+}
 
 interface HomeState {
     messages: Message[],
-    rooms: Room[],
+    groups: Group[],
     currentMessageContent: string,
 }
 
@@ -22,17 +24,34 @@ class Home extends React.Component<HomeProps, HomeState> {
 
         this.state = {
             messages: [],
-            rooms: [],
+            groups: [],
             currentMessageContent: "",
         };
 
-        this._populateDebug();
+        this._updateFromAPI();
+    }
+
+    private _updateFromAPI(): void {
+        APIRequest
+            .get("/group/list")
+            .authenticate()
+            .onSuccess((status, data) => {
+                const groups: Group[] = [];
+
+                for (const group of data.payload) {
+                    groups.push(Group.fromFullObject(group));
+                }
+
+                this.setState({
+                    groups: groups
+                });
+            }).send().then();
     }
 
     public render(): React.ReactNode {
         const roomList: React.ReactNode = (
-            <RoomList
-                rooms={this.state.rooms}
+            <GroupList
+                groups={this.state.groups}
             />
         );
 
@@ -72,25 +91,6 @@ class Home extends React.Component<HomeProps, HomeState> {
                 </div>
             </main>
         );
-    }
-
-    /**
-     * TODO: Supprimer cette fonction de debug
-     * @private
-     */
-    private _populateDebug() {
-        console.log("test");
-        const messages: Message[] = [];
-        for (let i = 0; i < 10; ++i) {
-            messages.push(Message.test("OK"));
-        }
-
-        // eslint-disable-next-line react/no-direct-mutation-state
-        this.state = {
-            messages: messages,
-            rooms: [],
-            currentMessageContent: "",
-        };
     }
 
     private _handleSendMessage(evt: FormEvent) {

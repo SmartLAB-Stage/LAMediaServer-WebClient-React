@@ -12,7 +12,7 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
     public render(): React.ReactNode {
         const rooms: React.ReactNode[] = [];
 
-        for (let i = 0; i < 10; ++i) {
+        for (let i = 0; i < 5; ++i) {
             rooms.push(
                 <a href={"/rooms/:id"}
                    className={"list-group-item list-group-item-action list-group-item-light rounded-0"}>
@@ -44,20 +44,8 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
         }
 
         return (
-            <div className={"room-list col-4 px-0"}>
-                <div className={"bg-white"}>
-                    <div className={"bg-gray px-4 py-2 bg-light"}>
-                        <p className={"h5 mb-0 py-1"}>
-                            Recent
-                        </p>
-                    </div>
-
-                    <div className={"messages-box"}>
-                        <div className={"list-group rounded-0"}>
-                            {rooms}
-                        </div>
-                    </div>
-                </div>
+            <div className={"room-list"}>
+                {rooms}
             </div>
         );
     }
