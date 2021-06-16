@@ -2,7 +2,6 @@
  * Méthodes de requête
  */
 import {sleep} from "common/utils";
-import {APIRequestConfig} from "config/APIRequestConfig";
 
 /**
  * Méthodes de requête
@@ -105,9 +104,15 @@ class APIRequest {
      * @private
      */
     private constructor(method: RequestMethod, route: string) {
+        const ENDPOINT_PREFIX = (process.env.REACT_APP_API_ENDPOINT_PREFIX as string)
+            .replace(/^(.*)\/$/, "$1")
+            .replace(/^\/(.*)$/, "$1");
+
         const fullRoute = "" +
-            `${APIRequestConfig.API_PROTOCOL}://${APIRequestConfig.API_WEBSITE}:${APIRequestConfig.API_PORT}/` +
-            `${APIRequestConfig.API_ENDPOINT_PREFIX.replace(/^(.*)\/$/, "$1").replace(/^\/(.*)$/, "$1")}/` +
+            `${process.env.REACT_APP_API_PROTOCOL}://` +
+            `${process.env.REACT_APP_API_ADDRESS}` +
+            `:${process.env.REACT_APP_API_PORT}/` +
+            `${ENDPOINT_PREFIX}/` +
             `${route.replace(/^\/(.*)$/, "$1")}`;
 
         this._method = method;
