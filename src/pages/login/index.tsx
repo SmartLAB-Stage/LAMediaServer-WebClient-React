@@ -1,5 +1,5 @@
 import {APIRequest} from "common/APIRequest";
-import storage from "common/storage";
+import {Authentication} from "common/authentication";
 import {sleep} from "common/utils";
 
 import React from "react";
@@ -231,7 +231,7 @@ class Login extends React.Component<LoginProps, LoginState> {
 
         if (success) {
             this.setState({status: LoginStatus.SUCCESS});
-            storage.setItem("_token", resData.payload.token);
+            Authentication.setToken(resData.payload.token, this.state.remember);
             await sleep(1000);
             this.props.history.push("/home");
         } else {
