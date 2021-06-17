@@ -2,56 +2,57 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import colors from "colors.module.scss";
 import {APIRequest} from "common/APIRequest";
 import {GroupList} from "components/groupList";
+import {MessageList} from "components/messageList";
 import {Group} from "model/group";
 import "pages/home/home.scss";
+import {Message} from "model/message";
 import React, {FormEvent,} from "react";
 import {Form,} from "react-bootstrap";
+import {RouteComponentProps} from "react-router-dom";
 
-interface HomeProps {
+interface HomeProps extends RouteComponentProps {
 }
 
 interface HomeState {
     groups: Group[],
     currentMessageContent: string,
+    roomId: string,
+    messages: Message[],
 }
 
-class Room extends React.Component<HomeProps, HomeState> {
+class RoomPage extends React.Component<HomeProps, HomeState> {
     public constructor(props: HomeProps) {
         super(props);
 
         this.state = {
             groups: [],
             currentMessageContent: "",
+            roomId: this.props.match.params["roomId"],
+            messages: [],
         };
 
-        this._updateFromAPI();
+        this._updateGroupsFromAPI();
+        this._updateMessagesFromAPI();
     }
 
     public render(): React.ReactNode {
-        const roomList: React.ReactNode = (
-            <GroupList
-                groups={this.state.groups}
-            />
-        );
-
         return (
             <main className={"rooms container-fluid py-5 px-4"}>
                 <div className={"row rounded-lg overflow-hidden shadow"}>
-                    {roomList}
+                    <GroupList
+                        groups={this.state.groups}
+                    />
 
                     <div className={"col-8 px-0"}>
-                        { // WIP
-                            /*
                         <MessageList
                             messages={this.state.messages}
-                        />*/
-                        }
+                        />
 
                         <Form onSubmit={(e) => this._handleSendMessage(e)}
                               className={"bg-light"}>
                             <div className={"input-group"}>
                                 <input type={"text"}
-                                       placeholder={"Entrez votre room"}
+                                       placeholder={"Entrez votre message"}
                                        aria-describedby={"button-addon2"}
                                        className={"form-control rounded-0 border-0 py-4 bg-light"}
                                        value={this.state.currentMessageContent}
@@ -75,7 +76,7 @@ class Room extends React.Component<HomeProps, HomeState> {
         );
     }
 
-    private _updateFromAPI(): void {
+    private _updateGroupsFromAPI(): void {
         APIRequest
             .get("/group/list")
             .authenticate()
@@ -92,22 +93,44 @@ class Room extends React.Component<HomeProps, HomeState> {
             }).send().then();
     }
 
-    private _handleSendMessage(evt: FormEvent) {
+    private _updateMessagesFromAPI(): void {
+        APIRequest
+            .get("/group/room/message/list")
+            .authenticate()
+            .withPayload({
+                roomId: this.state.roomId,
+            }).onSuccess((status, data) => {
+                const messages: Message[] = [];
+
+                for (const message of data.payload) {
+                    messages.unshift(Message.fromFullMessage(message));
+                }
+
+                this.setState({
+                    messages: messages,
+                });
+            }).send().then();
+    }
+
+    private async _handleSendMessage(evt: FormEvent): Promise<void> {
         evt.preventDefault();
 
         if (this.state.currentMessageContent.length === 0) {
             return;
         }
 
-        /*
-        const newMessage = Message.test(this.state.currentMessageContent);
-        this.setState(prevState => {
-            return {
-                messages: [...prevState.messages, newMessage],
-            };
-        });
+        await APIRequest
+            .post("/group/room/message/send")
+            .authenticate()
+            .minTime(100)
+            .withPayload({
+                message: this.state.currentMessageContent,
+                roomId: this.state.roomId,
+            }).onSuccess((status, data) => {
+                console.log(data);
+            }).send();
 
-         */
+        this._updateMessagesFromAPI();
 
         this.setState({
             currentMessageContent: "",
@@ -115,4 +138,4 @@ class Room extends React.Component<HomeProps, HomeState> {
     }
 }
 
-export {Room};
+export {RoomPage};

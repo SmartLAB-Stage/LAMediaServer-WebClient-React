@@ -14,7 +14,7 @@ interface HomeState {
     groups: Group[],
 }
 
-class Home extends React.Component<HomeProps, HomeState> {
+class HomePage extends React.Component<HomeProps, HomeState> {
     public constructor(props: HomeProps) {
         super(props);
 
@@ -22,20 +22,16 @@ class Home extends React.Component<HomeProps, HomeState> {
             groups: [],
         };
 
-        this._updateFromAPI();
+        this._updateGroupsFromAPI();
     }
 
     public render(): React.ReactNode {
-        const groupList: React.ReactNode = (
-            <GroupList
-                groups={this.state.groups}
-            />
-        );
-
         return (
             <main className={"rooms container-fluid py-5 px-4"}>
                 <div className={"row rounded-lg overflow-hidden shadow"}>
-                    {groupList}
+                    <GroupList
+                        groups={this.state.groups}
+                    />
 
                     <div className={"col-8 px-0"}>
                         <div className={"px-4 py-5 chat-box bg-white"}>
@@ -70,7 +66,7 @@ class Home extends React.Component<HomeProps, HomeState> {
         );
     }
 
-    private _updateFromAPI(): void {
+    private _updateGroupsFromAPI(): void {
         APIRequest
             .get("/group/list")
             .authenticate()
@@ -88,4 +84,4 @@ class Home extends React.Component<HomeProps, HomeState> {
     }
 }
 
-export {Home};
+export {HomePage};

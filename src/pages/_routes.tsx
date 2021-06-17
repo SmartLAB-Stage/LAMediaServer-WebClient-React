@@ -1,8 +1,9 @@
 import {PrivateRoute} from "pages/_privateRoute";
-import {Home} from "pages/home";
-import {Login} from "pages/login";
-import {Logout} from "pages/logout";
-import {NotFound} from "pages/notFound";
+import {HomePage} from "pages/home";
+import {LoginPage} from "pages/login";
+import {LogoutPage} from "pages/logout";
+import {NotFoundPage} from "pages/notFound";
+import {RoomPage} from "pages/room";
 import React from "react";
 import {
     BrowserRouter,
@@ -25,11 +26,12 @@ class Routes extends React.Component<RoutesProps, RoutesState> {
         return (
             <BrowserRouter>
                 <Switch>
-                    <Route exact path="/" component={Home}/>
-                    <Route exact path="/login" component={Login}/>
-                    <Route exact path="/logout" component={Logout}/>
-                    <PrivateRoute exact path="/home" component={Home}/>
-                    <Route component={NotFound}/>
+                    <Route          exact={true} path="/"               component={HomePage}/>
+                    <Route          exact={true} path="/login"          component={LoginPage}/>
+                    <Route          exact={true} path="/logout"         component={LogoutPage}/>
+                    <PrivateRoute   exact={true} path="/room/:roomId"   component={RoomPage}/>
+                    <PrivateRoute   exact={true} path="/home"           component={HomePage}/>
+                    <Route          exact={true}                        component={NotFoundPage}/>
                 </Switch>
             </BrowserRouter>
         );
