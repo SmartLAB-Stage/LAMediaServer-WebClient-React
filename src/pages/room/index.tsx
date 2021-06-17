@@ -119,14 +119,6 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
             return;
         }
 
-        /*
-        const newMessage = Message.test(this.state.currentMessageContent);
-        this.setState(prevState => {
-            return {
-                messages: [...prevState.messages, newMessage],
-            };
-        });*/
-
         await APIRequest
             .post("/group/room/message/send")
             .authenticate()
@@ -137,6 +129,8 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
             }).onSuccess((status, data) => {
                 console.log(data);
             }).send();
+
+        this._updateMessagesFromAPI();
 
         this.setState({
             currentMessageContent: "",
