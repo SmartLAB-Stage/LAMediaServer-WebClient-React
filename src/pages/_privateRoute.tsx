@@ -15,12 +15,14 @@ interface PrivateRouteState {
 class PrivateRoute extends React.Component<PrivateRouteProps, PrivateRouteState> {
     public render(): React.ReactNode {
         return (
-            <Route component={
-                Authentication.isAuthenticated()
-                    ? this.props.component
-                    : () => <Redirect to={{pathname: '/login', state: {from: this.props.location}}}/>
-                }>
-            </Route>
+            <Route
+                {...this.props}
+               component={
+                   Authentication.isAuthenticated()
+                       ? this.props.component
+                       : () => <Redirect to={{pathname: '/login', state: {from: this.props.location}}}/>
+               }
+            />
         );
     }
 }
