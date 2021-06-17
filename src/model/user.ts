@@ -25,6 +25,8 @@ class User {
      */
     private readonly _id: string;
 
+    private readonly _isMe: boolean;
+
     /**
      * Dernière activité
      * @private
@@ -50,11 +52,14 @@ class User {
     private readonly _username: string;
 
     private constructor(id: string,
+                        isMe: boolean,
                         username: string,
                         name: string,
                         status: UserStatus | undefined = undefined,
-                        lastSeen: Date | undefined = undefined) {
+                        lastSeen: Date | undefined = undefined,
+    ) {
         this._id = id;
+        this._isMe = isMe;
         this._username = username;
         this._name = name;
         this._status = status;
@@ -63,6 +68,10 @@ class User {
 
     public get id(): string {
         return this._id;
+    }
+
+    public get isMe(): boolean {
+        return this._isMe;
     }
 
     public get lastSeen(): Date | undefined {
@@ -81,24 +90,11 @@ class User {
         return this._username;
     }
 
-    public static fromFullUser(id: string,
-                               username: string,
-                               name: string,
-                               status: string | UserStatus,
-                               lastSeen: string | Date | undefined,
-    ): User {
-        if (lastSeen !== undefined) {
-            lastSeen = new Date(lastSeen);
-        }
-
-        return new this(id, username, name, status as UserStatus, lastSeen);
-    }
-
     public static fromPartialUser(id: string, isMe: boolean, username: string, name: string | undefined): User {
         if (name === undefined) {
-            return new this(id, username, username);
+            return new this(id, isMe, username, username);
         } else {
-            return new this(id, username, name);
+            return new this(id, isMe, username, name);
         }
     }
 
@@ -108,6 +104,7 @@ class User {
     public toJSON(): object {
         return {
             id: this.id,
+            isMe: this.isMe,
             lastSeen: this.lastSeen,
             name: this.name,
             status: this.status,
