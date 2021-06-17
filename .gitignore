@@ -27,3 +27,6 @@ yarn-error.log*
 src/**/*.css
 src/**/*.css.map
 src/*.d.ts
+
+
+.env

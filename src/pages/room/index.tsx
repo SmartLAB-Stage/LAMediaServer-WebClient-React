@@ -4,7 +4,7 @@ import {APIRequest} from "common/APIRequest";
 import {GroupList} from "components/groupList";
 import {Group} from "model/group";
 import "pages/home/home.scss";
-import React from "react";
+import React, {FormEvent,} from "react";
 import {Form,} from "react-bootstrap";
 
 interface HomeProps {
@@ -12,21 +12,23 @@ interface HomeProps {
 
 interface HomeState {
     groups: Group[],
+    currentMessageContent: string,
 }
 
-class Home extends React.Component<HomeProps, HomeState> {
+class Room extends React.Component<HomeProps, HomeState> {
     public constructor(props: HomeProps) {
         super(props);
 
         this.state = {
             groups: [],
+            currentMessageContent: "",
         };
 
         this._updateFromAPI();
     }
 
     public render(): React.ReactNode {
-        const groupList: React.ReactNode = (
+        const roomList: React.ReactNode = (
             <GroupList
                 groups={this.state.groups}
             />
@@ -35,29 +37,32 @@ class Home extends React.Component<HomeProps, HomeState> {
         return (
             <main className={"rooms container-fluid py-5 px-4"}>
                 <div className={"row rounded-lg overflow-hidden shadow"}>
-                    {groupList}
+                    {roomList}
 
                     <div className={"col-8 px-0"}>
-                        <div className={"px-4 py-5 chat-box bg-white"}>
-                            <i>
-                                Choisissez une discussion depuis la liste de gauche
-                            </i>
-                        </div>
+                        { // WIP
+                            /*
+                        <MessageList
+                            messages={this.state.messages}
+                        />*/
+                        }
 
-                        <Form onSubmit={() => undefined}
+                        <Form onSubmit={(e) => this._handleSendMessage(e)}
                               className={"bg-light"}>
                             <div className={"input-group"}>
                                 <input type={"text"}
-                                       placeholder={"Entrez votre message"}
+                                       placeholder={"Entrez votre room"}
                                        aria-describedby={"button-addon2"}
-                                       disabled={true}
                                        className={"form-control rounded-0 border-0 py-4 bg-light"}
-                                       value={""}
+                                       value={this.state.currentMessageContent}
+                                       onChange={(e) => this.setState({
+                                           currentMessageContent: e.target.value,
+                                       })}
                                 />
                                 <div className={"input-group-append"}>
                                     <button id={"button-addon2"}
                                             type={"submit"}
-                                            disabled={true}
+                                            disabled={this.state.currentMessageContent.length === 0}
                                             className={"btn btn-link"}>
                                         <FontAwesomeIcon icon={"paper-plane"} style={{color: colors.accentColor}}/>
                                     </button>
@@ -86,6 +91,28 @@ class Home extends React.Component<HomeProps, HomeState> {
                 });
             }).send().then();
     }
+
+    private _handleSendMessage(evt: FormEvent) {
+        evt.preventDefault();
+
+        if (this.state.currentMessageContent.length === 0) {
+            return;
+        }
+
+        /*
+        const newMessage = Message.test(this.state.currentMessageContent);
+        this.setState(prevState => {
+            return {
+                messages: [...prevState.messages, newMessage],
+            };
+        });
+
+         */
+
+        this.setState({
+            currentMessageContent: "",
+        });
+    }
 }
 
-export {Home};
+export {Room};
