@@ -15,7 +15,7 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
 
         for (const room of this.props.rooms) {
             reactRooms.push(
-                <a href={`/room/${room.id}`}
+                <a key={room.id} href={`/room/${room.id}`}
                    className={"list-group-item list-group-item-action list-group-item-light rounded-0"}>
                     <div className={"media"}>
                         <div className={"svg-align-container"}>
@@ -33,14 +33,16 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
                                 </h6>
                                 <small className={"small font-weight-bold"}>
                                     {room.lastMessage !== undefined
-                                        ? room.lastMessage.content
-                                        : <i>Dernier message non disponible</i>
+                                        ? room.lastMessage.parentUser.name
+                                        : <i>Expéditeur inconnu</i>
                                     }
-                                    xxx
                                 </small>
                             </div>
-                            <p className={"font-italic text-muted mb-0 text-small"}>
-                                Lorem ipsum dolor sit amet, consectetur. incididunt ut labore.
+                            <p className={"text-muted mb-0 text-small"}>
+                                {room.lastMessage !== undefined
+                                    ? room.lastMessage.content
+                                    : <i>Dernier message non disponible</i>
+                                }
                             </p>
                         </div>
                     </div>
@@ -49,7 +51,7 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
         }
 
         return (
-            <div className={"room-list"}>
+            <div key={this.props.rooms.length} className={"room-list"}>
                 {reactRooms}
             </div>
         );
