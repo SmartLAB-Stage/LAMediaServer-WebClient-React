@@ -62,12 +62,12 @@ type ProgressCallback = (loaded: number, total: number, evt: ProgressEvent) => v
 /**
  * Callback de succès
  */
-type SuccessCallback = (status: number, data: APIDataType) => void;
+type SuccessCallback = (status: number, data: APIDataType) => any | void;
 
 /**
  * Callback d'échec
  */
-type FailureCallback = (status: number, data: APIDataType | null, evt: ProgressEvent) => void;
+type FailureCallback = (status: number, data: APIDataType | null, evt: ProgressEvent) => any | void;
 
 /**
  * Requête API
@@ -263,10 +263,10 @@ class APIRequest {
     /**
      * Envoie la requête
      */
-    public async send(): Promise<void> {
+    public async send(): Promise<any | void> {
         const start = Date.now();
 
-        await new Promise<void>((resolve) => {
+        const res = await new Promise<any | void>((resolve) => {
             this._request.addEventListener("progress", (evt) => {
                 if (evt.lengthComputable) {
                     this._onProgress(evt.loaded, evt.total, evt);
@@ -278,18 +278,15 @@ class APIRequest {
             this._request.addEventListener("load", (evt: any) => {
                 const infos = APIRequest._getRequestInfos(evt);
                 if (infos.data === null || !APIRequest._isGoodStatusCode(infos.status)) {
-                    this._onFailure(infos.status, infos.data, evt);
-                    resolve();
+                    resolve(this._onFailure(infos.status, infos.data, evt));
                 } else {
-                    this._onSuccess(infos.status, infos.data);
-                    resolve();
+                    resolve(this._onSuccess(infos.status, infos.data));
                 }
             });
 
             this._request.addEventListener("error", (evt) => {
                 const infos = APIRequest._getRequestInfos(evt);
-                this._onFailure(infos.status, infos.data, evt);
-                resolve();
+                resolve(this._onFailure(infos.status, infos.data, evt));
             });
             // this._request.addEventListener("abort", transferCanceled);
 
@@ -315,6 +312,8 @@ class APIRequest {
         if (duration < this._minTime) {
             await sleep(this._minTime - duration);
         }
+
+        return res;
     }
 
     private _onProgress: ProgressCallback = (_loaded, _total, _evt) => (void null);
