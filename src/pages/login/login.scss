@@ -1,27 +1,31 @@
 @media all {
-    main {
+    main.login {
         display: flex;
         align-items: center;
         padding-bottom: 40px;
 
-        &.form-signin .form-floating input {
-            &[name="username"] {
-                margin-bottom: -1px;
-                border-bottom-right-radius: 0;
-                border-bottom-left-radius: 0;
+        &.form-signin {
+            .checkbox {
+                font-weight: 400;
             }
 
-            &[name="password"] {
-                margin-bottom: 10px;
-                border-top-left-radius: 0;
-                border-top-right-radius: 0;
+            .form-control:focus {
+                z-index: 2;
+            }
+
+            .form-floating input {
+                &[name="username"] {
+                    margin-bottom: -1px;
+                    border-bottom-right-radius: 0;
+                    border-bottom-left-radius: 0;
+                }
+
+                &[name="password"] {
+                    margin-bottom: 10px;
+                    border-top-left-radius: 0;
+                    border-top-right-radius: 0;
+                }
             }
         }
-    }
-
-    body {
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
 }

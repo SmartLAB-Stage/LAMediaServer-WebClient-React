@@ -2,10 +2,10 @@ import React from "react";
 import {Link} from "react-router-dom";
 
 type HeaderProps = {
-    appName: string
+    appName: string,
 }
 
-export default class Header extends React.Component<HeaderProps> {
+class Header extends React.Component<HeaderProps> {
     public render(): React.ReactNode {
         return (
             <nav className="navbar">
@@ -18,3 +18,5 @@ export default class Header extends React.Component<HeaderProps> {
         );
     }
 }
+
+export {Header};
