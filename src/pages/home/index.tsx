@@ -14,7 +14,7 @@ interface HomeState {
     groups: Group[],
 }
 
-class Home extends React.Component<HomeProps, HomeState> {
+class HomePage extends React.Component<HomeProps, HomeState> {
     public constructor(props: HomeProps) {
         super(props);
 
@@ -88,4 +88,4 @@ class Home extends React.Component<HomeProps, HomeState> {
     }
 }
 
-export {Home};
+export {HomePage};

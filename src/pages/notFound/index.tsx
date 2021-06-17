@@ -1,6 +1,6 @@
 import React from "react";
 
-class NotFound extends React.Component {
+class NotFoundPage extends React.Component {
     public render(): React.ReactNode {
         return (
             "Cette page n'existe pas"
@@ -8,4 +8,4 @@ class NotFound extends React.Component {
     }
 }
 
-export {NotFound};
+export {NotFoundPage};

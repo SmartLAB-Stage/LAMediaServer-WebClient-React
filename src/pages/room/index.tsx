@@ -6,22 +6,25 @@ import {Group} from "model/group";
 import "pages/home/home.scss";
 import React, {FormEvent,} from "react";
 import {Form,} from "react-bootstrap";
+import {RouteComponentProps} from "react-router-dom";
 
-interface HomeProps {
+interface HomeProps extends RouteComponentProps {
 }
 
 interface HomeState {
     groups: Group[],
     currentMessageContent: string,
+    roomId: string,
 }
 
-class Room extends React.Component<HomeProps, HomeState> {
+class RoomPage extends React.Component<HomeProps, HomeState> {
     public constructor(props: HomeProps) {
         super(props);
 
         this.state = {
             groups: [],
             currentMessageContent: "",
+            roomId: this.props.match.params["roomId"],
         };
 
         this._updateFromAPI();
@@ -51,7 +54,7 @@ class Room extends React.Component<HomeProps, HomeState> {
                               className={"bg-light"}>
                             <div className={"input-group"}>
                                 <input type={"text"}
-                                       placeholder={"Entrez votre room"}
+                                       placeholder={"Entrez votre message"}
                                        aria-describedby={"button-addon2"}
                                        className={"form-control rounded-0 border-0 py-4 bg-light"}
                                        value={this.state.currentMessageContent}
@@ -115,4 +118,4 @@ class Room extends React.Component<HomeProps, HomeState> {
     }
 }
 
-export {Room};
+export {RoomPage};

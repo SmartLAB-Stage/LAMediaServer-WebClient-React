@@ -62,7 +62,7 @@ interface LoginState {
     username: string,
 }
 
-class Login extends React.Component<LoginProps, LoginState> {
+class LoginPage extends React.Component<LoginProps, LoginState> {
     public constructor(props: LoginProps) {
         super(props);
         this.state = {
@@ -240,4 +240,4 @@ class Login extends React.Component<LoginProps, LoginState> {
     }
 }
 
-export {Login};
+export {LoginPage};
