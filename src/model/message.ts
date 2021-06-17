@@ -118,8 +118,8 @@ class Message {
             User.fromPartialUser(
                 rawMessage.parentUser.id,
                 rawMessage.parentUser.isMe,
-                rawMessage.parentUser.name,
                 rawMessage.parentUser.username,
+                rawMessage.parentUser.name,
             ),
             rawMessage.roomId,
             new Date(rawMessage.timestamp),
