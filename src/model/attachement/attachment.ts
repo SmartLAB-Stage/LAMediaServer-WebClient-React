@@ -1,6 +1,9 @@
-import {FileAttachment, ImageAttachment} from ".";
-import {ImageAttachmentSpecs} from "./imageAttachment";
+import {
+    FileAttachment,
+    ImageAttachment,
+} from ".";
 import {FileAttachmentSpecs} from "./fileAttachment";
+import {ImageAttachmentSpecs} from "./imageAttachment";
 
 /**
  * Type de pièce-jointe
@@ -55,4 +58,7 @@ abstract class Attachment {
     }
 }
 
-export {Attachment, AttachmentType};
+export {
+    Attachment,
+    AttachmentType,
+};
