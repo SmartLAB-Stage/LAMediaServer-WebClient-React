@@ -22,9 +22,10 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         };
     }
 
-    componentDidUpdate() {
-        // Attention aux boucles infinies !
-        this._updateFromAPI();
+    componentDidUpdate(prevProps: GroupListProps) {
+        if (prevProps.groups !== this.props.groups) {
+            this._updateFromAPI();
+        }
     }
 
     public render(): React.ReactNode {
