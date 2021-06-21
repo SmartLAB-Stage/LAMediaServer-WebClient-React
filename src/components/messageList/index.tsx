@@ -25,7 +25,8 @@ interface MessageListState {
 }
 
 class MessageList extends React.Component<MessageListProps, MessageListState> {
-    private _active = false;
+    private static _currentUpdateVersion = NaN;
+    private _currentUpdateVersion = NaN;
 
     public constructor(props: MessageListProps) {
         super(props);
@@ -45,20 +46,24 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             </div>
         );
 
-        const list = document.querySelector("div.message-list");
-        if (list !== null) {
-            list.scrollTop = list.scrollHeight;
-        }
-
         return messageList;
     }
 
     public componentDidMount() {
-        this._active = true;
+        MessageList._currentUpdateVersion = Math.random();
+        this._currentUpdateVersion = MessageList._currentUpdateVersion;
+    }
+
+    public componentDidUpdate() {
+        const list = document.querySelector("div.message-list");
+        if (list !== null) {
+            // FIXME: Va toujours scroller
+            // list.scrollTop = list.scrollHeight;
+        }
     }
 
     public componentWillUnmount() {
-        this._active = false;
+        MessageList._currentUpdateVersion = Math.random();
     }
 
     private _renderMessageList(): React.ReactNode[] {
@@ -211,7 +216,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         APIRequest
             .delete("/group/room/message/delete")
             .authenticate()
-            .canceledWhen(() => !this._active)
+            .canceledWhen(() => this._currentUpdateVersion !== MessageList._currentUpdateVersion)
             .withPayload({
                 roomId: this.props.roomId, // Ou `message.roomId` ?
                 messageId: message.id,
