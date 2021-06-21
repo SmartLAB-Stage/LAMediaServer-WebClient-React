@@ -26,12 +26,32 @@ class Routes extends React.Component<RoutesProps, RoutesState> {
         return (
             <BrowserRouter>
                 <Switch>
-                    <Route          exact={true} path="/"               component={HomePage}/>
-                    <Route          exact={true} path="/login"          component={LoginPage}/>
-                    <Route          exact={true} path="/logout"         component={LogoutPage}/>
-                    <PrivateRoute   exact={true} path="/room/:roomId"   component={RoomPage}/>
-                    <PrivateRoute   exact={true} path="/home"           component={HomePage}/>
-                    <Route          exact={true}                        component={NotFoundPage}/>
+                    <Route
+                        exact={true}
+                        path="/"
+                        component={HomePage}/>
+                    <Route
+                        exact={true}
+                        path="/login"
+                        component={LoginPage}/>
+                    <Route
+                        exact={true}
+                        path="/logout"
+                        component={LogoutPage}/>
+                    <PrivateRoute
+                        exact={true}
+                        path="/room/:id"
+                        render={(props) =>
+                            <RoomPage currentRoomId={props.match.params["id"] as string}
+                                      fullURL={props.match.path}/>
+                        }/>
+                    <PrivateRoute
+                        exact={true}
+                        path="/home"
+                        component={HomePage}/>
+                    <Route
+                        exact={true}
+                        component={NotFoundPage}/>
                 </Switch>
             </BrowserRouter>
         );

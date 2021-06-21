@@ -4,24 +4,32 @@ import {APIRequest} from "common/APIRequest";
 import {GroupList} from "components/groupList";
 import {MessageList} from "components/messageList";
 import {Group} from "model/group";
-import "pages/home/home.scss";
 import {Message} from "model/message";
+import "pages/home/home.scss";
+import {Room} from "model/room";
 import React, {FormEvent,} from "react";
 import {Form,} from "react-bootstrap";
-import {RouteComponentProps} from "react-router-dom";
 
-interface HomeProps extends RouteComponentProps {
+interface HomeProps {
+    currentRoomId: string,
+    fullURL: string,
 }
 
 interface HomeState {
     groups: Group[],
     currentMessageContent: string,
-    roomId: string,
+    currentRoomId: string,
     messages: Message[],
 }
 
 class RoomPage extends React.Component<HomeProps, HomeState> {
     private _looping: boolean;
+
+    /**
+     * Permet d'annuler les Promise asynchrones une fois l'élément React courant recyclé / la vue changée.
+     * @private
+     */
+    private _active = false;
 
     public constructor(props: HomeProps) {
         super(props);
@@ -31,12 +39,23 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
         this.state = {
             groups: [],
             currentMessageContent: "",
-            roomId: this.props.match.params["roomId"],
+            currentRoomId: this.props.currentRoomId,
             messages: [],
         };
 
+        window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentRoomId));
+
         this._updateGroupsFromAPI();
         this._updateMessagesFromAPI();
+    }
+
+    private _currentRoomChangeCallback(newRoom: Room): void {
+        console.log(newRoom.id);
+        this.setState({
+            currentRoomId: newRoom.id,
+        });
+        window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, newRoom.id));
+        this._updateMessagesFromAPI(newRoom.id);
     }
 
     public render(): React.ReactNode {
@@ -45,12 +64,14 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                 <div className={"row rounded-lg overflow-hidden shadow"}>
                     <GroupList
                         groups={this.state.groups}
+                        currentRoomChangeCallback={(newRoom: Room) => this._currentRoomChangeCallback(newRoom)}
                     />
 
                     <div className={"col-8 px-0"}>
                         <MessageList
+                            key={this.state.currentRoomId}
                             refreshMessages={() => this._updateMessagesFromAPI()}
-                            roomId={this.state.roomId}
+                            roomId={this.state.currentRoomId}
                             messages={this.state.messages}
                         />
 
@@ -82,11 +103,24 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
         );
     }
 
+    public componentDidMount() {
+        this._active = true;
+    }
+
+    public componentWillUnmount() {
+        this._active = false;
+    }
+
     private _updateGroupsFromAPI(): void {
         APIRequest
             .get("/group/list")
             .authenticate()
+            .canceledWhen(() => !this._active)
             .onSuccess((status, data) => {
+                if (!this._active) {
+                    return;
+                }
+
                 const groups: Group[] = [];
 
                 for (const group of data.payload) {
@@ -99,13 +133,15 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
             }).send().then();
     }
 
-    private _updateMessagesFromAPI(): void {
+    private _updateMessagesFromAPI(currentRoomId: string | null = null): void {
         APIRequest
             .get("/group/room/message/list")
             .authenticate()
+            .canceledWhen(() => !this._active)
             .withPayload({
-                roomId: this.state.roomId,
-            }).onSuccess((status, data) => {
+                roomId: currentRoomId === null ? this.state.currentRoomId : currentRoomId,
+            })
+            .onSuccess((status, data) => {
                 const messages: Message[] = [];
 
                 for (const message of data.payload) {
@@ -137,10 +173,11 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
         await APIRequest
             .post("/group/room/message/send")
             .authenticate()
+            .canceledWhen(() => !this._active)
             .minTime(100)
             .withPayload({
                 message: this.state.currentMessageContent,
-                roomId: this.state.roomId,
+                roomId: this.state.currentRoomId,
             }).onSuccess((status, data) => {
                 console.log(data);
             }).send();

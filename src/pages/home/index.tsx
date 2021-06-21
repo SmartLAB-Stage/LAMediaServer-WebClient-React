@@ -31,8 +31,8 @@ class HomePage extends React.Component<HomeProps, HomeState> {
         return (
             <main className={"rooms container-fluid py-5 px-4"}>
                 <div className={"row rounded-lg overflow-hidden shadow"}>
-                    <GroupList
-                        groups={this.state.groups}
+                    <GroupList groups={this.state.groups}
+                               currentRoomChangeCallback={(_) => (void null)}
                     />
 
                     <div className={"col-8 px-0"}>
