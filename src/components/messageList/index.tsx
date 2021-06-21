@@ -103,11 +103,13 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             }
 
             messages.push(
-                <div className={
-                    "media " +
-                    "w-50 " +
-                    "mb-" + (concatenate ? "1" : "0") + " " +
-                    (message.parentUser.isMe ? "ml-auto" : "")}
+                <div key={message.id}
+                     className={
+                         "media " +
+                         "w-50 " +
+                         "mb-" + (concatenate ? "1" : "0") + " " +
+                         (message.parentUser.isMe ? "ml-auto" : "")
+                     }
                 >
                     {profilePicture}
 
@@ -128,12 +130,19 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
     }
 
     public render(): React.ReactNode {
-        return (
+        const messageList: React.ReactNode = (
             <div className={"message-list px-4 py-5 chat-box bg-white"}>
                 {this._renderDeleteModal()}
                 {this._renderMessageList()}
             </div>
         );
+
+        const list = document.querySelector("div.message-list");
+        if (list !== null) {
+            list.scrollTop = list.scrollHeight;
+        }
+
+        return messageList;
     }
 
     private _renderDeleteModal(): React.ReactNode {
