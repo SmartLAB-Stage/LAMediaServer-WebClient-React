@@ -76,12 +76,12 @@ class Group {
 
     public toJSON(): object {
         return {
+            createdAt: this.createdAt,
             id: this.id,
             name: this.name,
-            createdAt: this.createdAt,
-            updatedAt: this.updatedAt,
             roomId: this.roomId,
             roomsCount: this.roomsCount,
+            updatedAt: this.updatedAt,
             usersCount: this.usersCount,
         };
     }

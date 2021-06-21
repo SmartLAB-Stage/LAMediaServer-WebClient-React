@@ -186,7 +186,7 @@ class LoginPage extends React.Component<LoginProps, LoginState> {
         this._active = false;
     }
 
-    public componentDidMount() {
+    public componentDidMount(): void {
         this._active = true;
     }
 

@@ -6,9 +6,9 @@ import {MessageList} from "components/messageList";
 import {Group} from "model/group";
 import {Message} from "model/message";
 import {Room} from "model/room";
+import React, {FormEvent} from "react";
+import {Form} from "react-bootstrap";
 import "./room.scss";
-import React, {FormEvent,} from "react";
-import {Form,} from "react-bootstrap";
 
 interface HomeProps {
     currentRoomId: string | null,
@@ -16,9 +16,9 @@ interface HomeProps {
 }
 
 interface HomeState {
-    groups: Group[],
     currentMessageContent: string,
     currentRoomId: string | null,
+    groups: Group[],
     messages: Message[],
 }
 
@@ -37,9 +37,9 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
         this._looping = false;
 
         this.state = {
-            groups: [],
             currentMessageContent: "",
             currentRoomId: this.props.currentRoomId,
+            groups: [],
             messages: [],
         };
 
@@ -141,7 +141,7 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                 }
 
                 this.setState({
-                    groups: groups
+                    groups,
                 });
             }).send().then();
     }
@@ -162,7 +162,7 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                 }
 
                 this.setState({
-                    messages: messages,
+                    messages,
                 });
             }).send().then();
 
@@ -191,9 +191,8 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
             .withPayload({
                 message: this.state.currentMessageContent,
                 roomId: this.state.currentRoomId,
-            }).onSuccess((status, data) => {
-                console.log(data);
-            }).send();
+            })
+            .send();
 
         this._updateMessagesFromAPI();
 

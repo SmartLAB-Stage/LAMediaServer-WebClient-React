@@ -39,14 +39,14 @@ enum RequestMethod {
  */
 type RequestInfos = {
     /**
-     * Statut HTTP
-     */
-    status: number,
-
-    /**
      * Data
      */
     data: any | null,
+
+    /**
+     * Statut HTTP
+     */
+    status: number,
 }
 
 type APIDataType = {

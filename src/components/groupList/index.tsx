@@ -7,7 +7,7 @@ import "./groupList.scss";
 
 interface GroupListProps {
     groups: Group[],
-    currentRoomChangeCallback: (Room) => void,
+    currentRoomChangeCallback: (room: Room) => void,
 }
 
 interface GroupListState {
@@ -25,15 +25,15 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         };
     }
 
-    public componentDidMount() {
+    public componentDidMount(): void {
         this._active = true;
     }
 
-    public componentWillUnmount() {
+    public componentWillUnmount(): void {
         this._active = false;
     }
 
-    componentDidUpdate(prevProps: GroupListProps) {
+    componentDidUpdate(prevProps: GroupListProps): void {
         if (prevProps.groups !== this.props.groups) {
             this._updateFromAPI();
         }
@@ -43,7 +43,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         const groupsComponent: React.ReactNode[] = [];
         let expanded = true;
 
-        for (let group of this.props.groups) {
+        for (const group of this.props.groups) {
             groupsComponent.push(
                 <div key={group.id} className={"card"}>
                     <div className={"card-header"} id={`heading_${group.id}`}>

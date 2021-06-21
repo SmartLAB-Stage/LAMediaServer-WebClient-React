@@ -32,7 +32,7 @@ abstract class Attachment {
         if (rawAttachments === undefined) {
             return undefined;
         } else {
-            let attachments: Attachment[] = [];
+            const attachments: Attachment[] = [];
 
             for (const rawAttachment of rawAttachments) {
                 if (rawAttachment.hasOwnProperty("image_url")) {

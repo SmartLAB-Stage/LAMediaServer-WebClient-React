@@ -39,22 +39,20 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
     }
 
     public render(): React.ReactNode {
-        const messageList: React.ReactNode = (
+        return (
             <>
                 {this._renderDeleteModal()}
                 {this._renderMessageList()}
             </>
         );
-
-        return messageList;
     }
 
-    public componentDidMount() {
+    public componentDidMount(): void {
         MessageList._currentUpdateVersion = Math.random();
         this._currentUpdateVersion = MessageList._currentUpdateVersion;
     }
 
-    public componentDidUpdate() {
+    public componentDidUpdate(): void {
         const list = document.querySelector("div.message-list");
         if (list !== null) {
             // FIXME: Va toujours scroller
@@ -62,7 +60,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         }
     }
 
-    public componentWillUnmount() {
+    public componentWillUnmount(): void {
         MessageList._currentUpdateVersion = Math.random();
     }
 
@@ -102,7 +100,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                             <FontAwesomeIcon icon={faTrash}/>
                         </Button>
                     </>
-                )
+                );
             } else {
                 profilePicture = (
                     <div className={"svg-align-container"}>
@@ -165,15 +163,15 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
     private _renderDeleteModal(): React.ReactNode {
         const handleClose = () => this.setState({
-            deleteModalOpen: false,
             deletedMessage: null,
+            deleteModalOpen: false,
         });
 
         const handleDeleteMessage = () => {
             const deletedMessage = this.state.deletedMessage;
             this.setState({
-                deleteModalOpen: false,
                 deletedMessage: null,
+                deleteModalOpen: false,
             });
 
             if (deletedMessage !== null) {
@@ -218,8 +216,8 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             .authenticate()
             .canceledWhen(() => this._currentUpdateVersion !== MessageList._currentUpdateVersion)
             .withPayload({
-                roomId: this.props.roomId, // Ou `message.roomId` ?
                 messageId: message.id,
+                roomId: this.props.roomId, // Ou `message.roomId` ?
             })
             .onSuccess(() => {
                 this.props.refreshMessages();

@@ -9,7 +9,7 @@ import "./roomList.scss";
 
 interface RoomListProps {
     rooms: Room[],
-    currentRoomChangeCallback: (Room) => void,
+    currentRoomChangeCallback: (room: Room) => void,
 }
 
 interface RoomListState {
@@ -67,7 +67,7 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
         );
     }
 
-    private _renderTooltip(props, room: Room): React.ReactNode {
+    private _renderTooltip(props: any, room: Room): React.ReactNode {
         return <Tooltip {...props}>{room.name}</Tooltip>;
     }
 }
