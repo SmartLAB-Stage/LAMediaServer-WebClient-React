@@ -21,8 +21,12 @@ interface HomeState {
 }
 
 class RoomPage extends React.Component<HomeProps, HomeState> {
+    private _looping: boolean;
+
     public constructor(props: HomeProps) {
         super(props);
+
+        this._looping = false;
 
         this.state = {
             groups: [],
@@ -45,6 +49,8 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
 
                     <div className={"col-8 px-0"}>
                         <MessageList
+                            refreshMessages={() => this._updateMessagesFromAPI()}
+                            roomId={this.state.roomId}
                             messages={this.state.messages}
                         />
 
@@ -110,6 +116,15 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                     messages: messages,
                 });
             }).send().then();
+
+        if (!this._looping) {
+            this._looping = true;
+            setTimeout(() => {
+                // FIXME: Transformer ça en websocket
+                this._looping = false;
+                this._updateMessagesFromAPI();
+            }, 10_000);
+        }
     }
 
     private async _handleSendMessage(evt: FormEvent): Promise<void> {
