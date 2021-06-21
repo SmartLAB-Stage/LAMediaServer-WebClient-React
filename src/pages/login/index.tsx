@@ -63,6 +63,8 @@ interface LoginState {
 }
 
 class LoginPage extends React.Component<LoginProps, LoginState> {
+    private _active = false;
+
     public constructor(props: LoginProps) {
         super(props);
         this.state = {
@@ -181,6 +183,11 @@ class LoginPage extends React.Component<LoginProps, LoginState> {
         document.body.style.alignItems = null;
         document.body.style.justifyContent = null;
          */
+        this._active = false;
+    }
+
+    public componentDidMount() {
+        this._active = true;
     }
 
     /**
@@ -205,6 +212,7 @@ class LoginPage extends React.Component<LoginProps, LoginState> {
 
         await APIRequest
             .post("/me/login")
+            .canceledWhen(() => !this._active)
             .withPayload({
                 username: this.state.username,
                 password: this.state.password,

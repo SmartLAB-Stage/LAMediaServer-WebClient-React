@@ -14,12 +14,22 @@ interface GroupListState {
 }
 
 class GroupList extends React.Component<GroupListProps, GroupListState> {
+    private _active = false;
+
     public constructor(props: GroupListProps) {
         super(props);
 
         this.state = {
             rooms: {},
         };
+    }
+
+    public componentDidMount() {
+        this._active = true;
+    }
+
+    public componentWillUnmount() {
+        this._active = false;
     }
 
     componentDidUpdate(prevProps: GroupListProps) {
@@ -86,6 +96,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
             APIRequest
                 .get("/group/room/list")
                 .authenticate()
+                .canceledWhen(() => !this._active)
                 .withPayload({
                     groupRoomId: group.roomId,
                 }).onSuccess(

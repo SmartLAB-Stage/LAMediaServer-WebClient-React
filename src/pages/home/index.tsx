@@ -15,6 +15,8 @@ interface HomeState {
 }
 
 class HomePage extends React.Component<HomeProps, HomeState> {
+    private _active = false;
+
     public constructor(props: HomeProps) {
         super(props);
 
@@ -66,10 +68,19 @@ class HomePage extends React.Component<HomeProps, HomeState> {
         );
     }
 
+    public componentDidMount() {
+        this._active = true;
+    }
+
+    public componentWillUnmount() {
+        this._active = false;
+    }
+
     private _updateGroupsFromAPI(): void {
         APIRequest
             .get("/group/list")
             .authenticate()
+            .canceledWhen(() => !this._active)
             .onSuccess((status, data) => {
                 const groups: Group[] = [];
 

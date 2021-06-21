@@ -73,6 +73,8 @@ type FailureCallback = (status: number, data: APIDataType | null, evt: ProgressE
  * Requête API
  */
 class APIRequest {
+    private _canceledFunction: () => boolean;
+
     /**
      * Méthode
      * @private
@@ -123,6 +125,10 @@ class APIRequest {
             `${ENDPOINT_PREFIX}/` +
             `${route.replace(/^\/(.*)$/, "$1")}`;
 
+        this._canceledFunction = () => {
+            console.warn("Aucune fonction de détection d'annulation");
+            return true;
+        };
         this._method = method;
         this._minTime = 0;
         this._payload = {};
@@ -215,6 +221,11 @@ class APIRequest {
         return this;
     }
 
+    public canceledWhen(canceled: () => boolean): APIRequest {
+        this._canceledFunction = canceled;
+        return this;
+    }
+
     /**
      * Set le payload
      * @param payload Payload
@@ -268,6 +279,10 @@ class APIRequest {
 
         const res = await new Promise<any | void>((resolve) => {
             this._request.addEventListener("progress", (evt) => {
+                if (this._canceledFunction()) {
+                    return;
+                }
+
                 if (evt.lengthComputable) {
                     this._onProgress(evt.loaded, evt.total, evt);
                 } else {
@@ -276,6 +291,10 @@ class APIRequest {
             });
 
             this._request.addEventListener("load", (evt: any) => {
+                if (this._canceledFunction()) {
+                    return;
+                }
+
                 const infos = APIRequest._getRequestInfos(evt);
                 if (infos.data === null || !APIRequest._isGoodStatusCode(infos.status)) {
                     resolve(this._onFailure(infos.status, infos.data, evt));
@@ -285,6 +304,10 @@ class APIRequest {
             });
 
             this._request.addEventListener("error", (evt) => {
+                if (this._canceledFunction()) {
+                    return;
+                }
+
                 const infos = APIRequest._getRequestInfos(evt);
                 resolve(this._onFailure(infos.status, infos.data, evt));
             });

@@ -1,13 +1,16 @@
+import {
+    faEdit,
+    faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {APIRequest} from "common/APIRequest";
 import {Message} from "model/message";
 import React from "react";
-import "./messageList.scss";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import {
     Button,
     Modal,
 } from "react-bootstrap";
+import "./messageList.scss";
 
 interface MessageListProps {
     messages: Message[],
@@ -22,6 +25,8 @@ interface MessageListState {
 }
 
 class MessageList extends React.Component<MessageListProps, MessageListState> {
+    private _active = false;
+
     public constructor(props: MessageListProps) {
         super(props);
 
@@ -30,6 +35,30 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             deleteModalOpen: false,
             editedMessage: null,
         }
+    }
+
+    public render(): React.ReactNode {
+        const messageList: React.ReactNode = (
+            <div className={"message-list px-4 py-5 chat-box bg-white"}>
+                {this._renderDeleteModal()}
+                {this._renderMessageList()}
+            </div>
+        );
+
+        const list = document.querySelector("div.message-list");
+        if (list !== null) {
+            list.scrollTop = list.scrollHeight;
+        }
+
+        return messageList;
+    }
+
+    public componentDidMount() {
+        this._active = true;
+    }
+
+    public componentWillUnmount() {
+        this._active = false;
     }
 
     private _renderMessageList(): React.ReactNode[] {
@@ -129,22 +158,6 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         return messages;
     }
 
-    public render(): React.ReactNode {
-        const messageList: React.ReactNode = (
-            <div className={"message-list px-4 py-5 chat-box bg-white"}>
-                {this._renderDeleteModal()}
-                {this._renderMessageList()}
-            </div>
-        );
-
-        const list = document.querySelector("div.message-list");
-        if (list !== null) {
-            list.scrollTop = list.scrollHeight;
-        }
-
-        return messageList;
-    }
-
     private _renderDeleteModal(): React.ReactNode {
         const handleClose = () => this.setState({
             deleteModalOpen: false,
@@ -198,10 +211,12 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         APIRequest
             .delete("/group/room/message/delete")
             .authenticate()
+            .canceledWhen(() => !this._active)
             .withPayload({
                 roomId: this.props.roomId, // Ou `message.roomId` ?
                 messageId: message.id,
-            }).onSuccess((status, data) => {
+            })
+            .onSuccess(() => {
                 this.props.refreshMessages();
             }).send().then();
     }
