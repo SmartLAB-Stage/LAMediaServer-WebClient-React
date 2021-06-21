@@ -40,10 +40,10 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
     public render(): React.ReactNode {
         const messageList: React.ReactNode = (
-            <div className={"message-list px-4 py-5 chat-box bg-white"}>
+            <>
                 {this._renderDeleteModal()}
                 {this._renderMessageList()}
-            </div>
+            </>
         );
 
         return messageList;

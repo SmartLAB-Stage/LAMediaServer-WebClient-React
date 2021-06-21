@@ -5,20 +5,20 @@ import {GroupList} from "components/groupList";
 import {MessageList} from "components/messageList";
 import {Group} from "model/group";
 import {Message} from "model/message";
-import "pages/home/home.scss";
 import {Room} from "model/room";
+import "./room.scss";
 import React, {FormEvent,} from "react";
 import {Form,} from "react-bootstrap";
 
 interface HomeProps {
-    currentRoomId: string,
+    currentRoomId: string | null,
     fullURL: string,
 }
 
 interface HomeState {
     groups: Group[],
     currentMessageContent: string,
-    currentRoomId: string,
+    currentRoomId: string | null,
     messages: Message[],
 }
 
@@ -43,19 +43,12 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
             messages: [],
         };
 
-        window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentRoomId));
-
         this._updateGroupsFromAPI();
-        this._updateMessagesFromAPI();
-    }
 
-    private _currentRoomChangeCallback(newRoom: Room): void {
-        console.log(newRoom.id);
-        this.setState({
-            currentRoomId: newRoom.id,
-        });
-        window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, newRoom.id));
-        this._updateMessagesFromAPI(newRoom.id);
+        if (this.state.currentRoomId !== null) {
+            window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentRoomId));
+            this._updateMessagesFromAPI();
+        }
     }
 
     public render(): React.ReactNode {
@@ -68,12 +61,22 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                     />
 
                     <div className={"col-8 px-0"}>
-                        <MessageList
-                            key={this.state.currentRoomId}
-                            refreshMessages={() => this._updateMessagesFromAPI()}
-                            roomId={this.state.currentRoomId}
-                            messages={this.state.messages}
-                        />
+                        <div className={"px-4 py-5 chat-box bg-white"}>
+                            {this.state.currentRoomId === null
+                                ? (
+                                    <i>
+                                        Choisissez une discussion depuis la liste de gauche
+                                    </i>
+                                ) : (
+                                    <MessageList
+                                        key={this.state.currentRoomId}
+                                        refreshMessages={() => this._updateMessagesFromAPI()}
+                                        roomId={this.state.currentRoomId}
+                                        messages={this.state.messages}
+                                    />
+                                )
+                            }
+                        </div>
 
                         <Form onSubmit={(e) => this._handleSendMessage(e)}
                               className={"bg-light"}>
@@ -82,6 +85,7 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                                        placeholder={"Entrez votre message"}
                                        aria-describedby={"button-addon2"}
                                        className={"form-control rounded-0 border-0 py-4 bg-light"}
+                                       disabled={this.state.currentRoomId === null}
                                        value={this.state.currentMessageContent}
                                        onChange={(e) => this.setState({
                                            currentMessageContent: e.target.value,
@@ -109,6 +113,15 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
 
     public componentWillUnmount() {
         this._active = false;
+    }
+
+    private _currentRoomChangeCallback(newRoom: Room): void {
+        this.setState({
+            currentRoomId: newRoom.id,
+        });
+
+        window.history.pushState(this.state, "", this.props.fullURL.replace(/:[^/]*/, newRoom.id));
+        this._updateMessagesFromAPI(newRoom.id);
     }
 
     private _updateGroupsFromAPI(): void {
@@ -166,7 +179,7 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
     private async _handleSendMessage(evt: FormEvent): Promise<void> {
         evt.preventDefault();
 
-        if (this.state.currentMessageContent.length === 0) {
+        if (this.state.currentMessageContent.length === 0 || this.state.currentRoomId === null) {
             return;
         }
 
