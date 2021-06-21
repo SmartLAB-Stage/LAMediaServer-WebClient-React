@@ -7,14 +7,14 @@
 
     .svg-align-container {
         height: 40px;
-        width: 20px;
+        width: 30px;
         position: relative;
 
         .svg-align-center {
             width: 30px;
             position: absolute;
             top: 50%;
-            left: 50%;
+            left: 25%;
             -ms-transform: translate(-50%, -50%);
             transform: translate(-50%, -50%);
         }

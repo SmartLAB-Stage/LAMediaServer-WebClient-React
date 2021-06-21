@@ -48,7 +48,7 @@ class Message {
      * Timestamp
      * @private
      */
-    private readonly _timestamp: Date | undefined;
+    private readonly _timestamp: Date;
 
     /**
      * Liste des pièces jointes
@@ -66,7 +66,7 @@ class Message {
                         content: string,
                         parentUser: User,
                         roomId: string | undefined,
-                        timestamp: Date | undefined,
+                        timestamp: Date,
                         attachments: Attachment[] | undefined,
                         reactions: Reaction[] | undefined
     ) {
@@ -87,7 +87,7 @@ class Message {
         return this._roomId;
     }
 
-    public get timestamp(): Date | undefined {
+    public get timestamp(): Date {
         return this._timestamp;
     }
 

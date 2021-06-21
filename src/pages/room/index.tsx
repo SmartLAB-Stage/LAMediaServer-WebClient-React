@@ -4,35 +4,51 @@ import {APIRequest} from "common/APIRequest";
 import {GroupList} from "components/groupList";
 import {MessageList} from "components/messageList";
 import {Group} from "model/group";
-import "pages/home/home.scss";
 import {Message} from "model/message";
+import {Room} from "model/room";
+import "./room.scss";
 import React, {FormEvent,} from "react";
 import {Form,} from "react-bootstrap";
-import {RouteComponentProps} from "react-router-dom";
 
-interface HomeProps extends RouteComponentProps {
+interface HomeProps {
+    currentRoomId: string | null,
+    fullURL: string,
 }
 
 interface HomeState {
     groups: Group[],
     currentMessageContent: string,
-    roomId: string,
+    currentRoomId: string | null,
     messages: Message[],
 }
 
 class RoomPage extends React.Component<HomeProps, HomeState> {
+    private _looping: boolean;
+
+    /**
+     * Permet d'annuler les Promise asynchrones une fois l'élément React courant recyclé / la vue changée.
+     * @private
+     */
+    private _active = false;
+
     public constructor(props: HomeProps) {
         super(props);
+
+        this._looping = false;
 
         this.state = {
             groups: [],
             currentMessageContent: "",
-            roomId: this.props.match.params["roomId"],
+            currentRoomId: this.props.currentRoomId,
             messages: [],
         };
 
         this._updateGroupsFromAPI();
-        this._updateMessagesFromAPI();
+
+        if (this.state.currentRoomId !== null) {
+            window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentRoomId));
+            this._updateMessagesFromAPI();
+        }
     }
 
     public render(): React.ReactNode {
@@ -41,12 +57,26 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                 <div className={"row rounded-lg overflow-hidden shadow"}>
                     <GroupList
                         groups={this.state.groups}
+                        currentRoomChangeCallback={(newRoom: Room) => this._currentRoomChangeCallback(newRoom)}
                     />
 
                     <div className={"col-8 px-0"}>
-                        <MessageList
-                            messages={this.state.messages}
-                        />
+                        <div className={"px-4 py-5 chat-box bg-white"}>
+                            {this.state.currentRoomId === null
+                                ? (
+                                    <i>
+                                        Choisissez une discussion depuis la liste de gauche
+                                    </i>
+                                ) : (
+                                    <MessageList
+                                        key={this.state.currentRoomId}
+                                        refreshMessages={() => this._updateMessagesFromAPI()}
+                                        roomId={this.state.currentRoomId}
+                                        messages={this.state.messages}
+                                    />
+                                )
+                            }
+                        </div>
 
                         <Form onSubmit={(e) => this._handleSendMessage(e)}
                               className={"bg-light"}>
@@ -55,6 +85,7 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                                        placeholder={"Entrez votre message"}
                                        aria-describedby={"button-addon2"}
                                        className={"form-control rounded-0 border-0 py-4 bg-light"}
+                                       disabled={this.state.currentRoomId === null}
                                        value={this.state.currentMessageContent}
                                        onChange={(e) => this.setState({
                                            currentMessageContent: e.target.value,
@@ -76,11 +107,33 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
         );
     }
 
+    public componentDidMount() {
+        this._active = true;
+    }
+
+    public componentWillUnmount() {
+        this._active = false;
+    }
+
+    private _currentRoomChangeCallback(newRoom: Room): void {
+        this.setState({
+            currentRoomId: newRoom.id,
+        });
+
+        window.history.pushState(this.state, "", this.props.fullURL.replace(/:[^/]*/, newRoom.id));
+        this._updateMessagesFromAPI(newRoom.id);
+    }
+
     private _updateGroupsFromAPI(): void {
         APIRequest
             .get("/group/list")
             .authenticate()
+            .canceledWhen(() => !this._active)
             .onSuccess((status, data) => {
+                if (!this._active) {
+                    return;
+                }
+
                 const groups: Group[] = [];
 
                 for (const group of data.payload) {
@@ -93,13 +146,15 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
             }).send().then();
     }
 
-    private _updateMessagesFromAPI(): void {
+    private _updateMessagesFromAPI(currentRoomId: string | null = null): void {
         APIRequest
             .get("/group/room/message/list")
             .authenticate()
+            .canceledWhen(() => !this._active)
             .withPayload({
-                roomId: this.state.roomId,
-            }).onSuccess((status, data) => {
+                roomId: currentRoomId === null ? this.state.currentRoomId : currentRoomId,
+            })
+            .onSuccess((status, data) => {
                 const messages: Message[] = [];
 
                 for (const message of data.payload) {
@@ -110,22 +165,32 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                     messages: messages,
                 });
             }).send().then();
+
+        if (!this._looping) {
+            this._looping = true;
+            setTimeout(() => {
+                // FIXME: Transformer ça en websocket
+                this._looping = false;
+                this._updateMessagesFromAPI();
+            }, 10_000);
+        }
     }
 
     private async _handleSendMessage(evt: FormEvent): Promise<void> {
         evt.preventDefault();
 
-        if (this.state.currentMessageContent.length === 0) {
+        if (this.state.currentMessageContent.length === 0 || this.state.currentRoomId === null) {
             return;
         }
 
         await APIRequest
             .post("/group/room/message/send")
             .authenticate()
+            .canceledWhen(() => !this._active)
             .minTime(100)
             .withPayload({
                 message: this.state.currentMessageContent,
-                roomId: this.state.roomId,
+                roomId: this.state.currentRoomId,
             }).onSuccess((status, data) => {
                 console.log(data);
             }).send();

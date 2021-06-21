@@ -7,6 +7,7 @@ import "./groupList.scss";
 
 interface GroupListProps {
     groups: Group[],
+    currentRoomChangeCallback: (Room) => void,
 }
 
 interface GroupListState {
@@ -14,6 +15,8 @@ interface GroupListState {
 }
 
 class GroupList extends React.Component<GroupListProps, GroupListState> {
+    private _active = false;
+
     public constructor(props: GroupListProps) {
         super(props);
 
@@ -22,9 +25,18 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         };
     }
 
-    componentDidUpdate() {
-        // Attention aux boucles infinies !
-        this._updateFromAPI();
+    public componentDidMount() {
+        this._active = true;
+    }
+
+    public componentWillUnmount() {
+        this._active = false;
+    }
+
+    componentDidUpdate(prevProps: GroupListProps) {
+        if (prevProps.groups !== this.props.groups) {
+            this._updateFromAPI();
+        }
     }
 
     public render(): React.ReactNode {
@@ -51,10 +63,12 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                          aria-labelledby={`heading_${group.id}`}
                          data-parent={"#accordion"}>
                         <div className={"card-body"}>
-                            <RoomList rooms={this.state.rooms[group.id] !== undefined
-                                ? this.state.rooms[group.id]
-                                : []
-                            }/>
+                            <RoomList currentRoomChangeCallback={this.props.currentRoomChangeCallback}
+                                      rooms={this.state.rooms[group.id] !== undefined
+                                          ? this.state.rooms[group.id]
+                                          : []
+                                      }
+                            />
                         </div>
                     </div>
                 </div>
@@ -85,10 +99,11 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
             APIRequest
                 .get("/group/room/list")
                 .authenticate()
+                .canceledWhen(() => !this._active)
                 .withPayload({
                     groupRoomId: group.roomId,
-                }).onSuccess(
-                (status, data) => {
+                })
+                .onSuccess((status, data) => {
                     const rooms: Room[] = [];
 
                     for (const room of data.payload) {
@@ -96,15 +111,16 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                     }
 
                     return rooms;
-                }).onFailure(
-                (status, data, evt) => {
+                })
+                .onFailure((status, data, evt) => {
                     // FIXME: Si ce cas de figure arrive c'est que ce groupe a été supprimé
                     if (status === 404) {
                         return [] as Room[];
                     } else {
                         return null;
                     }
-                }).send()
+                })
+                .send()
                 .then((rooms) => {
                     if (this.state.rooms[group.id] === undefined && rooms !== null) {
                         // FIXME: Va set mais pas update
