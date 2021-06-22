@@ -47,7 +47,7 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
                                         }
                                     </small>
                                 </div>
-                                <p className={"text-muted mb-0 text-small"}>
+                                <p className={"message text-muted mb-0 text-small"}>
                                     {room.lastMessage !== undefined
                                         ? room.lastMessage.content
                                         : <i>Dernier message non disponible</i>

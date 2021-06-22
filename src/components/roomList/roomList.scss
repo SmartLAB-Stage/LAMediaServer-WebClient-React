@@ -19,4 +19,11 @@
             transform: translate(-50%, -50%);
         }
     }
+
+    .message {
+        width: 60ch;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
 }

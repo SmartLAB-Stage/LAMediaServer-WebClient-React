@@ -148,7 +148,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                     <div className={"media-body " + (message.parentUser.isMe ? "ml-3" : "")}>
                         <div
                             className={"rounded py-2 px-3 mb-0 " + (message.parentUser.isMe ? "bg-accent-color" : "bg-light")}>
-                            <p className={"text-small mb-0 " + (message.parentUser.isMe ? "text-white" : "text-muted")}>
+                            <p className={"message text-small mb-0 " + (message.parentUser.isMe ? "text-white" : "text-muted")}>
                                 {message.content}
                             </p>
                         </div>
