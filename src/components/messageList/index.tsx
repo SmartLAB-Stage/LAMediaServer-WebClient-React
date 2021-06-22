@@ -77,7 +77,8 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             }
 
             messages.push(
-                <SingleMessage message={message}
+                <SingleMessage key={message.id}
+                               message={message}
                                concatenate={concatenate}
                                editMessage={(evt) => this._editMessage(evt)}
                                openModalDeleteMessage={() => this._openModalDeleteMessage(message)}
