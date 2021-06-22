@@ -3,9 +3,11 @@ import colors from "colors.module.scss";
 import {APIRequest} from "common/APIRequest";
 import {GroupList} from "components/groupList";
 import {MessageList} from "components/messageList";
+import {UserList} from "components/userList";
 import {Group} from "model/group";
 import {Message} from "model/message";
 import {Room} from "model/room";
+import {User} from "model/user";
 import React, {FormEvent} from "react";
 import {Form} from "react-bootstrap";
 import "./room.scss";
@@ -20,6 +22,8 @@ interface HomeState {
     currentRoomId: string | null,
     groups: Group[],
     messages: Message[],
+    selectedGroup: Group | null,
+    users: User[],
 }
 
 class RoomPage extends React.Component<HomeProps, HomeState> {
@@ -41,6 +45,8 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
             currentRoomId: this.props.currentRoomId,
             groups: [],
             messages: [],
+            selectedGroup: null,
+            users: [],
         };
 
         this._updateGroupsFromAPI();
@@ -55,13 +61,16 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
         return (
             <main className={"rooms container-fluid py-5 px-4"}>
                 <div className={"row rounded-lg overflow-hidden shadow"}>
-                    <GroupList groups={this.state.groups}
-                               selectedRoomId={this.state.currentRoomId}
-                               currentRoomChangeCallback={(newRoom: Room) => this._currentRoomChangeCallback(newRoom)}
+                    <GroupList
+                        currentRoomChangeCallback={(room: Room, group: Group) => this._currentRoomChangeCallback(room, group)}
+                        groups={this.state.groups}
+                        selectedRoomFound={(group: Group) => this._updateUsersFromAPI(group)}
+                        selectedRoomId={this.state.currentRoomId}
                     />
 
                     <div className={"col-7 px-0"}>
-                        <div className={"px-4 py-5 chat-box bg-white " + (this.state.currentRoomId === null ? "" : "message-list")}>
+                        <div
+                            className={"px-4 py-5 chat-box bg-white " + (this.state.currentRoomId === null ? "" : "message-list")}>
                             {this.state.currentRoomId === null
                                 ? (
                                     <i>
@@ -102,6 +111,9 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                             </div>
                         </Form>
                     </div>
+                    <div className={"col-2 px-0"}>
+                        <UserList users={this.state.users}/>
+                    </div>
                 </div>
             </main>
         );
@@ -115,13 +127,15 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
         this._active = false;
     }
 
-    private _currentRoomChangeCallback(newRoom: Room): void {
+    private _currentRoomChangeCallback(newRoom: Room, newGroup: Group): void {
         this.setState({
             currentRoomId: newRoom.id,
+            selectedGroup: newGroup,
         });
 
         window.history.pushState(this.state, "", this.props.fullURL.replace(/:[^/]*/, newRoom.id));
         this._updateMessagesFromAPI(newRoom.id);
+        this._updateUsersFromAPI(newGroup);
     }
 
     private _updateGroupsFromAPI(): void {
@@ -146,6 +160,29 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
             }).send().then();
     }
 
+    private _updateUsersFromAPI(selectedGroup: Group): void {
+        APIRequest
+            .get("/group/user/list")
+            .authenticate()
+            .withPayload({
+                groupId: selectedGroup.id,
+            })
+            .canceledWhen(() => !this._active)
+            .onSuccess((status, data) => {
+                const users: User[] = [];
+
+                for (const user of data.payload) {
+                    users.push(User.fromFullUser(user));
+                }
+
+                this.setState({
+                    users,
+                });
+            })
+            .send()
+            .then();
+    }
+
     private _updateMessagesFromAPI(currentRoomId: string | null = null): void {
         APIRequest
             .get("/group/room/message/list")
@@ -164,7 +201,9 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                 this.setState({
                     messages,
                 });
-            }).send().then();
+            })
+            .send()
+            .then();
 
         if (!this._looping) {
             this._looping = true;

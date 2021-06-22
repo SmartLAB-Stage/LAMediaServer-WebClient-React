@@ -1,3 +1,4 @@
+import {Group} from "model/group";
 import {Room} from "model/room";
 import React from "react";
 import {
@@ -7,7 +8,8 @@ import {
 import "./roomList.scss";
 
 interface RoomListProps {
-    currentRoomChangeCallback: (room: Room) => void,
+    currentRoomChangeCallback: (room: Room, group: Group) => void,
+    parentGroup: Group,
     rooms: Room[],
     selectedRoomId: string | null,
 }
@@ -21,7 +23,7 @@ class RoomList extends React.Component<RoomListProps, {}> {
                 <OverlayTrigger key={room.id}
                                 placement="top"
                                 overlay={(props) => this._renderTooltip(props, room)}>
-                    <button onClick={() => this.props.currentRoomChangeCallback(room)}
+                    <button onClick={() => this.props.currentRoomChangeCallback(room, this.props.parentGroup)}
                             type={"button"}
                             className={
                                 "list-group-item " +

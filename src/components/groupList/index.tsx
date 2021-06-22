@@ -6,8 +6,9 @@ import React from "react";
 import "./groupList.scss";
 
 interface GroupListProps {
-    currentRoomChangeCallback: (room: Room) => void,
+    currentRoomChangeCallback: (room: Room, group: Group) => void,
     groups: Group[],
+    selectedRoomFound: (parentGroup: Group) => void,
     selectedRoomId: string | null,
 }
 
@@ -36,7 +37,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
 
     componentDidUpdate(prevProps: GroupListProps): void {
         if (prevProps.groups !== this.props.groups) {
-            this._updateFromAPI();
+            this._updateRoomsFromAPI();
         }
     }
 
@@ -64,7 +65,8 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                          aria-labelledby={`heading_${group.id}`}
                          data-parent={"#accordion"}>
                         <div className={"card-body"}>
-                            <RoomList currentRoomChangeCallback={this.props.currentRoomChangeCallback}
+                            <RoomList parentGroup={group}
+                                      currentRoomChangeCallback={this.props.currentRoomChangeCallback}
                                       selectedRoomId={this.props.selectedRoomId}
                                       rooms={this.state.rooms[group.id] !== undefined
                                           ? this.state.rooms[group.id]
@@ -90,7 +92,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         );
     }
 
-    private _updateFromAPI(): void {
+    private _updateRoomsFromAPI(): void {
         for (const group of this.props.groups) {
             APIRequest
                 .get("/group/room/list")
@@ -103,12 +105,16 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                     const rooms: Room[] = [];
 
                     for (const room of data.payload) {
-                        rooms.push(Room.fromFullObject(room));
+                        const roomObject = Room.fromFullObject(room);
+                        rooms.push(roomObject);
+                        if (roomObject.id === this.props.selectedRoomId) {
+                            this.props.selectedRoomFound(group);
+                        }
                     }
 
                     return rooms;
                 })
-                .onFailure((status, data, evt) => {
+                .onFailure((status) => {
                     // FIXME: Si ce cas de figure arrive c'est que ce groupe a été supprimé
                     if (status === 404) {
                         return [] as Room[];

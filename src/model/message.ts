@@ -1,7 +1,7 @@
 import {Attachment} from "./attachement";
 import {Reaction} from "./reaction";
 import {
-    RawUser,
+    RawPartialUser,
     User,
 } from "./user";
 
@@ -11,7 +11,7 @@ import {
 interface RawMessage {
     content: string,
     id: string,
-    parentUser: RawUser,
+    parentUser: RawPartialUser,
     roomId: string,
     timestamp: Date,
 }
