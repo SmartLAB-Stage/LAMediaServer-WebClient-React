@@ -23,6 +23,7 @@ interface MessageListState {
 class MessageList extends React.Component<MessageListProps, MessageListState> {
     private static _currentUpdateVersion = NaN;
     private _currentUpdateVersion = NaN;
+    private _alreadyScrolledDown = false;
 
     public constructor(props: MessageListProps) {
         super(props);
@@ -49,10 +50,12 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
     }
 
     public componentDidUpdate(): void {
-        const list = document.querySelector("div.message-list");
-        if (list !== null) {
-            // FIXME: Va toujours scroller
-            // list.scrollTop = list.scrollHeight;
+        if (!this._alreadyScrolledDown) {
+            const list = document.querySelector("div.message-list");
+            if (list !== null) {
+                this._alreadyScrolledDown = true;
+                list.scrollTop = list.scrollHeight;
+            }
         }
     }
 
