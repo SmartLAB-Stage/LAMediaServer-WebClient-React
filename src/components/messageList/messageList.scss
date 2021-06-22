@@ -20,7 +20,12 @@
         }
     }
 
-    .message {
+    p.message {
         word-break: break-word;
+    }
+
+    div.actionButtons {
+        display: table-cell;
+        vertical-align: middle;
     }
 }
