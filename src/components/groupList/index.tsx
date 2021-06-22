@@ -82,11 +82,9 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         }
 
         return (
-            <div key={this.props.groups.length} className={"room-list col-3 px-0"}>
-                <div className={"bg-white"}>
-                    <div id={"accordion"}>
-                        {groupsComponent}
-                    </div>
+            <div className={"room-list bg-white"}>
+                <div id={"accordion"}>
+                    {groupsComponent}
                 </div>
             </div>
         );

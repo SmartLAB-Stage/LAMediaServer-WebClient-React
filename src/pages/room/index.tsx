@@ -3,6 +3,7 @@ import colors from "colors.module.scss";
 import {APIRequest} from "common/APIRequest";
 import {GroupList} from "components/groupList";
 import {MessageList} from "components/messageList";
+import {PersonalInfos} from "components/personalInfos";
 import {UserList} from "components/userList";
 import {Group} from "model/group";
 import {Message} from "model/message";
@@ -61,12 +62,21 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
         return (
             <main className={"rooms container-fluid py-5 px-4"}>
                 <div className={"row rounded-lg overflow-hidden shadow"}>
-                    <GroupList
-                        currentRoomChangeCallback={(room: Room, group: Group) => this._currentRoomChangeCallback(room, group)}
-                        groups={this.state.groups}
-                        selectedRoomFound={(group: Group) => this._updateUsersFromAPI(group)}
-                        selectedRoomId={this.state.currentRoomId}
-                    />
+                    <div className={"col-3 px-0"}>
+                        <div className={"row"}>
+                            <div className={"col-sm-12"}>
+                                <GroupList
+                                    currentRoomChangeCallback={(room: Room, group: Group) => this._currentRoomChangeCallback(room, group)}
+                                    groups={this.state.groups}
+                                    selectedRoomFound={(group: Group) => this._updateUsersFromAPI(group)}
+                                    selectedRoomId={this.state.currentRoomId}
+                                />
+                            </div>
+                            <div className={"col personalInfos"}>
+                                <PersonalInfos/>
+                            </div>
+                        </div>
+                    </div>
 
                     <div className={"col-7 px-0"}>
                         <div
