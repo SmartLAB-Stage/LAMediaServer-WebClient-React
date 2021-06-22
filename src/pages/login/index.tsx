@@ -178,11 +178,9 @@ class LoginPage extends React.Component<LoginProps, LoginState> {
     }
 
     public componentWillUnmount(): void {
-        /*
-        document.body.style.display = null;
-        document.body.style.alignItems = null;
-        document.body.style.justifyContent = null;
-         */
+        document.body.style.display = "";
+        document.body.style.alignItems = "";
+        document.body.style.justifyContent = "";
         this._active = false;
     }
 
