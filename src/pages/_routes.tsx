@@ -39,6 +39,13 @@ class Routes extends React.Component<RoutesProps, RoutesState> {
                         component={LogoutPage}/>
                     <PrivateRoute
                         exact={true}
+                        path="/room/"
+                        render={() =>
+                            <RoomPage currentRoomId={null}
+                                      fullURL={"/room/:id"}/>
+                        }/>
+                    <PrivateRoute
+                        exact={true}
                         path="/room/:id"
                         render={(props) =>
                             <RoomPage currentRoomId={props.match.params["id"] as string}
@@ -47,7 +54,7 @@ class Routes extends React.Component<RoutesProps, RoutesState> {
                     <PrivateRoute
                         exact={true}
                         path="/home"
-                        render={(props) =>
+                        render={() =>
                             <RoomPage currentRoomId={null}
                                       fullURL={"/room/:id"}/>
                         }/>
