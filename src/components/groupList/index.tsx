@@ -6,8 +6,9 @@ import React from "react";
 import "./groupList.scss";
 
 interface GroupListProps {
-    groups: Group[],
     currentRoomChangeCallback: (room: Room) => void,
+    groups: Group[],
+    selectedRoomId: string | null,
 }
 
 interface GroupListState {
@@ -64,6 +65,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                          data-parent={"#accordion"}>
                         <div className={"card-body"}>
                             <RoomList currentRoomChangeCallback={this.props.currentRoomChangeCallback}
+                                      selectedRoomId={this.props.selectedRoomId}
                                       rooms={this.state.rooms[group.id] !== undefined
                                           ? this.state.rooms[group.id]
                                           : []
@@ -78,14 +80,8 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         }
 
         return (
-            <div key={this.props.groups.length} className={"room-list col-4 px-0"}>
+            <div key={this.props.groups.length} className={"room-list col-3 px-0"}>
                 <div className={"bg-white"}>
-                    <div className={"bg-gray px-4 py-2 bg-light"}>
-                        <p className={"h5 mb-0 py-1"}>
-                            Groupes
-                        </p>
-                    </div>
-
                     <div id={"accordion"}>
                         {groupsComponent}
                     </div>

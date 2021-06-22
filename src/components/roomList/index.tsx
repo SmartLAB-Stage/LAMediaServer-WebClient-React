@@ -1,21 +1,18 @@
 import {Room} from "model/room";
 import React from "react";
 import {
-    Button,
     OverlayTrigger,
     Tooltip,
 } from "react-bootstrap";
 import "./roomList.scss";
 
 interface RoomListProps {
-    rooms: Room[],
     currentRoomChangeCallback: (room: Room) => void,
+    rooms: Room[],
+    selectedRoomId: string | null,
 }
 
-interface RoomListState {
-}
-
-class RoomList extends React.Component<RoomListProps, RoomListState> {
+class RoomList extends React.Component<RoomListProps, {}> {
     public render(): React.ReactNode {
         const reactRooms: React.ReactNode[] = [];
 
@@ -24,8 +21,13 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
                 <OverlayTrigger key={room.id}
                                 placement="top"
                                 overlay={(props) => this._renderTooltip(props, room)}>
-                    <Button onClick={() => this.props.currentRoomChangeCallback(room)}
-                            className={"button list-group-item list-group-item-action list-group-item-light rounded-0"}>
+                    <button onClick={() => this.props.currentRoomChangeCallback(room)}
+                            type={"button"}
+                            className={
+                                "list-group-item " +
+                                "list-group-item-action " +
+                                (this.props.selectedRoomId === room.id ? "list-group-item-info " : "")
+                            }>
                         <div className={"media"}>
                             <div className={"svg-align-container"}>
                                 <div className={"svg-align-center"}>
@@ -55,7 +57,7 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
                                 </p>
                             </div>
                         </div>
-                    </Button>
+                    </button>
                 </OverlayTrigger>
             );
         }

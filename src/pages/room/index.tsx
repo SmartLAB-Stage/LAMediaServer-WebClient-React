@@ -55,12 +55,12 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
         return (
             <main className={"rooms container-fluid py-5 px-4"}>
                 <div className={"row rounded-lg overflow-hidden shadow"}>
-                    <GroupList
-                        groups={this.state.groups}
-                        currentRoomChangeCallback={(newRoom: Room) => this._currentRoomChangeCallback(newRoom)}
+                    <GroupList groups={this.state.groups}
+                               selectedRoomId={this.state.currentRoomId}
+                               currentRoomChangeCallback={(newRoom: Room) => this._currentRoomChangeCallback(newRoom)}
                     />
 
-                    <div className={"col-8 px-0"}>
+                    <div className={"col-7 px-0"}>
                         <div className={"px-4 py-5 chat-box bg-white " + (this.state.currentRoomId === null ? "" : "message-list")}>
                             {this.state.currentRoomId === null
                                 ? (
