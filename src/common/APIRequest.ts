@@ -138,6 +138,14 @@ class APIRequest {
     }
 
     /**
+     * Effectue une requête DELETE
+     * @param route Route
+     */
+    public static delete(route: string): APIRequest {
+        return new APIRequest(RequestMethod.DELETE, route);
+    }
+
+    /**
      * Effectue une requête GET
      * @param route Route
      */
@@ -155,11 +163,12 @@ class APIRequest {
     }
 
     /**
-     * Effectue une requête DELETE
+     * Effectue une requête PUT
      * @param route Route
      */
-    public static delete(route: string): APIRequest {
-        return new APIRequest(RequestMethod.DELETE, route);
+
+    public static put(route: string): APIRequest {
+        return new APIRequest(RequestMethod.PUT, route);
     }
 
     /**
