@@ -1,9 +1,5 @@
-import {
-    faEdit,
-    faTrash,
-} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {APIRequest} from "common/APIRequest";
+import {SingleMessage} from "components/messageList/singleMessage";
 import {Message} from "model/message";
 import React from "react";
 import {
@@ -69,11 +65,6 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
         for (let i = 0; i < this.props.messages.length; ++i) {
             const message = this.props.messages[i];
-
-            let profilePicture: React.ReactNode;
-            let userInfos: React.ReactNode;
-            let actionButtons: React.ReactNode;
-
             let concatenate = false;
 
             if (i !== this.props.messages.length - 1) {
@@ -85,77 +76,12 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                 }
             }
 
-            if (message.parentUser.isMe) {
-                actionButtons = (
-                    <div className={"actionButtons"}>
-                        &nbsp;
-                        <Button type={"button"}
-                                className={"btn btn-warning btn-sm px-1 py-0"}
-                                onClick={(e) => this._editMessage(e)}>
-                            <FontAwesomeIcon icon={faEdit}/>
-                        </Button>
-                        &nbsp;
-                        <Button type={"button"}
-                                className={"btn btn-danger btn-sm px-1 py-0"}
-                                onClick={() => this._openModalDeleteMessage(message)}>
-                            <FontAwesomeIcon icon={faTrash}/>
-                        </Button>
-                    </div>
-                );
-            } else {
-                profilePicture = (
-                    <div className={"svg-align-container"}>
-                        <div className={"svg-align-center"}>
-                            {concatenate
-                                ? ""
-                                : <img src={"/static/res/profile-picture-logo.svg"}
-                                       alt={"Utilisateur"}
-                                       width={"100%"}
-                                />
-                            }
-                        </div>
-                    </div>
-                );
-
-                userInfos = (
-                    <>
-                        <br/>
-                        Par {message.parentUser.name}
-                    </>
-                );
-            }
-
-            let messageTimestamp: React.ReactNode = "";
-            if (!concatenate) {
-                messageTimestamp = (
-                    <p className={"small text-muted"}>
-                        Le {message.timestamp.toLocaleDateString()}, à {message.timestamp.toLocaleTimeString()}
-                        {userInfos}
-                    </p>
-                );
-            }
-
             messages.push(
-                <div key={message.id}
-                     className={
-                         "media " +
-                         "w-50 " +
-                         "mb-" + (concatenate ? "1" : "0") + " " +
-                         (message.parentUser.isMe ? "ml-auto" : "")
-                     }
-                >
-                    {message.parentUser.isMe ? "" : profilePicture}
-
-                    <div className={"media-body " + (message.parentUser.isMe ? "ml-3" : "")}>
-                        <div className={"rounded py-2 px-3 mb-0 " + (message.parentUser.isMe ? "bg-accent-color" : "bg-light")}>
-                            <p className={"message text-small mb-0 " + (message.parentUser.isMe ? "text-white" : "text-muted")}>
-                                {message.content}
-                            </p>
-                        </div>
-                        {messageTimestamp}
-                    </div>
-                    {message.parentUser.isMe ? actionButtons : ""}
-                </div>
+                <SingleMessage message={message}
+                               concatenate={concatenate}
+                               editMessage={(evt) => this._editMessage(evt)}
+                               openModalDeleteMessage={() => this._openModalDeleteMessage(message)}
+                />
             );
         }
 
@@ -207,7 +133,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         });
     }
 
-    private _editMessage(e: any): void {
+    private _editMessage(evt: any): void {
 
     }
 
@@ -222,7 +148,9 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             })
             .onSuccess(() => {
                 this.props.refreshMessages();
-            }).send().then();
+            })
+            .send()
+            .then();
     }
 }
 
