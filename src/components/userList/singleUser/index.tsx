@@ -49,6 +49,7 @@ class SingleUser extends React.Component<SingleUserProps, {}> {
                      alt="Profile"/>
                 <div className="media-body">
                     <span className={"name"}>{this.props.user.name}</span>
+                    {this.props.user.isMe ? <span className={"descriptor-me"}> (vous)</span> : ""}
                     <br/>
                     <span className={"username"}>{this.props.user.username}</span>
                     <br/>
