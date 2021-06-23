@@ -3,7 +3,7 @@ import {User} from "model/user";
 import React from "react";
 
 interface ProfilePictureProps {
-    user: User,
+    user: User | null,
 }
 
 class ProfilePicture extends React.Component<ProfilePictureProps, {}> {
@@ -37,7 +37,11 @@ class ProfilePicture extends React.Component<ProfilePictureProps, {}> {
     }
 
     public render(): React.ReactNode {
-        let url = APIRequest.getRawRoute(`/user/avatar/get?username=${this.props.user.username}`);
+        let url = "";
+        if (this.props.user !== null) {
+            url = APIRequest.getRawRoute(`/user/avatar/get?username=${this.props.user.username}`);
+        }
+
         return (
             <img className="profilePicture d-flex align-self-center"
                  src={url}
