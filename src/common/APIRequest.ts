@@ -114,17 +114,6 @@ class APIRequest {
      * @private
      */
     private constructor(method: RequestMethod, route: string) {
-        const ENDPOINT_PREFIX = (process.env.REACT_APP_API_ENDPOINT_PREFIX as string)
-            .replace(/^(.*)\/$/, "$1")
-            .replace(/^\/(.*)$/, "$1");
-
-        const fullRoute = "" +
-            `${process.env.REACT_APP_API_PROTOCOL}://` +
-            `${process.env.REACT_APP_API_ADDRESS}` +
-            `:${process.env.REACT_APP_API_PORT}/` +
-            `${ENDPOINT_PREFIX}/` +
-            `${route.replace(/^\/(.*)$/, "$1")}`;
-
         this._canceledFunction = () => {
             console.warn("Aucune fonction de détection d'annulation");
             return true;
@@ -133,7 +122,7 @@ class APIRequest {
         this._minTime = 0;
         this._payload = {};
         this._request = new XMLHttpRequest();
-        this._route = fullRoute;
+        this._route = APIRequest.getRawRoute(route);
         this._token = null;
     }
 
@@ -169,6 +158,21 @@ class APIRequest {
 
     public static put(route: string): APIRequest {
         return new APIRequest(RequestMethod.PUT, route);
+    }
+
+    public static getRawRoute(route: string): string {
+        const ENDPOINT_PREFIX = (process.env.REACT_APP_API_ENDPOINT_PREFIX as string)
+            .replace(/^(.*)\/$/, "$1")
+            .replace(/^\/(.*)$/, "$1");
+
+        const fullRoute = "" +
+            `${process.env.REACT_APP_API_PROTOCOL}://` +
+            `${process.env.REACT_APP_API_ADDRESS}` +
+            `:${process.env.REACT_APP_API_PORT}/` +
+            `${ENDPOINT_PREFIX}/` +
+            `${route.replace(/^\/(.*)$/, "$1")}`;
+
+        return fullRoute;
     }
 
     /**

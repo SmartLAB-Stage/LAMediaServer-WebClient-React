@@ -2,7 +2,7 @@ import {Message} from "model/message";
 import React from "react";
 import {ActionButtons} from "./actionButtons";
 import {MessageTimestamp} from "./messageTimestamp";
-import {ProfilePicture} from "./profilePicture";
+import {ProfilePicture} from "components/profilePicture";
 import "./singleMessage.scss";
 
 interface SingleMessageProps {
@@ -23,7 +23,19 @@ class SingleMessage extends React.Component<SingleMessageProps, {}> {
                      (this.props.message.parentUser.isMe ? "ml-auto" : "")
                  }
             >
-                {this.props.message.parentUser.isMe ? "" : <ProfilePicture concatenate={this.props.concatenate}/>}
+                {this.props.message.parentUser.isMe
+                    ? ""
+                    : (
+                        <div className={"svg-align-container"}>
+                            <div className={"svg-align-center"}>
+                                {this.props.concatenate
+                                    ? ""
+                                    : <ProfilePicture user={this.props.message.parentUser}/>
+                                }
+                            </div>
+                        </div>
+                    )
+                }
 
                 <div className={
                     "media-body " +

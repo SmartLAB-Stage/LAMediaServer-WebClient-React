@@ -59,6 +59,15 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
     }
 
     public render(): React.ReactNode {
+        let me: User | null = null;
+
+        for (const user of this.state.users) {
+            if (user.isMe) {
+                me = user;
+                break;
+            }
+        }
+
         return (
             <main className={"rooms container-fluid py-5 px-4"}>
                 <div className={"row rounded-lg overflow-hidden shadow"}>
@@ -73,7 +82,7 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                                 />
                             </div>
                             <div className={"col personalInfos"}>
-                                <PersonalInfos/>
+                                <PersonalInfos user={me}/>
                             </div>
                         </div>
                     </div>

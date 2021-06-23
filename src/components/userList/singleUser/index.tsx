@@ -1,3 +1,4 @@
+import {ProfilePicture} from "components/profilePicture";
 import {
     User,
     UserStatus,
@@ -43,10 +44,7 @@ class SingleUser extends React.Component<SingleUserProps, {}> {
 
         return (
             <li className={"media singleUser"}>
-                <img className="profilePicture d-flex align-self-center"
-                     src={"/static/res/profile-picture-logo.svg"}
-                     width={"100%"}
-                     alt="Profile"/>
+                <ProfilePicture user={this.props.user}/>
                 <div className="media-body">
                     <span className={"name"}>{this.props.user.name}</span>
                     {this.props.user.isMe ? <span className={"descriptor-me"}> (vous)</span> : ""}
