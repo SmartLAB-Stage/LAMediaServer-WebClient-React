@@ -32,7 +32,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             deletedMessage: null,
             deleteModalOpen: false,
             editedMessage: null,
-        }
+        };
     }
 
     public render(): React.ReactNode {
@@ -85,7 +85,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                                concatenate={concatenate}
                                editMessage={(evt) => this._editMessage(evt)}
                                openModalDeleteMessage={() => this._openModalDeleteMessage(message)}
-                />
+                />,
             );
         }
 
@@ -108,7 +108,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             if (deletedMessage !== null) {
                 this._deleteMessage(deletedMessage);
             }
-        }
+        };
 
         return (
             <>

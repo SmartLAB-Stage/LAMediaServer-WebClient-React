@@ -60,7 +60,7 @@ class RoomList extends React.Component<RoomListProps, {}> {
                             </div>
                         </div>
                     </button>
-                </OverlayTrigger>
+                </OverlayTrigger>,
             );
         }
 

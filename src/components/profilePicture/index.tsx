@@ -7,6 +7,9 @@ interface ProfilePictureProps {
 }
 
 class ProfilePicture extends React.Component<ProfilePictureProps, {}> {
+    /**
+     * Non utilisé, proof of concept si besoin
+     */
     public renderRaw(): React.ReactNode {
         const image = `
             <svg xmlns="http://www.w3.org/2000/svg" 

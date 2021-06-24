@@ -75,7 +75,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                             />
                         </div>
                     </div>
-                </div>
+                </div>,
             );
 
             expanded = false;
@@ -128,7 +128,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                             rooms: {
                                 ...this.state.rooms,
                                 [group.id]: rooms,
-                            }
+                            },
                         });
                     }
                 });

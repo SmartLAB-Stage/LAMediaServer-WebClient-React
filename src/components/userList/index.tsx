@@ -15,7 +15,7 @@ class UserList extends React.Component<UserListProps, {}> {
             users.push(
                 <SingleUser key={user.id}
                             user={user}
-                />
+                />,
             );
         }
 

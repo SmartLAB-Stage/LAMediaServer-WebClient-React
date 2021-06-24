@@ -1,8 +1,8 @@
+import {ProfilePicture} from "components/profilePicture";
 import {Message} from "model/message";
 import React from "react";
 import {ActionButtons} from "./actionButtons";
 import {MessageTimestamp} from "./messageTimestamp";
-import {ProfilePicture} from "components/profilePicture";
 import "./singleMessage.scss";
 
 interface SingleMessageProps {
