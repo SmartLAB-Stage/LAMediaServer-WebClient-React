@@ -161,18 +161,16 @@ class APIRequest {
     }
 
     public static getRawRoute(route: string): string {
-        const ENDPOINT_PREFIX = (process.env.REACT_APP_API_ENDPOINT_PREFIX as string)
+        const ENDPOINT_PREFIX = (process.env.REACT_APP_REST_API_ENDPOINT_PREFIX as string)
             .replace(/^(.*)\/$/, "$1")
             .replace(/^\/(.*)$/, "$1");
 
-        const fullRoute = "" +
-            `${process.env.REACT_APP_API_PROTOCOL}://` +
+        return "" +
+            `${process.env.REACT_APP_REST_API_PROTOCOL}://` +
             `${process.env.REACT_APP_API_ADDRESS}` +
             `:${process.env.REACT_APP_API_PORT}/` +
             `${ENDPOINT_PREFIX}/` +
             `${route.replace(/^\/(.*)$/, "$1")}`;
-
-        return fullRoute;
     }
 
     /**
