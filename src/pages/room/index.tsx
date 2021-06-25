@@ -98,7 +98,13 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                                 ) : (
                                     <MessageList
                                         key={this.state.currentRoomId}
-                                        refreshMessages={() => this._updateMessagesFromAPI()}
+                                        messagesRefreshed={(newMessages: Message[] | null) => {
+                                            if (newMessages === null) {
+                                                this._updateMessagesFromAPI();
+                                            } else {
+                                                this._messagesRefreshed(newMessages);
+                                            }
+                                        }}
                                         roomId={this.state.currentRoomId}
                                         messages={this.state.messages}
                                     />
@@ -144,6 +150,18 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
 
     public componentWillUnmount() {
         this._active = false;
+    }
+
+    private _messagesRefreshed(newMessages: Message[]) {
+        const messages = this.state.messages;
+
+        for (const message of newMessages) {
+            messages.push(message);
+        }
+
+        this.setState({
+            messages,
+        });
     }
 
     private _currentRoomChangeCallback(newRoom: Room, newGroup: Group): void {
@@ -223,15 +241,6 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
             })
             .send()
             .then();
-
-        if (!this._looping) {
-            this._looping = true;
-            setTimeout(() => {
-                // FIXME: Transformer ça en websocket
-                this._looping = false;
-                this._updateMessagesFromAPI();
-            }, 10_000);
-        }
     }
 
     private async _handleSendMessage(evt: FormEvent): Promise<void> {
@@ -251,8 +260,6 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                 roomId: this.state.currentRoomId,
             })
             .send();
-
-        this._updateMessagesFromAPI();
 
         this.setState({
             currentMessageContent: "",

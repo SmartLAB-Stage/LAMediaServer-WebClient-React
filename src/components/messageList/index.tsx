@@ -1,4 +1,5 @@
 import {APIRequest} from "common/APIRequest";
+import {APIWebSocket} from "common/APIWebSocket";
 import {SingleMessage} from "components/messageList/singleMessage";
 import {Message} from "model/message";
 import React from "react";
@@ -10,7 +11,7 @@ import "./messageList.scss";
 
 interface MessageListProps {
     messages: Message[],
-    refreshMessages: Function,
+    messagesRefreshed: (newMessages: Message[] | null) => void,
     roomId: string,
 }
 
@@ -22,8 +23,9 @@ interface MessageListState {
 
 class MessageList extends React.Component<MessageListProps, MessageListState> {
     private static _currentUpdateVersion = NaN;
-    private _currentUpdateVersion = NaN;
     private _alreadyScrolledDown = false;
+    private _currentUpdateVersion = NaN;
+    private _socket: APIWebSocket | null = null;
 
     public constructor(props: MessageListProps) {
         super(props);
@@ -47,6 +49,24 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
     public componentDidMount(): void {
         MessageList._currentUpdateVersion = Math.random();
         this._currentUpdateVersion = MessageList._currentUpdateVersion;
+        this._socket = APIWebSocket
+            .getSocket("/group/room/message/fetch")
+            .withToken()
+            .withPayload({
+                roomId: this.props.roomId,
+            })
+            .onResponse((data) => {
+                console.log(data);
+                const newMessages: Message[] = [];
+
+                for (const message of data) {
+                    newMessages.push(Message.fromFullMessage(message));
+                }
+
+                this.props.messagesRefreshed(newMessages);
+            });
+
+        this._socket.open();
     }
 
     public componentDidUpdate(): void {
@@ -61,6 +81,9 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
     public componentWillUnmount(): void {
         MessageList._currentUpdateVersion = Math.random();
+        if (this._socket !== null) {
+            this._socket.close();
+        }
     }
 
     private _renderMessageList(): React.ReactNode[] {
@@ -151,7 +174,8 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                 roomId: this.props.roomId, // Ou `message.roomId` ?
             })
             .onSuccess(() => {
-                this.props.refreshMessages();
+                // TODO: Gérer ça plus proprement
+                this.props.messagesRefreshed(null);
             })
             .send()
             .then();

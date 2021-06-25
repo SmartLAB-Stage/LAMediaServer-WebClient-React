@@ -1,3 +1,5 @@
+import {Authentication} from "common/authentication";
+
 type APIWebSocketCallback = (data: any) => void;
 
 class APIWebSocket {
@@ -33,9 +35,31 @@ class APIWebSocket {
         return new this(endpoint);
     }
 
-    public withToken(token: string | undefined): APIWebSocket {
+    /**
+     * Configure le payload des requêtes GET
+     * @param route Route de base
+     * @param payload Payload
+     * @private
+     */
+    private static _setGetPayload(route: string, payload: object): string {
+        const keys = Object.keys(payload);
+        if (keys.length === 0) {
+            return route;
+        } else {
+            let newRoute = route + "?";
+
+            for (const key of keys) {
+                newRoute += `${encodeURIComponent(key)}=${encodeURIComponent(payload[key])}&`;
+            }
+
+            return newRoute.slice(0, -1);
+        }
+    }
+
+    public withToken(): APIWebSocket {
         let tokenSanitized: string = "";
-        if (token !== undefined) {
+        let token = Authentication.getToken();
+        if (token !== null) {
             tokenSanitized = token;
         }
         this._token = tokenSanitized;
@@ -53,10 +77,23 @@ class APIWebSocket {
     }
 
     public open(): void {
-        this._webSocket = new WebSocket(APIWebSocket.getRawRoute(this._endpoint));
+        const uri = APIWebSocket._setGetPayload(APIWebSocket.getRawRoute(this._endpoint), {
+            _token: this._token,
+            ...this._payload,
+        });
+
+        this._webSocket = new WebSocket(uri);
         this._webSocket.onmessage = (evt) => {
-            console.log(evt.data);
-            this._responseCallback(evt.data);
+            let data = null;
+            try {
+                data = JSON.parse(evt.data);
+            } catch (e) {
+                console.error(e);
+            }
+
+            if (data !== null) {
+                this._responseCallback(data);
+            }
         };
     }
 
