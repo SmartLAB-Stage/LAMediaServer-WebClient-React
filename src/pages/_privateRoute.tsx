@@ -1,3 +1,4 @@
+import {APIRequest} from "common/APIRequest";
 import {Authentication} from "common/authentication";
 import React from "react";
 import {
@@ -20,7 +21,17 @@ class PrivateRoute extends React.Component<PrivateRouteProps, PrivateRouteState>
                 component={
                     Authentication.isAuthenticated()
                         ? this.props.component
-                        : () => <Redirect to={{pathname: "/login", state: {from: this.props.location}}}/>
+                        : () => {
+                            if (this.props.location !== undefined && /\?token=.+/.test(this.props.location.search)) {
+                                let token = this.props.location.search;
+                                token = decodeURIComponent(token.replace(/\?token=(.+)/, "$1"));
+                                Authentication.setToken(token, true);
+                                return <Redirect to={{pathname: "/home"}}/>;
+                            } else {
+                                window.location.href = APIRequest.getRawRoute("/oauth/login?service=" + encodeURIComponent(window.location.href));
+                                return null;
+                            }
+                        }
                 }
             />
         );

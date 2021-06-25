@@ -1,5 +1,4 @@
 import {PrivateRoute} from "pages/_privateRoute";
-import {LoginPage} from "pages/login";
 import {LogoutPage} from "pages/logout";
 import {NotFoundPage} from "pages/notFound";
 import {RoomPage} from "pages/room";
@@ -25,14 +24,13 @@ class Routes extends React.Component<RoutesProps, RoutesState> {
         return (
             <BrowserRouter>
                 <Switch>
-                    <Route
+                    <PrivateRoute
                         exact={true}
                         path="/"
-                        component={LoginPage}/>
-                    <Route
-                        exact={true}
-                        path="/login"
-                        component={LoginPage}/>
+                        render={() =>
+                            <RoomPage currentRoomId={null}
+                                      fullURL={"/room/:id"}/>
+                        }/>
                     <Route
                         exact={true}
                         path="/logout"
