@@ -20,7 +20,8 @@
             font-size: 0.9rem;
         }
 
-        .messages-box, .chat-box {
+        .messages-box,
+        .chat-box {
             min-height: 80vh;
             height: 80vh;
             overflow-y: scroll;
@@ -34,5 +35,10 @@
             font-size: 0.9rem;
             color: #999;
         }
+    }
+
+    .personalInfos {
+        position: absolute;
+        bottom: 0;
     }
 }

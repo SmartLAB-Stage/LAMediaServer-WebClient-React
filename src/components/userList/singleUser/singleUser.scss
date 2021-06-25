@@ -1,0 +1,32 @@
+.userList ul {
+    li.singleUser {
+        border-bottom: 1px solid #aaa;
+        padding-top: 1px;
+
+        &.media {
+            padding-bottom: 1px;
+        }
+
+        .name {
+            font-size: 100%;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .descriptor-me {
+            font-size: (100% * 2 / 3);
+        }
+
+        .username {
+            font-size: small;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .profilePicture {
+            width: 40px;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+    }
+}

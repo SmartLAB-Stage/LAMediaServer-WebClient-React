@@ -1,21 +1,20 @@
+import {Group} from "model/group";
 import {Room} from "model/room";
 import React from "react";
 import {
-    Button,
     OverlayTrigger,
     Tooltip,
 } from "react-bootstrap";
 import "./roomList.scss";
 
 interface RoomListProps {
+    currentRoomChangeCallback: (room: Room, group: Group) => void,
+    parentGroup: Group,
     rooms: Room[],
-    currentRoomChangeCallback: (Room) => void,
+    selectedRoomId: string | null,
 }
 
-interface RoomListState {
-}
-
-class RoomList extends React.Component<RoomListProps, RoomListState> {
+class RoomList extends React.Component<RoomListProps, {}> {
     public render(): React.ReactNode {
         const reactRooms: React.ReactNode[] = [];
 
@@ -24,8 +23,13 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
                 <OverlayTrigger key={room.id}
                                 placement="top"
                                 overlay={(props) => this._renderTooltip(props, room)}>
-                    <Button onClick={() => this.props.currentRoomChangeCallback(room)}
-                            className={"button list-group-item list-group-item-action list-group-item-light rounded-0"}>
+                    <button onClick={() => this.props.currentRoomChangeCallback(room, this.props.parentGroup)}
+                            type={"button"}
+                            className={
+                                "list-group-item " +
+                                "list-group-item-action " +
+                                (this.props.selectedRoomId === room.id ? "list-group-item-info " : "")
+                            }>
                         <div className={"media"}>
                             <div className={"svg-align-container"}>
                                 <div className={"svg-align-center"}>
@@ -47,7 +51,7 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
                                         }
                                     </small>
                                 </div>
-                                <p className={"text-muted mb-0 text-small"}>
+                                <p className={"message text-muted mb-0 text-small"}>
                                     {room.lastMessage !== undefined
                                         ? room.lastMessage.content
                                         : <i>Dernier message non disponible</i>
@@ -55,8 +59,8 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
                                 </p>
                             </div>
                         </div>
-                    </Button>
-                </OverlayTrigger>
+                    </button>
+                </OverlayTrigger>,
             );
         }
 
@@ -67,7 +71,7 @@ class RoomList extends React.Component<RoomListProps, RoomListState> {
         );
     }
 
-    private _renderTooltip(props, room: Room): React.ReactNode {
+    private _renderTooltip(props: any, room: Room): React.ReactNode {
         return <Tooltip {...props}>{room.name}</Tooltip>;
     }
 }

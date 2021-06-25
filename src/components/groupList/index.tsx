@@ -6,8 +6,10 @@ import React from "react";
 import "./groupList.scss";
 
 interface GroupListProps {
+    currentRoomChangeCallback: (room: Room, group: Group) => void,
     groups: Group[],
-    currentRoomChangeCallback: (Room) => void,
+    selectedRoomFound: (parentGroup: Group) => void,
+    selectedRoomId: string | null,
 }
 
 interface GroupListState {
@@ -25,17 +27,17 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         };
     }
 
-    public componentDidMount() {
+    public componentDidMount(): void {
         this._active = true;
     }
 
-    public componentWillUnmount() {
+    public componentWillUnmount(): void {
         this._active = false;
     }
 
-    componentDidUpdate(prevProps: GroupListProps) {
+    componentDidUpdate(prevProps: GroupListProps): void {
         if (prevProps.groups !== this.props.groups) {
-            this._updateFromAPI();
+            this._updateRoomsFromAPI();
         }
     }
 
@@ -43,7 +45,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         const groupsComponent: React.ReactNode[] = [];
         let expanded = true;
 
-        for (let group of this.props.groups) {
+        for (const group of this.props.groups) {
             groupsComponent.push(
                 <div key={group.id} className={"card"}>
                     <div className={"card-header"} id={`heading_${group.id}`}>
@@ -63,7 +65,9 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                          aria-labelledby={`heading_${group.id}`}
                          data-parent={"#accordion"}>
                         <div className={"card-body"}>
-                            <RoomList currentRoomChangeCallback={this.props.currentRoomChangeCallback}
+                            <RoomList parentGroup={group}
+                                      currentRoomChangeCallback={this.props.currentRoomChangeCallback}
+                                      selectedRoomId={this.props.selectedRoomId}
                                       rooms={this.state.rooms[group.id] !== undefined
                                           ? this.state.rooms[group.id]
                                           : []
@@ -71,30 +75,22 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                             />
                         </div>
                     </div>
-                </div>
+                </div>,
             );
 
             expanded = false;
         }
 
         return (
-            <div key={this.props.groups.length} className={"room-list col-4 px-0"}>
-                <div className={"bg-white"}>
-                    <div className={"bg-gray px-4 py-2 bg-light"}>
-                        <p className={"h5 mb-0 py-1"}>
-                            Groupes
-                        </p>
-                    </div>
-
-                    <div id={"accordion"}>
-                        {groupsComponent}
-                    </div>
+            <div className={"room-list bg-white"}>
+                <div id={"accordion"}>
+                    {groupsComponent}
                 </div>
             </div>
         );
     }
 
-    private _updateFromAPI(): void {
+    private _updateRoomsFromAPI(): void {
         for (const group of this.props.groups) {
             APIRequest
                 .get("/group/room/list")
@@ -107,12 +103,16 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                     const rooms: Room[] = [];
 
                     for (const room of data.payload) {
-                        rooms.push(Room.fromFullObject(room));
+                        const roomObject = Room.fromFullObject(room);
+                        rooms.push(roomObject);
+                        if (roomObject.id === this.props.selectedRoomId) {
+                            this.props.selectedRoomFound(group);
+                        }
                     }
 
                     return rooms;
                 })
-                .onFailure((status, data, evt) => {
+                .onFailure((status) => {
                     // FIXME: Si ce cas de figure arrive c'est que ce groupe a été supprimé
                     if (status === 404) {
                         return [] as Room[];
@@ -128,7 +128,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                             rooms: {
                                 ...this.state.rooms,
                                 [group.id]: rooms,
-                            }
+                            },
                         });
                     }
                 });

@@ -1,7 +1,10 @@
 /**
  * Canal
  */
-import {Message, RawMessage} from "./message";
+import {
+    Message,
+    RawMessage,
+} from "./message";
 
 /**
  * Room raw
@@ -21,16 +24,16 @@ interface RawRoom {
  */
 class Room {
     /**
-     * Canal par défaut ou non
-     * @private
-     */
-    private readonly _isDefault: boolean;
-
-    /**
      * ID
      * @private
      */
     private readonly _id: string;
+
+    /**
+     * Canal par défaut ou non
+     * @private
+     */
+    private readonly _isDefault: boolean;
 
     /**
      * Dernier message
@@ -77,8 +80,24 @@ class Room {
         this._messagesCount = messagesCount;
     }
 
+    public get id(): string {
+        return this._id;
+    }
+
+    public get isDefault(): boolean {
+        return this._isDefault;
+    }
+
+    public get lastMessage(): Message | undefined {
+        return this._lastMessage;
+    }
+
     public get messagesCount(): number {
         return this._messagesCount;
+    }
+
+    public get name(): string {
+        return this._name;
     }
 
     public get parentRoomId(): string {
@@ -87,22 +106,6 @@ class Room {
 
     public get usersCount(): number {
         return this._usersCount;
-    }
-
-    public get isDefault(): boolean {
-        return this._isDefault;
-    }
-
-    public get id(): string {
-        return this._id;
-    }
-
-    public get lastMessage(): Message | undefined {
-        return this._lastMessage;
-    }
-
-    public get name(): string {
-        return this._name;
     }
 
     public static fromFullObject(obj: RawRoom): Room {
@@ -114,7 +117,7 @@ class Room {
             obj.parentRoomId,
             obj.usersCount,
             obj.messagesCount,
-        )
+        );
     }
 
     /**
@@ -129,7 +132,7 @@ class Room {
             messagesCount: this.messagesCount,
             usersCount: this.usersCount,
             parentRoomId: this.parentRoomId,
-        }
+        };
     }
 }
 

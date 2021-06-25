@@ -3,16 +3,21 @@
  */
 enum UserStatus {
     AWAY = "away",
+    BUSY = "busy",
     OFFLINE = "offline",
     ONLINE = "online",
     UNKNOWN = "unknown",
 }
 
-interface RawUser {
+interface RawPartialUser {
     id: string,
     isMe: boolean,
     name: string,
     username: string,
+}
+
+interface RawFullUser extends RawPartialUser {
+    status: UserStatus | string,
 }
 
 /**
@@ -98,6 +103,16 @@ class User {
         }
     }
 
+    public static fromFullUser(rawUser: RawFullUser): User {
+        return new this(
+            rawUser.id,
+            rawUser.isMe,
+            rawUser.username,
+            rawUser.name,
+            rawUser.status as UserStatus,
+        );
+    }
+
     /**
      * Permet l'encodage en JSON
      */
@@ -109,7 +124,7 @@ class User {
             name: this.name,
             status: this.status,
             username: this.username,
-        }
+        };
     }
 }
 
@@ -117,4 +132,4 @@ export {
     User,
     UserStatus,
 };
-export type {RawUser};
+export type {RawPartialUser};

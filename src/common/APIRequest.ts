@@ -39,14 +39,14 @@ enum RequestMethod {
  */
 type RequestInfos = {
     /**
-     * Statut HTTP
-     */
-    status: number,
-
-    /**
      * Data
      */
     data: any | null,
+
+    /**
+     * Statut HTTP
+     */
+    status: number,
 }
 
 type APIDataType = {
@@ -114,17 +114,6 @@ class APIRequest {
      * @private
      */
     private constructor(method: RequestMethod, route: string) {
-        const ENDPOINT_PREFIX = (process.env.REACT_APP_API_ENDPOINT_PREFIX as string)
-            .replace(/^(.*)\/$/, "$1")
-            .replace(/^\/(.*)$/, "$1");
-
-        const fullRoute = "" +
-            `${process.env.REACT_APP_API_PROTOCOL}://` +
-            `${process.env.REACT_APP_API_ADDRESS}` +
-            `:${process.env.REACT_APP_API_PORT}/` +
-            `${ENDPOINT_PREFIX}/` +
-            `${route.replace(/^\/(.*)$/, "$1")}`;
-
         this._canceledFunction = () => {
             console.warn("Aucune fonction de détection d'annulation");
             return true;
@@ -133,8 +122,16 @@ class APIRequest {
         this._minTime = 0;
         this._payload = {};
         this._request = new XMLHttpRequest();
-        this._route = fullRoute;
+        this._route = APIRequest.getFullRoute(route);
         this._token = null;
+    }
+
+    /**
+     * Effectue une requête DELETE
+     * @param route Route
+     */
+    public static delete(route: string): APIRequest {
+        return new APIRequest(RequestMethod.DELETE, route);
     }
 
     /**
@@ -155,11 +152,34 @@ class APIRequest {
     }
 
     /**
-     * Effectue une requête DELETE
+     * Effectue une requête PUT
      * @param route Route
      */
-    public static delete(route: string): APIRequest {
-        return new APIRequest(RequestMethod.DELETE, route);
+
+    public static put(route: string): APIRequest {
+        return new APIRequest(RequestMethod.PUT, route);
+    }
+
+    public static getRawRoute(route: string): string {
+        let resRoute = "" +
+            `${process.env.REACT_APP_REST_API_PROTOCOL}://` +
+            `${process.env.REACT_APP_API_ADDRESS}`;
+
+        if (process.env.REACT_APP_API_PORT !== undefined) {
+            resRoute += `:${process.env.REACT_APP_API_PORT}/`;
+        }
+
+        resRoute += `${route.replace(/^\/(.*)$/, "$1")}`;
+
+        return resRoute;
+    }
+
+    public static getFullRoute(route: string): string {
+        const ENDPOINT_PREFIX = (process.env.REACT_APP_REST_API_ENDPOINT_PREFIX as string)
+            .replace(/^(.*)\/$/, "$1")
+            .replace(/^\/(.*)$/, "$1");
+
+        return this.getRawRoute(`${ENDPOINT_PREFIX}/${route.replace(/^\/(.*)$/, "$1")}`);
     }
 
     /**

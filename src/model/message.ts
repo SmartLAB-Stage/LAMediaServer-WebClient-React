@@ -1,7 +1,7 @@
 import {Attachment} from "./attachement";
 import {Reaction} from "./reaction";
 import {
-    RawUser,
+    RawPartialUser,
     User,
 } from "./user";
 
@@ -11,7 +11,7 @@ import {
 interface RawMessage {
     content: string,
     id: string,
-    parentUser: RawUser,
+    parentUser: RawPartialUser,
     roomId: string,
     timestamp: Date,
 }
@@ -21,10 +21,10 @@ interface RawMessage {
  */
 class Message {
     /**
-     * ID
+     * Liste des pièces jointes
      * @private
      */
-    private readonly _id: string;
+    private readonly _attachments: Attachment[] | undefined;
 
     /**
      * Contenu
@@ -33,10 +33,22 @@ class Message {
     private readonly _content: string;
 
     /**
+     * ID
+     * @private
+     */
+    private readonly _id: string;
+
+    /**
      * Utilisateur parent
      * @private
      */
     private readonly _parentUser: User;
+
+    /**
+     * Liste des réactions
+     * @private
+     */
+    private readonly _reactions: Reaction[] | undefined;
 
     /**
      * ID de la salle
@@ -50,25 +62,13 @@ class Message {
      */
     private readonly _timestamp: Date;
 
-    /**
-     * Liste des pièces jointes
-     * @private
-     */
-    private readonly _attachments: Attachment[] | undefined;
-
-    /**
-     * Liste des réactions
-     * @private
-     */
-    private readonly _reactions: Reaction[] | undefined;
-
     private constructor(id: string,
                         content: string,
                         parentUser: User,
                         roomId: string | undefined,
                         timestamp: Date,
                         attachments: Attachment[] | undefined,
-                        reactions: Reaction[] | undefined
+                        reactions: Reaction[] | undefined,
     ) {
         this._id = id;
         this._content = content;
@@ -77,6 +77,22 @@ class Message {
         this._timestamp = timestamp;
         this._attachments = attachments;
         this._reactions = reactions;
+    }
+
+    public get attachments(): Attachment[] | undefined {
+        return this._attachments;
+    }
+
+    public get content(): string {
+        return this._content;
+    }
+
+    public get id(): string {
+        return this._id;
+    }
+
+    public get parentUser(): User {
+        return this._parentUser;
     }
 
     public get reactions(): Reaction[] | undefined {
@@ -89,22 +105,6 @@ class Message {
 
     public get timestamp(): Date {
         return this._timestamp;
-    }
-
-    public get attachments(): Attachment[] | undefined {
-        return this._attachments;
-    }
-
-    public get id(): string {
-        return this._id;
-    }
-
-    public get content(): string {
-        return this._content;
-    }
-
-    public get parentUser(): User {
-        return this._parentUser;
     }
 
     /**
@@ -130,14 +130,14 @@ class Message {
 
     public toJSON(): object {
         return {
-            id: this.id,
+            attachments: this.attachments,
             content: this.content,
+            id: this.id,
             parentUser: this.parentUser,
+            reactions: this.reactions,
             roomId: this.roomId,
             timestamp: this.timestamp,
-            attachments: this.attachments,
-            reactions: this.reactions,
-        }
+        };
     }
 }
 

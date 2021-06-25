@@ -6,7 +6,14 @@ class Authentication {
     }
 
     public static getToken(): string | null {
-        return this._storage.getItem("_token");
+        let token = this._storage.getItem("_token");
+
+        if (token === null) {
+            // FIXME: Hack
+            token = sessionStorage.getItem("_token");
+        }
+
+        return token;
     }
 
     public static setToken(token: string, remember: boolean): void {
