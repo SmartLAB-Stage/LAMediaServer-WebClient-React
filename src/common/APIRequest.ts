@@ -122,7 +122,7 @@ class APIRequest {
         this._minTime = 0;
         this._payload = {};
         this._request = new XMLHttpRequest();
-        this._route = APIRequest.getRawRoute(route);
+        this._route = APIRequest.getFullRoute(route);
         this._token = null;
     }
 
@@ -161,16 +161,25 @@ class APIRequest {
     }
 
     public static getRawRoute(route: string): string {
+        let resRoute = "" +
+            `${process.env.REACT_APP_REST_API_PROTOCOL}://` +
+            `${process.env.REACT_APP_API_ADDRESS}`;
+
+        if (process.env.REACT_APP_API_PORT !== undefined) {
+            resRoute += `:${process.env.REACT_APP_API_PORT}/`;
+        }
+
+        resRoute += `${route.replace(/^\/(.*)$/, "$1")}`;
+
+        return resRoute;
+    }
+
+    public static getFullRoute(route: string): string {
         const ENDPOINT_PREFIX = (process.env.REACT_APP_REST_API_ENDPOINT_PREFIX as string)
             .replace(/^(.*)\/$/, "$1")
             .replace(/^\/(.*)$/, "$1");
 
-        return "" +
-            `${process.env.REACT_APP_REST_API_PROTOCOL}://` +
-            `${process.env.REACT_APP_API_ADDRESS}` +
-            `:${process.env.REACT_APP_API_PORT}/` +
-            `${ENDPOINT_PREFIX}/` +
-            `${route.replace(/^\/(.*)$/, "$1")}`;
+        return this.getRawRoute(`${ENDPOINT_PREFIX}/${route.replace(/^\/(.*)$/, "$1")}`);
     }
 
     /**

@@ -42,7 +42,7 @@ class ProfilePicture extends React.Component<ProfilePictureProps, {}> {
     public render(): React.ReactNode {
         let url = "";
         if (this.props.user !== null) {
-            url = APIRequest.getRawRoute(`/user/avatar/get?username=${this.props.user.username}`);
+            url = APIRequest.getFullRoute(`/user/avatar/get?username=${this.props.user.username}`);
         }
 
         return (
