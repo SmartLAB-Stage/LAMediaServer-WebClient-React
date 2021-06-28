@@ -23,13 +23,12 @@ interface HomeState {
     currentRoomId: string | null,
     groups: Group[],
     messages: Message[],
+    meUser: User | null,
     selectedGroup: Group | null,
     users: User[],
 }
 
 class RoomPage extends React.Component<HomeProps, HomeState> {
-    private _looping: boolean;
-
     /**
      * Permet d'annuler les Promise asynchrones une fois l'élément React courant recyclé / la vue changée.
      * @private
@@ -39,35 +38,27 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
     public constructor(props: HomeProps) {
         super(props);
 
-        this._looping = false;
-
         this.state = {
             currentMessageContent: "",
             currentRoomId: this.props.currentRoomId,
             groups: [],
             messages: [],
+            meUser: null,
             selectedGroup: null,
             users: [],
         };
 
         this._updateGroupsFromAPI();
 
-        if (this.state.currentRoomId !== null) {
+        if (this.state.currentRoomId === null) {
+            this._updateMyInfos();
+        } else {
             window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentRoomId));
             this._updateMessagesFromAPI();
         }
     }
 
     public render(): React.ReactNode {
-        let me: User | null = null;
-
-        for (const user of this.state.users) {
-            if (user.isMe) {
-                me = user;
-                break;
-            }
-        }
-
         return (
             <main className={"rooms container-fluid py-5 px-4"}>
                 <div className={"row rounded-lg overflow-hidden shadow"}>
@@ -82,7 +73,7 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                                 />
                             </div>
                             <div className={"col personalInfos"}>
-                                <PersonalInfos user={me}/>
+                                <PersonalInfos user={this.state.meUser}/>
                             </div>
                         </div>
                     </div>
@@ -152,6 +143,24 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
         this._active = false;
     }
 
+    private _updateMyInfos(): void {
+        APIRequest
+            .get("/me/get")
+            .authenticate()
+            .canceledWhen(() => !this._active)
+            .onSuccess((status, data) => {
+                if (!this._active) {
+                    return;
+                }
+
+                const me = User.fromFullUser(data.payload);
+
+                this.setState({
+                    meUser: me,
+                });
+            }).send().then();
+    }
+
     private _messagesRefreshed(newMessages: Message[]) {
         const messages = this.state.messages;
 
@@ -210,6 +219,17 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
 
                 for (const user of data.payload) {
                     users.push(User.fromFullUser(user));
+                }
+
+                if (this.state.meUser === null) {
+                    for (const user of users) {
+                        if (user.isMe) {
+                            this.setState({
+                                meUser: user,
+                            });
+                            break;
+                        }
+                    }
                 }
 
                 this.setState({
