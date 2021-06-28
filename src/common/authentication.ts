@@ -1,27 +1,16 @@
 class Authentication {
-    private static _storage: Storage = localStorage;
+    private static _storage: Storage = sessionStorage;
 
     public static isAuthenticated(): boolean {
         return this.getToken() !== null;
     }
 
     public static getToken(): string | null {
-        let token = this._storage.getItem("_token");
-
-        if (token === null) {
-            // FIXME: Hack
-            token = sessionStorage.getItem("_token");
-        }
-
-        return token;
+        return this._storage.getItem("_token");
     }
 
-    public static setToken(token: string, remember: boolean): void {
-        if (!remember) {
-            this.clearToken();
-            this._storage = sessionStorage;
-        }
-
+    public static setToken(token: string): void {
+        this.clearToken();
         this._storage.setItem("_token", token);
     }
 

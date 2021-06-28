@@ -25,7 +25,7 @@ class PrivateRoute extends React.Component<PrivateRouteProps, PrivateRouteState>
                             if (this.props.location !== undefined && /\?token=.+/.test(this.props.location.search)) {
                                 let token = this.props.location.search;
                                 token = decodeURIComponent(token.replace(/\?token=(.+)/, "$1"));
-                                Authentication.setToken(token, true);
+                                Authentication.setToken(token);
                                 return <Redirect to={{pathname: "/home"}}/>;
                             } else {
                                 window.location.href = APIRequest.getRawRoute("/oauth/login?service=" + encodeURIComponent(window.location.href));
