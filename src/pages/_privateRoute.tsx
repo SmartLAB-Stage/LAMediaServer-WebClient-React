@@ -2,7 +2,6 @@ import {Authentication} from "helper/authentication";
 import {OAuth} from "helper/OAuth";
 import React from "react";
 import {
-    Redirect,
     Route,
     RouteProps,
 } from "react-router-dom";
@@ -22,15 +21,8 @@ class PrivateRoute extends React.Component<PrivateRouteProps, PrivateRouteState>
                     Authentication.isAuthenticated()
                         ? this.props.component
                         : () => {
-                            if (this.props.location !== undefined && /\?token=.+/.test(this.props.location.search)) {
-                                let token = this.props.location.search;
-                                token = decodeURIComponent(token.replace(/\?token=(.+)/, "$1"));
-                                Authentication.setToken(token);
-                                return <Redirect to={{pathname: "/home"}}/>;
-                            } else {
-                                window.location.href = OAuth.getUri();
-                                return null;
-                            }
+                            window.location.href = OAuth.getUri();
+                            return null;
                         }
                 }
             />
