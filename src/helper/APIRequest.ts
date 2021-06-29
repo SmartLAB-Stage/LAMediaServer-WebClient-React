@@ -1,8 +1,8 @@
 /**
  * Méthodes de requête
  */
-import {Authentication} from "common/authentication";
-import {sleep} from "common/utils";
+import {Authentication} from "helper/authentication";
+import {sleep} from "helper/utils";
 
 /**
  * Méthodes de requête

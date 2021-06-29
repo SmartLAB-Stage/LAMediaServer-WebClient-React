@@ -1,5 +1,5 @@
-import {APIRequest} from "common/APIRequest";
-import {Authentication} from "common/authentication";
+import {APIRequest} from "helper/APIRequest";
+import {Authentication} from "helper/authentication";
 import React from "react";
 import {
     Redirect,

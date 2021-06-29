@@ -1,5 +1,5 @@
-import {APIRequest} from "common/APIRequest";
-import {APIWebSocket} from "common/APIWebSocket";
+import {APIRequest} from "helper/APIRequest";
+import {APIWebSocket} from "helper/APIWebSocket";
 import {SingleMessage} from "components/messageList/singleMessage";
 import {Message} from "model/message";
 import React from "react";

@@ -1,4 +1,4 @@
-import {Authentication} from "common/authentication";
+import {Authentication} from "helper/authentication";
 
 type APIWebSocketCallback = (data: any) => void;
 

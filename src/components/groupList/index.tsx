@@ -1,4 +1,4 @@
-import {APIRequest} from "common/APIRequest";
+import {APIRequest} from "helper/APIRequest";
 import {RoomList} from "components/roomList";
 import {Group} from "model/group";
 import {Room} from "model/room";

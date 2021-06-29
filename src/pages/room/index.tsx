@@ -1,6 +1,6 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import colors from "colors.module.scss";
-import {APIRequest} from "common/APIRequest";
+import {APIRequest} from "helper/APIRequest";
 import {GroupList} from "components/groupList";
 import {MessageList} from "components/messageList";
 import {PersonalInfos} from "components/personalInfos";

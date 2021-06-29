@@ -1,4 +1,4 @@
-import {APIRequest} from "common/APIRequest";
+import {APIRequest} from "helper/APIRequest";
 import {User} from "model/user";
 import React from "react";
 

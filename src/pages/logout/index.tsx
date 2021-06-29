@@ -1,4 +1,4 @@
-import {Authentication} from "common/authentication";
+import {Authentication} from "helper/authentication";
 import React from "react";
 
 class LogoutPage extends React.Component {
