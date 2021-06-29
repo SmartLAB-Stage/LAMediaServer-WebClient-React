@@ -3,6 +3,7 @@ import {LoginPage} from "pages/login";
 import {LogoutPage} from "pages/logout";
 import {NotFoundPage} from "pages/notFound";
 import {OAuthUserProfilePage} from "pages/oauth/userprofile";
+import {OpenViduPage} from "pages/openvidu";
 import {RoomPage} from "pages/room";
 import React from "react";
 import {
@@ -23,6 +24,10 @@ class Routes extends React.Component<{}, {}> {
                             <RoomPage currentRoomId={null}
                                       fullURL={"/room/:id"}/>
                         }/>
+                    <Route
+                        exact={true}
+                        path="/openvidu"
+                        component={OpenViduPage}/>
                     <Route
                         exact={true}
                         path="/oauth/userprofile"
