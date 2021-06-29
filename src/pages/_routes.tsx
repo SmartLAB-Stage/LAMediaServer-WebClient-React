@@ -2,6 +2,7 @@ import {PrivateRoute} from "pages/_privateRoute";
 import {LoginPage} from "pages/login";
 import {LogoutPage} from "pages/logout";
 import {NotFoundPage} from "pages/notFound";
+import {OAuthUserProfilePage} from "pages/oauth/userprofile";
 import {RoomPage} from "pages/room";
 import React from "react";
 import {
@@ -34,13 +35,17 @@ class Routes extends React.Component<RoutesProps, RoutesState> {
                         }/>
                     <Route
                         exact={true}
+                        path="/oauth/userprofile"
+                        component={OAuthUserProfilePage}/>
+                    <Route
+                        exact={true}
                         path="/logout"
                         component={LogoutPage}/>
                     <PrivateRoute
                         exact={true}
                         path="/login"
                         render={() =>
-                            <LoginPage />
+                            <LoginPage/>
                         }/>
                     <PrivateRoute
                         exact={true}

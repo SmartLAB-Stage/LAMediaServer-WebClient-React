@@ -1,5 +1,5 @@
-import {APIRequest} from "helper/APIRequest";
 import {Authentication} from "helper/authentication";
+import {OAuth} from "helper/OAuth";
 import React from "react";
 import {
     Redirect,
@@ -28,7 +28,7 @@ class PrivateRoute extends React.Component<PrivateRouteProps, PrivateRouteState>
                                 Authentication.setToken(token);
                                 return <Redirect to={{pathname: "/home"}}/>;
                             } else {
-                                window.location.href = APIRequest.getRawRoute("/oauth/login?service=" + encodeURIComponent(window.location.href));
+                                window.location.href = OAuth.getUri();
                                 return null;
                             }
                         }
