@@ -1,10 +1,10 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import colors from "colors.module.scss";
-import {APIRequest} from "helper/APIRequest";
 import {GroupList} from "components/groupList";
 import {MessageList} from "components/messageList";
 import {PersonalInfos} from "components/personalInfos";
 import {UserList} from "components/userList";
+import {APIRequest} from "helper/APIRequest";
 import {Group} from "model/group";
 import {Message} from "model/message";
 import {Room} from "model/room";
@@ -158,7 +158,9 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                 this.setState({
                     meUser: me,
                 });
-            }).send().then();
+            })
+            .send()
+            .then();
     }
 
     private _messagesRefreshed(newMessages: Message[]) {
@@ -203,7 +205,9 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                 this.setState({
                     groups,
                 });
-            }).send().then();
+            })
+            .send()
+            .then();
     }
 
     private _updateUsersFromAPI(selectedGroup: Group): void {
@@ -279,7 +283,8 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
                 message: this.state.currentMessageContent,
                 roomId: this.state.currentRoomId,
             })
-            .send();
+            .send()
+            .then();
 
         this.setState({
             currentMessageContent: "",

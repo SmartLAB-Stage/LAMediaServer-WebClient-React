@@ -1,4 +1,5 @@
 import {Authentication} from "helper/authentication";
+import {setGetPayload} from "helper/utils";
 
 type APIWebSocketCallback = (data: any) => void;
 
@@ -44,27 +45,6 @@ class APIWebSocket {
         return new this(endpoint);
     }
 
-    /**
-     * Configure le payload des requêtes GET
-     * @param route Route de base
-     * @param payload Payload
-     * @private
-     */
-    private static _setGetPayload(route: string, payload: object): string {
-        const keys = Object.keys(payload);
-        if (keys.length === 0) {
-            return route;
-        } else {
-            let newRoute = route + "?";
-
-            for (const key of keys) {
-                newRoute += `${encodeURIComponent(key)}=${encodeURIComponent(payload[key])}&`;
-            }
-
-            return newRoute.slice(0, -1);
-        }
-    }
-
     public withToken(): APIWebSocket {
         let tokenSanitized: string = "";
         let token = Authentication.getToken();
@@ -86,7 +66,7 @@ class APIWebSocket {
     }
 
     public open(): void {
-        const uri = APIWebSocket._setGetPayload(APIWebSocket.getFullRoute(this._endpoint), {
+        const uri = setGetPayload(APIWebSocket.getFullRoute(this._endpoint), {
             _token: this._token,
             ...this._payload,
         });

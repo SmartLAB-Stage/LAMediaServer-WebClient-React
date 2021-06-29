@@ -11,17 +11,7 @@ import {
     Switch,
 } from "react-router-dom";
 
-interface RoutesProps {
-}
-
-interface RoutesState {
-}
-
-class Routes extends React.Component<RoutesProps, RoutesState> {
-    public constructor(props: RoutesProps) {
-        super(props);
-    }
-
+class Routes extends React.Component<{}, {}> {
     public render(): React.ReactNode {
         return (
             <BrowserRouter>

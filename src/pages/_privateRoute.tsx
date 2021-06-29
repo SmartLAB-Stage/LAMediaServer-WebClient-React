@@ -6,13 +6,7 @@ import {
     RouteProps,
 } from "react-router-dom";
 
-interface PrivateRouteProps extends RouteProps {
-}
-
-interface PrivateRouteState {
-}
-
-class PrivateRoute extends React.Component<PrivateRouteProps, PrivateRouteState> {
+class PrivateRoute extends React.Component<RouteProps, {}> {
     public render(): React.ReactNode {
         return (
             <Route

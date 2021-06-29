@@ -81,7 +81,6 @@ class OAuthUserProfilePage extends React.Component<RouteProps, OAuthUserProfileP
                         errorMessage: data.message,
                     });
                 }
-
             })
             .send()
             .then();

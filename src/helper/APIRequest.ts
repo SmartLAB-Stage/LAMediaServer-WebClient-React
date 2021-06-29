@@ -2,7 +2,10 @@
  * Méthodes de requête
  */
 import {Authentication} from "helper/authentication";
-import {sleep} from "helper/utils";
+import {
+    setGetPayload,
+    sleep,
+} from "helper/utils";
 
 /**
  * Méthodes de requête
@@ -215,27 +218,6 @@ class APIRequest {
         return [200, 201, 204, 304].includes(statusCode);
     }
 
-    /**
-     * Configure le payload des requêtes GET
-     * @param route Route de base
-     * @param payload Payload
-     * @private
-     */
-    private static _setGetPayload(route: string, payload: object): string {
-        const keys = Object.keys(payload);
-        if (keys.length === 0) {
-            return route;
-        } else {
-            let newRoute = route + "?";
-
-            for (const key of keys) {
-                newRoute += `${encodeURIComponent(key)}=${encodeURIComponent(payload[key])}&`;
-            }
-
-            return newRoute.slice(0, -1);
-        }
-    }
-
     public authenticate(): APIRequest {
         this._token = Authentication.getToken();
         return this;
@@ -334,7 +316,7 @@ class APIRequest {
             // this._request.addEventListener("abort", transferCanceled);
 
             if (this._method === RequestMethod.GET) {
-                this._request.open(this._method as string, APIRequest._setGetPayload(this._route, this._payload));
+                this._request.open(this._method as string, setGetPayload(this._route, this._payload));
             } else {
                 this._request.open(this._method as string, this._route);
             }

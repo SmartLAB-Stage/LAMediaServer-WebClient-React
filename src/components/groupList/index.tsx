@@ -1,5 +1,5 @@
-import {APIRequest} from "helper/APIRequest";
 import {RoomList} from "components/roomList";
+import {APIRequest} from "helper/APIRequest";
 import {Group} from "model/group";
 import {Room} from "model/room";
 import React from "react";
@@ -13,7 +13,7 @@ interface GroupListProps {
 }
 
 interface GroupListState {
-    rooms: { [key: string]: Room[] },
+    rooms: Record<string, Room[]>,
 }
 
 class GroupList extends React.Component<GroupListProps, GroupListState> {

@@ -5,7 +5,7 @@ type HeaderProps = {
     appName: string,
 }
 
-class Header extends React.Component<HeaderProps> {
+class Header extends React.Component<HeaderProps, {}> {
     public render(): React.ReactNode {
         return (
             <nav className="navbar">
