@@ -29,4 +29,5 @@ src/**/*.css.map
 src/*.d.ts
 
 
+!src/*.d.ts
 .env
