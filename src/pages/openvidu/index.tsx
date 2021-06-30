@@ -8,6 +8,7 @@ import {
     StreamEvent,
 } from "openvidu-browser";
 import React from "react";
+import "./openvidu.scss";
 
 interface OpenViduPageState {
     subscribersConnections: Connection[],
@@ -15,12 +16,16 @@ interface OpenViduPageState {
 
 class OpenViduPage extends React.Component<{}, OpenViduPageState> {
     private _active = false;
+    private _openVidu: OpenVidu;
     private _publisher: Publisher | null;
+    private _session: Session;
 
     public constructor(props: {}) {
         super(props);
 
+        this._openVidu = new OpenVidu();
         this._publisher = null;
+        this._session = this._openVidu.initSession();
 
         this.state = {
             subscribersConnections: [],
@@ -33,6 +38,7 @@ class OpenViduPage extends React.Component<{}, OpenViduPageState> {
     }
 
     public componentWillUnmount(): void {
+        this._session.disconnect();
         this._active = false;
     }
 
@@ -46,14 +52,14 @@ class OpenViduPage extends React.Component<{}, OpenViduPageState> {
         }
 
         return (
-            <div>
+            <>
                 <div id={"video-publisher"}/>
                 {subscribers}
-            </div>
+            </>
         );
     }
 
-    private _onStreamCreated(session: Session, evt: StreamEvent) {
+    private _onStreamCreated(evt: StreamEvent) {
         const connection = evt.stream.connection;
 
         this.setState({
@@ -63,7 +69,7 @@ class OpenViduPage extends React.Component<{}, OpenViduPageState> {
             ],
         });
 
-        session.subscribe(evt.stream, `video-subscriber_${connection.connectionId}`);
+        this._session.subscribe(evt.stream, `video-subscriber_${connection.connectionId}`);
 
         /*
         if(e.stream.hasVideo == false){
@@ -91,13 +97,13 @@ class OpenViduPage extends React.Component<{}, OpenViduPageState> {
         */
     }
 
-    private _onConnected(openVidu: OpenVidu, session: Session) {
-        this._publisher = openVidu.initPublisher("video-publisher", {
+    private _onConnected() {
+        this._publisher = this._openVidu.initPublisher("video-publisher", {
             publishAudio: true,
             publishVideo: true,
         });
 
-        session.publish(this._publisher).then(() => {
+        this._session.publish(this._publisher).then(() => {
             // ...
         });
 
@@ -112,11 +118,8 @@ class OpenViduPage extends React.Component<{}, OpenViduPageState> {
     }
 
     private _setOpenVidu(username, targetWebSocketURL): void {
-        const openVidu = new OpenVidu();
-        const session = openVidu.initSession();
-
-        session.on("streamCreated", (evt) => this._onStreamCreated(session, evt as StreamEvent));
-        session.on("streamDestroyed", (evt) => this._onStreamDestroyed(evt as StreamEvent));
+        this._session.on("streamCreated", (evt) => this._onStreamCreated(evt as StreamEvent));
+        this._session.on("streamDestroyed", (evt) => this._onStreamDestroyed(evt as StreamEvent));
 
         /*
         session.on("publisherStartSpeaking", (evt) => {
@@ -131,14 +134,14 @@ class OpenViduPage extends React.Component<{}, OpenViduPageState> {
             console.warn(id, "arrête de parler");
         });*/
 
-        session.connect(targetWebSocketURL)
-            .then(() => this._onConnected(openVidu, session))
+        this._session.connect(targetWebSocketURL)
+            .then(() => this._onConnected())
             .catch((error) => {
                 console.error("An error occurred while connecting to the session: " + error.code + " " + error.message);
             });
 
-        session.on("streamPropertyChanged", (evt) => this._onStreamPropertyChanged(evt as StreamEvent & { changedProperty: string }));
-        session.on("sessionDisconnected", () => {
+        this._session.on("streamPropertyChanged", (evt) => this._onStreamPropertyChanged(evt as StreamEvent & { changedProperty: string }));
+        this._session.on("sessionDisconnected", () => {
             // console.warn("session disconnected");
         });
     }
@@ -159,7 +162,9 @@ class OpenViduPage extends React.Component<{}, OpenViduPageState> {
     }
 
     private _createVideoConferenceRoom(): void {
-        const id = "ses_Uv4FcbxQEw";
+        let id;
+        // id = "ses_LIetoRevvE";
+        id = null;
 
         if (id === null) {
             APIRequest
