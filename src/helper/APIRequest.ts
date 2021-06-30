@@ -120,7 +120,10 @@ class APIRequest {
      */
     private constructor(method: RequestMethod, route: string) {
         this._canceledFunction = () => {
-            console.warn("Aucune fonction de détection d'annulation");
+            console.warn(
+                "Aucune fonction de détection d'annulation n'est définie, " +
+                "cette requête ne sera donc pas exécutée.",
+            );
             return true;
         };
         this._method = method;
