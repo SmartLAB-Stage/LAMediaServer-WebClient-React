@@ -135,11 +135,11 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
         );
     }
 
-    public componentDidMount() {
+    public componentDidMount(): void {
         this._active = true;
     }
 
-    public componentWillUnmount() {
+    public componentWillUnmount(): void {
         this._active = false;
     }
 
@@ -149,10 +149,6 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
             .authenticate()
             .canceledWhen(() => !this._active)
             .onSuccess((status, data) => {
-                if (!this._active) {
-                    return;
-                }
-
                 const me = User.fromFullUser(data.payload);
 
                 this.setState({
@@ -192,10 +188,6 @@ class RoomPage extends React.Component<HomeProps, HomeState> {
             .authenticate()
             .canceledWhen(() => !this._active)
             .onSuccess((status, data) => {
-                if (!this._active) {
-                    return;
-                }
-
                 const groups: Group[] = [];
 
                 for (const group of data.payload) {
