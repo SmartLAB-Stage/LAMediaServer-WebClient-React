@@ -24,7 +24,7 @@ class Routes extends React.Component<{}, {}> {
                             <RoomPage currentRoomId={null}
                                       fullURL={"/room/:id"}/>
                         }/>
-                    <Route
+                    <PrivateRoute
                         exact={true}
                         path="/openvidu"
                         component={OpenViduPage}/>
