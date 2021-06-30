@@ -110,6 +110,8 @@ class APIRequest {
 
     private _token: string | null;
 
+    private _unauthorizedErrorsAllowed: boolean;
+
     /**
      * Constructeur
      * @param method Méthode
@@ -127,6 +129,7 @@ class APIRequest {
         this._request = new XMLHttpRequest();
         this._route = APIRequest.getFullRoute(route);
         this._token = null;
+        this._unauthorizedErrorsAllowed = false;
     }
 
     /**
@@ -223,6 +226,11 @@ class APIRequest {
         return this;
     }
 
+    public unauthorizedErrorsAllowed(): APIRequest {
+        this._unauthorizedErrorsAllowed = true;
+        return this;
+    }
+
     public canceledWhen(canceled: () => boolean): APIRequest {
         this._canceledFunction = canceled;
         return this;
@@ -279,6 +287,16 @@ class APIRequest {
     public async send(): Promise<any | void> {
         const start = Date.now();
 
+        const onFailure = (status: number, data: APIDataType | null, evt: ProgressEvent): any => {
+            if (status === 401 && !this._unauthorizedErrorsAllowed) {
+                console.debug("Vous avez été déconnecté");
+                Authentication.clearToken();
+                window.location.href = "/";
+            }
+
+            return this._onFailure(status, data, evt);
+        };
+
         const res = await new Promise<any | void>((resolve) => {
             this._request.addEventListener("progress", (evt) => {
                 if (this._canceledFunction()) {
@@ -299,7 +317,7 @@ class APIRequest {
 
                 const infos = APIRequest._getRequestInfos(evt);
                 if (infos.data === null || !APIRequest._isGoodStatusCode(infos.status)) {
-                    resolve(this._onFailure(infos.status, infos.data, evt));
+                    resolve(onFailure(infos.status, infos.data, evt));
                 } else {
                     resolve(this._onSuccess(infos.status, infos.data));
                 }
@@ -311,7 +329,7 @@ class APIRequest {
                 }
 
                 const infos = APIRequest._getRequestInfos(evt);
-                resolve(this._onFailure(infos.status, infos.data, evt));
+                resolve(onFailure(infos.status, infos.data, evt));
             });
             // this._request.addEventListener("abort", transferCanceled);
 

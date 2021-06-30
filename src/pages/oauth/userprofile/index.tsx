@@ -66,6 +66,7 @@ class OAuthUserProfilePage extends React.Component<RouteProps, OAuthUserProfileP
                 refreshToken: token.refreshToken,
             })
             .canceledWhen(() => !this._active)
+            .unauthorizedErrorsAllowed()
             .onSuccess((status, data) => {
                 if (!this._active) {
                     return;
