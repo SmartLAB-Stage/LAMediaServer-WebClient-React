@@ -1,5 +1,5 @@
 class Authentication {
-    private static _storage: Storage = sessionStorage;
+    private static _storage: Storage = localStorage;
 
     public static isAuthenticated(): boolean {
         return this.getToken() !== null;
