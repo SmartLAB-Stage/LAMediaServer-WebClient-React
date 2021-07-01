@@ -15,7 +15,7 @@ interface ActionButtonsProps {
 class ActionButtons extends React.Component<ActionButtonsProps, {}> {
     public render(): React.ReactNode {
         return (
-            <div className={"actionButtons"}>
+            <div className={"action-buttons"}>
                 &nbsp;
                 <Button type={"button"}
                         className={"btn btn-secondary btn-sm px-1 py-0"}

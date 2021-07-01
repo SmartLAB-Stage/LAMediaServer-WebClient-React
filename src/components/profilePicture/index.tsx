@@ -14,7 +14,7 @@ class ProfilePicture extends React.Component<ProfilePictureProps, {}> {
         }
 
         return (
-            <img className="profilePicture d-flex align-self-center"
+            <img className="profile-picture d-flex align-self-center"
                  src={url}
                  onError={(elt) => {
                      // @ts-ignore

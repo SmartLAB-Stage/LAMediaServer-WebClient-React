@@ -65,6 +65,4 @@ class Routes extends React.Component<{}, {}> {
     }
 }
 
-// <Header appName="LAMediaServer"/>
-
 export {Routes};

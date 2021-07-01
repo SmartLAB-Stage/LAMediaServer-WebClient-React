@@ -43,7 +43,7 @@ class SingleUser extends React.Component<SingleUserProps, {}> {
         }
 
         return (
-            <li className={"media singleUser"}>
+            <li className={"media single-user"}>
                 <ProfilePicture user={this.props.user}/>
                 <div className="media-body">
                     <span className={"name"}>{this.props.user.name}</span>
