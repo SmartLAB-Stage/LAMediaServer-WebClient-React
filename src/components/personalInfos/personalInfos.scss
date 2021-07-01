@@ -1,7 +1,18 @@
-.personalInfos {
-    .profilePicture {
-        width: 40px;
-        margin-left: 10px;
-        margin-right: 10px;
+.personal-infos {
+    .profile-picture-parent {
+        // padding: 0;
+
+        .profilePicture {
+            width: 40px;
+        }
+    }
+
+    div {
+        &#video-publisher {
+            video {
+                width: 100%;
+                height: auto;
+            }
+        }
     }
 }
