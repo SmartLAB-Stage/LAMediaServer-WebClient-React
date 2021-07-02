@@ -1,3 +1,4 @@
+import {PersonalVideoPreview} from "components/personalInfos/personalVideoPreview";
 import {ProfilePicture} from "components/profilePicture";
 import {User} from "model/user";
 import {VideoconferencePublisher} from "model/videoconference";
@@ -10,16 +11,6 @@ interface PersonalInfosProps {
 }
 
 class PersonalInfos extends React.Component<PersonalInfosProps, {}> {
-    public componentDidMount(): void {
-        this.componentDidUpdate();
-    }
-
-    public componentDidUpdate(): void {
-        if (this.props.videoconferencePublisher !== null) {
-            this.props.videoconferencePublisher.publisher.createVideoElement(this.props.videoconferencePublisher.DOM_id);
-        }
-    }
-
     public render(): React.ReactNode {
         return (
             <div className="card border-secondary mb-0 flex-row flex-wrap">
@@ -35,9 +26,10 @@ class PersonalInfos extends React.Component<PersonalInfosProps, {}> {
                     </p>
                 </div>
                 {
-                    this.props.videoconferencePublisher === null
+                    this.props.videoconferencePublisher === null || this.props.user === null
                         ? ""
-                        : <div id={this.props.videoconferencePublisher.DOM_id}/>
+                        : <PersonalVideoPreview user={this.props.user}
+                                                videoconferencePublisher={this.props.videoconferencePublisher}/>
                 }
 
             </div>
