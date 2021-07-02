@@ -1,6 +1,8 @@
 import {PrivateRoute} from "pages/_privateRoute";
+import {LoginPage} from "pages/login";
 import {LogoutPage} from "pages/logout";
 import {NotFoundPage} from "pages/notFound";
+import {OAuthUserProfilePage} from "pages/oauth/userprofile";
 import {RoomPage} from "pages/room";
 import React from "react";
 import {
@@ -9,17 +11,7 @@ import {
     Switch,
 } from "react-router-dom";
 
-interface RoutesProps {
-}
-
-interface RoutesState {
-}
-
-class Routes extends React.Component<RoutesProps, RoutesState> {
-    public constructor(props: RoutesProps) {
-        super(props);
-    }
-
+class Routes extends React.Component<{}, {}> {
     public render(): React.ReactNode {
         return (
             <BrowserRouter>
@@ -33,11 +25,19 @@ class Routes extends React.Component<RoutesProps, RoutesState> {
                         }/>
                     <Route
                         exact={true}
+                        path="/oauth/userprofile"
+                        component={OAuthUserProfilePage}/>
+                    <Route
+                        exact={true}
                         path="/logout"
                         component={LogoutPage}/>
+                    <Route
+                        exact={true}
+                        path="/login"
+                        component={LoginPage}/>
                     <PrivateRoute
                         exact={true}
-                        path="/room/"
+                        path="/room"
                         render={() =>
                             <RoomPage currentRoomId={null}
                                       fullURL={"/room/:id"}/>
@@ -64,7 +64,5 @@ class Routes extends React.Component<RoutesProps, RoutesState> {
         );
     }
 }
-
-// <Header appName="LAMediaServer"/>
 
 export {Routes};

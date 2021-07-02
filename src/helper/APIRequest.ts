@@ -1,8 +1,11 @@
 /**
  * Méthodes de requête
  */
-import {Authentication} from "common/authentication";
-import {sleep} from "common/utils";
+import {Authentication} from "helper/authentication";
+import {
+    setGetPayload,
+    sleep,
+} from "helper/utils";
 
 /**
  * Méthodes de requête
@@ -107,6 +110,8 @@ class APIRequest {
 
     private _token: string | null;
 
+    private _unauthorizedErrorsAllowed: boolean;
+
     /**
      * Constructeur
      * @param method Méthode
@@ -115,7 +120,10 @@ class APIRequest {
      */
     private constructor(method: RequestMethod, route: string) {
         this._canceledFunction = () => {
-            console.warn("Aucune fonction de détection d'annulation");
+            console.warn(
+                "Aucune fonction de détection d'annulation n'est définie, " +
+                "cette requête ne sera donc pas exécutée.",
+            );
             return true;
         };
         this._method = method;
@@ -124,6 +132,7 @@ class APIRequest {
         this._request = new XMLHttpRequest();
         this._route = APIRequest.getFullRoute(route);
         this._token = null;
+        this._unauthorizedErrorsAllowed = false;
     }
 
     /**
@@ -215,29 +224,13 @@ class APIRequest {
         return [200, 201, 204, 304].includes(statusCode);
     }
 
-    /**
-     * Configure le payload des requêtes GET
-     * @param route Route de base
-     * @param payload Payload
-     * @private
-     */
-    private static _setGetPayload(route: string, payload: object): string {
-        const keys = Object.keys(payload);
-        if (keys.length === 0) {
-            return route;
-        } else {
-            let newRoute = route + "?";
-
-            for (const key of keys) {
-                newRoute += `${encodeURIComponent(key)}=${encodeURIComponent(payload[key])}&`;
-            }
-
-            return newRoute.slice(0, -1);
-        }
-    }
-
     public authenticate(): APIRequest {
         this._token = Authentication.getToken();
+        return this;
+    }
+
+    public unauthorizedErrorsAllowed(): APIRequest {
+        this._unauthorizedErrorsAllowed = true;
         return this;
     }
 
@@ -297,6 +290,16 @@ class APIRequest {
     public async send(): Promise<any | void> {
         const start = Date.now();
 
+        const onFailure = (status: number, data: APIDataType | null, evt: ProgressEvent): any => {
+            if (status === 401 && !this._unauthorizedErrorsAllowed) {
+                console.debug("Vous avez été déconnecté");
+                Authentication.clearToken();
+                window.location.href = "/";
+            }
+
+            return this._onFailure(status, data, evt);
+        };
+
         const res = await new Promise<any | void>((resolve) => {
             this._request.addEventListener("progress", (evt) => {
                 if (this._canceledFunction()) {
@@ -317,7 +320,7 @@ class APIRequest {
 
                 const infos = APIRequest._getRequestInfos(evt);
                 if (infos.data === null || !APIRequest._isGoodStatusCode(infos.status)) {
-                    resolve(this._onFailure(infos.status, infos.data, evt));
+                    resolve(onFailure(infos.status, infos.data, evt));
                 } else {
                     resolve(this._onSuccess(infos.status, infos.data));
                 }
@@ -329,12 +332,12 @@ class APIRequest {
                 }
 
                 const infos = APIRequest._getRequestInfos(evt);
-                resolve(this._onFailure(infos.status, infos.data, evt));
+                resolve(onFailure(infos.status, infos.data, evt));
             });
             // this._request.addEventListener("abort", transferCanceled);
 
             if (this._method === RequestMethod.GET) {
-                this._request.open(this._method as string, APIRequest._setGetPayload(this._route, this._payload));
+                this._request.open(this._method as string, setGetPayload(this._route, this._payload));
             } else {
                 this._request.open(this._method as string, this._route);
             }

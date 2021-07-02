@@ -29,4 +29,5 @@ src/**/*.css.map
 src/*.d.ts
 
 
+!src/lamediaserver-webclient-react.d.ts
 .env

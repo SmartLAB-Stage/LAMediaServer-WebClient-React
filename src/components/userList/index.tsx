@@ -20,7 +20,7 @@ class UserList extends React.Component<UserListProps, {}> {
         }
 
         return (
-            <div className={"userList"}>
+            <div className={"user-list"}>
                 <ul className={"list-unstyled"}>
                     {users}
                 </ul>
