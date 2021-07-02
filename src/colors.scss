@@ -1,18 +1,30 @@
+/**
+ * Couleurs utilisées dans le projet
+ */
+
+// Import des fonctions SCSS bootstrap
 @import "../node_modules/bootstrap/scss/functions";
 
+// Import des variables SCSS bootstrap
 @import "../node_modules/bootstrap/scss/variables";
 @import "../node_modules/bootstrap/scss/mixins";
 
+// Background du body et des éléments clairs
 $body-bg: $light;
+// Couleur du body
 $body-color: #333;
 
+// Couleur d'accentuation, comme les messages
 $accent-color: #d63384;
+// Couleur d'accentuation, pour bootstrap
 $primary: $accent-color;
 
+// Import d'autres composants SCSS bootstrap
 @import "../node_modules/bootstrap/scss/root";
 @import "../node_modules/bootstrap/scss/reboot";
 @import "../node_modules/bootstrap/scss/type";
 
+// Classe utilisée pour la couleur d'accentuation
 .bg-accent-color {
     background-color: $primary;
 }

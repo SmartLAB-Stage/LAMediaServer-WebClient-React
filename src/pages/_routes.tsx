@@ -31,12 +31,10 @@ class Routes extends React.Component<{}, {}> {
                         exact={true}
                         path="/logout"
                         component={LogoutPage}/>
-                    <PrivateRoute
+                    <Route
                         exact={true}
                         path="/login"
-                        render={() =>
-                            <LoginPage/>
-                        }/>
+                        component={LoginPage}/>
                     <PrivateRoute
                         exact={true}
                         path="/room"
@@ -66,7 +64,5 @@ class Routes extends React.Component<{}, {}> {
         );
     }
 }
-
-// <Header appName="LAMediaServer"/>
 
 export {Routes};

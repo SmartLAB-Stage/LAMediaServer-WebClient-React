@@ -3,7 +3,6 @@ import {APIRequest} from "helper/APIRequest";
 import {Group} from "model/group";
 import {Room} from "model/room";
 import React from "react";
-import "./groupList.scss";
 
 interface GroupListProps {
     currentRoomChangeCallback: (room: Room, group: Group) => void,
