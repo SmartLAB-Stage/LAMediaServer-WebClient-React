@@ -453,7 +453,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .canceledWhen(() => !this._active)
             .authenticate()
             .onSuccess((status, data) => {
-                alert(data.payload.id);
+                // alert(data.payload.id);
                 this._connectToVideoConference(data.payload.id as string);
             })
             .onFailure((status, data) => {
