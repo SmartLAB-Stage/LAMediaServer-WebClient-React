@@ -20,10 +20,9 @@ class RoomList extends React.Component<RoomListProps, {}> {
 
         for (const room of this.props.rooms) {
             reactRooms.push(
-                <>
+                <React.Fragment key={"roomListElement-" + room.id}>
                     <div className={"col"}>
-                        <OverlayTrigger key={"roomListElement-" + room.id}
-                                        placement="top"
+                        <OverlayTrigger placement="top"
                                         overlay={(props) => this._renderTooltip(props, room)}>
                             <button onClick={() => this.props.currentRoomChangeCallback(room, this.props.parentGroup)}
                                     type={"button"}
@@ -65,7 +64,7 @@ class RoomList extends React.Component<RoomListProps, {}> {
                         </OverlayTrigger>
                     </div>
                     <div className="w-100"/>
-                </>,
+                </React.Fragment>,
             );
         }
 

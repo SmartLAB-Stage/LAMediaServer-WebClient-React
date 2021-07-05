@@ -46,7 +46,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
 
         for (const group of this.props.groups) {
             groupsComponent.push(
-                <div key={group.id} className={"card"}>
+                <div key={`group-list-group-${group.id}`} className={"card"}>
                     <div className={"card-header"} id={`heading_${group.id}`}>
                         <h5 className={"mb-0"}>
                             <button className={"btn btn-link " + (expanded ? "" : "collapsed")}
