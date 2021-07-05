@@ -1,8 +1,6 @@
 import {ProfilePicture} from "components/profilePicture";
-import {
-    User,
-    UserStatus,
-} from "model/user";
+import {Presence} from "model/presence";
+import {User} from "model/user";
 import React from "react";
 import "./singleUser.scss";
 
@@ -16,28 +14,28 @@ class SingleUser extends React.Component<SingleUserProps, {}> {
         let status = "?";
 
         switch (this.props.user.status) {
-            case UserStatus.AWAY:
+            case Presence.AWAY:
                 badgeColor = "warning";
                 status = "Absent";
                 break;
 
-            case UserStatus.BUSY:
+            case Presence.BUSY:
                 badgeColor = "warning";
                 status = "Occupé";
                 break;
 
-            case UserStatus.ONLINE:
+            case Presence.ONLINE:
                 badgeColor = "success";
                 status = "En ligne";
                 break;
 
 
-            case UserStatus.OFFLINE:
+            case Presence.OFFLINE:
                 badgeColor = "secondary";
                 status = "Hors-ligne";
                 break;
 
-            case UserStatus.UNKNOWN:
+            case Presence.UNKNOWN:
             default:
                 break;
         }

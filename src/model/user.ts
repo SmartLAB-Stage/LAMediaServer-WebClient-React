@@ -1,13 +1,4 @@
-/**
- * Statut de connexion
- */
-enum UserStatus {
-    AWAY = "away",
-    BUSY = "busy",
-    OFFLINE = "offline",
-    ONLINE = "online",
-    UNKNOWN = "unknown",
-}
+import {Presence} from "model/presence";
 
 interface RawPartialUser {
     id: string,
@@ -17,7 +8,7 @@ interface RawPartialUser {
 }
 
 interface RawFullUser extends RawPartialUser {
-    status: UserStatus | string,
+    status: Presence | string,
 }
 
 /**
@@ -48,7 +39,7 @@ class User {
      * Statut
      * @private
      */
-    private readonly _status: UserStatus | undefined;
+    private readonly _status: Presence | undefined;
 
     /**
      * Nom d'utilisateur
@@ -60,7 +51,7 @@ class User {
                         isMe: boolean,
                         username: string,
                         name: string,
-                        status: UserStatus | undefined = undefined,
+                        status: Presence | undefined = undefined,
                         lastSeen: Date | undefined = undefined,
     ) {
         this._id = id;
@@ -87,7 +78,7 @@ class User {
         return this._name;
     }
 
-    public get status(): UserStatus | undefined {
+    public get status(): Presence | undefined {
         return this._status;
     }
 
@@ -109,7 +100,7 @@ class User {
             rawUser.isMe,
             rawUser.username,
             rawUser.name,
-            rawUser.status as UserStatus,
+            rawUser.status as Presence,
         );
     }
 
@@ -130,6 +121,5 @@ class User {
 
 export {
     User,
-    UserStatus,
 };
 export type {RawPartialUser};
