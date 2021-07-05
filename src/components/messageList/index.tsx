@@ -64,9 +64,9 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
         this._getAllMessages();
 
-        this._setSocketSentMessages();
-        this._setSocketDeletedMessages();
-        this._setSocketEditedMessages();
+        this._setSocketMessagesSent();
+        this._setSocketMessagesDeleted();
+        this._setSocketMessagesEdited();
 
         for (const sock of this._sockets) {
             sock.open();
@@ -115,7 +115,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             .then();
     }
 
-    private _setSocketSentMessages() {
+    private _setSocketMessagesSent() {
         this._sockets.push(APIWebSocket
             .getSocket("/group/room/message/sent")
             .withToken()
@@ -136,7 +136,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         );
     }
 
-    private _setSocketDeletedMessages() {
+    private _setSocketMessagesDeleted() {
         this._sockets.push(APIWebSocket
             .getSocket("/group/room/message/deleted")
             .withToken()
@@ -162,7 +162,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         );
     }
 
-    private _setSocketEditedMessages() {
+    private _setSocketMessagesEdited() {
         interface EditedMessage {
             editor: {
                 timestamp: Date,
