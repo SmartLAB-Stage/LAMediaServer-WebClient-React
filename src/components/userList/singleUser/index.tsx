@@ -20,7 +20,7 @@ class SingleUser extends React.Component<SingleUserProps, {}> {
                 break;
 
             case Presence.BUSY:
-                badgeColor = "warning";
+                badgeColor = "danger";
                 status = "Occupé";
                 break;
 

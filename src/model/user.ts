@@ -39,7 +39,7 @@ class User {
      * Statut
      * @private
      */
-    private readonly _status: Presence | undefined;
+    private _status: Presence | undefined;
 
     /**
      * Nom d'utilisateur
@@ -84,6 +84,10 @@ class User {
 
     public get username(): string {
         return this._username;
+    }
+
+    public setStatus(newStatus: Presence) {
+        this._status = newStatus;
     }
 
     public static fromPartialUser(id: string, isMe: boolean, username: string, name: string | undefined): User {

@@ -32,7 +32,6 @@ interface RoomState {
     groups: Group[],
     meUser: User | null,
     selectedGroup: Group | null,
-    users: User[],
     videoconferencePublisher: VideoconferencePublisher | null,
     videoconferenceSubscribersConnections: VideoconferenceSubscriber[],
 }
@@ -59,7 +58,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             groups: [],
             meUser: null,
             selectedGroup: null,
-            users: [],
             videoconferencePublisher: null,
             videoconferenceSubscribersConnections: [],
         };
@@ -77,7 +75,11 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                                         this._currentRoomChangeCallback(room, group);
                                     }}
                                     groups={this.state.groups}
-                                    selectedRoomFound={(group: Group) => this._updateUsersFromAPI(group)}
+                                    selectedRoomFound={(group: Group) => {
+                                        this.setState({
+                                            selectedGroup: group,
+                                        });
+                                    }}
                                     selectedRoomId={this.state.currentRoomId}
                                 />
                             </div>
@@ -134,7 +136,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                         </Form>
                     </div>
                     <div className={"col-2 px-0"}>
-                        <UserList users={this.state.users}/>
+                        <UserList selectedGroup={this.state.selectedGroup}/>
                     </div>
                 </div>
             </main>
@@ -144,10 +146,9 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
     public componentDidMount(): void {
         this._active = true;
         this._updateGroupsFromAPI();
+        this._updateMyInfos();
 
-        if (this.state.currentRoomId === null) {
-            this._updateMyInfos();
-        } else {
+        if (this.state.currentRoomId !== null) {
             window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentRoomId));
         }
     }
@@ -198,7 +199,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         state.videoconferencePublisher = undefined;
 
         window.history.pushState(state, "", this.props.fullURL.replace(/:[^/]*/, newRoom.id));
-        this._updateUsersFromAPI(newGroup);
     }
 
     private _updateGroupsFromAPI(): void {
@@ -215,40 +215,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
                 this.setState({
                     groups,
-                });
-            })
-            .send()
-            .then();
-    }
-
-    private _updateUsersFromAPI(selectedGroup: Group): void {
-        APIRequest
-            .get("/group/user/list")
-            .authenticate()
-            .withPayload({
-                groupId: selectedGroup.id,
-            })
-            .canceledWhen(() => !this._active)
-            .onSuccess((status, data) => {
-                const users: User[] = [];
-
-                for (const user of data.payload) {
-                    users.push(User.fromFullUser(user));
-                }
-
-                if (this.state.meUser === null) {
-                    for (const user of users) {
-                        if (user.isMe) {
-                            this.setState({
-                                meUser: user,
-                            });
-                            break;
-                        }
-                    }
-                }
-
-                this.setState({
-                    users,
                 });
             })
             .send()
