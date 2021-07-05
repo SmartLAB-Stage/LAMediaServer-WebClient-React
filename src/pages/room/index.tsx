@@ -6,7 +6,6 @@ import {PersonalInfos} from "components/personalInfos";
 import {UserList} from "components/userList";
 import {APIRequest} from "helper/APIRequest";
 import {Group} from "model/group";
-import {Message} from "model/message";
 import {Room} from "model/room";
 import {User} from "model/user";
 import {
@@ -31,7 +30,6 @@ interface RoomState {
     currentMessageContent: string,
     currentRoomId: string | null,
     groups: Group[],
-    messages: Message[],
     meUser: User | null,
     selectedGroup: Group | null,
     users: User[],
@@ -59,7 +57,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             currentMessageContent: "",
             currentRoomId: this.props.currentRoomId,
             groups: [],
-            messages: [],
             meUser: null,
             selectedGroup: null,
             users: [],
@@ -103,16 +100,8 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                                     </i>
                                 ) : (
                                     <MessageList
-                                        key={this.state.currentRoomId}
-                                        messagesRefreshed={(newMessages: Message[] | null) => {
-                                            if (newMessages === null) {
-                                                this._updateMessagesFromAPI();
-                                            } else {
-                                                this._messagesRefreshed(newMessages);
-                                            }
-                                        }}
+                                        key={`message-list-${this.state.currentRoomId}`}
                                         roomId={this.state.currentRoomId}
-                                        messages={this.state.messages}
                                     />
                                 )
                             }
@@ -160,7 +149,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             this._updateMyInfos();
         } else {
             window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentRoomId));
-            this._updateMessagesFromAPI();
         }
     }
 
@@ -198,18 +186,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .then();
     }
 
-    private _messagesRefreshed(newMessages: Message[]) {
-        const messages = this.state.messages;
-
-        for (const message of newMessages) {
-            messages.push(message);
-        }
-
-        this.setState({
-            messages,
-        });
-    }
-
     private _currentRoomChangeCallback(newRoom: Room, newGroup: Group): void {
         this.setState({
             currentRoomId: newRoom.id,
@@ -222,7 +198,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         state.videoconferencePublisher = undefined;
 
         window.history.pushState(state, "", this.props.fullURL.replace(/:[^/]*/, newRoom.id));
-        this._updateMessagesFromAPI(newRoom.id);
         this._updateUsersFromAPI(newGroup);
     }
 
@@ -274,29 +249,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
                 this.setState({
                     users,
-                });
-            })
-            .send()
-            .then();
-    }
-
-    private _updateMessagesFromAPI(currentRoomId: string | null = null): void {
-        APIRequest
-            .get("/group/room/message/list")
-            .authenticate()
-            .canceledWhen(() => !this._active)
-            .withPayload({
-                roomId: currentRoomId === null ? this.state.currentRoomId : currentRoomId,
-            })
-            .onSuccess((status, data) => {
-                const messages: Message[] = [];
-
-                for (const message of data.payload) {
-                    messages.unshift(Message.fromFullMessage(message));
-                }
-
-                this.setState({
-                    messages,
                 });
             })
             .send()
