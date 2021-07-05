@@ -1,3 +1,4 @@
+import {User} from "model/user";
 import {
     Connection,
     Publisher,
@@ -11,7 +12,7 @@ interface VideoconferencePublisher {
 
 interface VideoconferenceSubscriber {
     connection: Connection,
-    username: string,
+    user: User,
 }
 
 export type {

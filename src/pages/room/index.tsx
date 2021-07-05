@@ -160,14 +160,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
     public componentDidUpdate(prevProps: {}, prevState: RoomState): void {
         if (prevState.meUser === null && this.state.meUser !== null) {
-            this._createVideoConferenceRoom();
-            /*
-            const id = window.prompt("Room ID");
-            if (id === "" || id === null) {
-                this._createVideoConferenceRoom();
-            } else {
-                this._connectToVideoConference(id);
-            }*/
+            this._connectToVideoConference();
         }
     }
 
@@ -247,28 +240,22 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
     private _onStreamCreated(evt: StreamEvent) {
         const connection = evt.stream.connection;
-        const data = JSON.parse(connection.data);
+        const user = User.fromFullUser(JSON.parse(connection.data));
 
-        console.warn(data);
+        if (user.username !== this.state.meUser?.username) {
+            console.warn(user);
+            this.setState({
+                videoconferenceSubscribersConnections: [
+                    ...this.state.videoconferenceSubscribersConnections,
+                    {
+                        user,
+                        connection,
+                    },
+                ],
+            });
 
-        this.setState({
-            videoconferenceSubscribersConnections: [
-                ...this.state.videoconferenceSubscribersConnections,
-                {
-                    username: data.username,
-                    connection,
-                },
-            ],
-        });
-
-        this._session.subscribe(evt.stream, `video-subscriber_${connection.connectionId}`);
-
-        /*
-        if(e.stream.hasVideo == false){
-            $('#'+e.stream.connection.connectionId+' > video').hide();
-        }else{
-            $('#'+e.stream.connection.connectionId+' > img').hide();
-        }*/
+            this._session.subscribe(evt.stream, `video-subscriber_${connection.connectionId}`);
+        }
     }
 
     private _onStreamDestroyed(evt: StreamEvent) {
@@ -333,9 +320,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             console.warn(id, "arrête de parler");
         });*/
 
-        const userData = {
-            username: this.state.meUser?.username,
-        };
+        const userData = this.state.meUser?.toJSON();
 
         this._session.connect(targetWebSocketURL, userData)
             .then(() => this._onConnected())
@@ -364,38 +349,19 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         }
     }
 
-    private _createVideoConferenceRoom(): void {
-        APIRequest
-            .post("/videoconference/session/create")
-            .unauthorizedErrorsAllowed()
-            .canceledWhen(() => !this._active)
-            .authenticate()
-            .onSuccess((status, data) => {
-                // alert(data.payload.id);
-                this._connectToVideoConference(data.payload.id as string);
-            })
-            .onFailure((status, data) => {
-                console.warn(status, data);
-            })
-            .send()
-            .then();
-    }
-
-    private _connectToVideoConference(sessionId: string): void {
+    private _connectToVideoConference(): void {
         APIRequest
             .post("/videoconference/session/connect")
-            .unauthorizedErrorsAllowed()
             .canceledWhen(() => !this._active)
             .authenticate()
             .withPayload({
-                sessionId,
+                sessionId: this.state.currentRoomId
             })
             .onSuccess((status, data) => {
                 this._setOpenVidu(data.payload.targetWebSocketURL);
             })
             .onFailure((status, data) => {
                 console.warn("connect nok", status, data);
-                this._createVideoConferenceRoom();
             })
             .send()
             .then();
