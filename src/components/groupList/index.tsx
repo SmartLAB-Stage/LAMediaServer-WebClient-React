@@ -10,6 +10,7 @@ interface GroupListProps {
     selectedRoomFound: (parentGroup: Group) => void,
     selectedRoomId: string | null,
     videoConferenceChangeCallback: (room: Room, group: Group) => void,
+    videoConferenceConnectedRoomId: string | null,
 }
 
 interface GroupListState {
@@ -77,6 +78,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                                       videoConferenceChangeCallback={
                                           (room: Room) => this.props.videoConferenceChangeCallback(room, group)
                                       }
+                                      videoConferenceConnectedRoomId={this.props.videoConferenceConnectedRoomId}
                             />
                         </div>
                     </div>

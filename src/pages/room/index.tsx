@@ -89,6 +89,11 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                                     videoConferenceChangeCallback={(room: Room, _group: Group) => {
                                         this._videoConferenceChangeCallback(room);
                                     }}
+                                    videoConferenceConnectedRoomId={
+                                        this.state.openViduSessionInfos === null
+                                            ? null
+                                            : this.state.openViduSessionInfos.sessionId
+                                    }
                                 />
                             </div>
                             <div className={"col personal-infos"}>

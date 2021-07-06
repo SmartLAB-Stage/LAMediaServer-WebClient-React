@@ -8,6 +8,7 @@ interface RoomListProps {
     rooms: Room[],
     selectedRoomId: string | null,
     videoConferenceChangeCallback: (room: Room) => void,
+    videoConferenceConnectedRoomId: string | null,
 }
 
 class RoomList extends React.Component<RoomListProps, {}> {
@@ -15,16 +16,19 @@ class RoomList extends React.Component<RoomListProps, {}> {
         const reactRooms: React.ReactNode[] = [];
 
         for (const room of this.props.rooms) {
-            reactRooms.push(<RoomComponent key={"roomListElement-" + room.id}
-                                           currentRoomChangeCallback={
-                                               () => this.props.currentRoomChangeCallback(room)
-                                           }
-                                           room={room}
-                                           selected={this.props.selectedRoomId === room.id}
-                                           videoConferenceChangeCallback={
-                                               () => this.props.videoConferenceChangeCallback(room)
-                                           }
-            />);
+            reactRooms.push(
+                <RoomComponent key={"roomListElement-" + room.id}
+                               currentRoomChangeCallback={
+                                   () => this.props.currentRoomChangeCallback(room)
+                               }
+                               room={room}
+                               selected={this.props.selectedRoomId === room.id}
+                               videoConferenceChangeCallback={
+                                   () => this.props.videoConferenceChangeCallback(room)
+                               }
+                               videoConferenceConnectedRoomId={this.props.videoConferenceConnectedRoomId}
+                />,
+            );
         }
 
         return (
