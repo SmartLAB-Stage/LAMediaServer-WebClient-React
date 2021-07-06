@@ -158,7 +158,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         this._active = false;
     }
 
-    public componentDidUpdate(prevProps: {}, prevState: RoomState): void {
+    public componentDidUpdate(prevProps: RoomProps, prevState: RoomState): void {
         if (prevState.meUser === null && this.state.meUser !== null) {
             this._connectToVideoConference();
         }
