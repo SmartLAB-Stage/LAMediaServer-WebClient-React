@@ -1,0 +1,10 @@
+.personal-infos {
+    div {
+        &[id^=video-publisher] {
+            video {
+                width: 100%;
+                height: auto;
+            }
+        }
+    }
+}

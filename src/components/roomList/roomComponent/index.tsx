@@ -9,6 +9,7 @@ interface RoomComponentProps {
     currentRoomChangeCallback: () => void,
     room: Room,
     selected: boolean,
+    videoConferenceChangeCallback: () => void,
 }
 
 class RoomComponent extends React.Component<RoomComponentProps, {}> {
@@ -59,6 +60,12 @@ class RoomComponent extends React.Component<RoomComponentProps, {}> {
                             </div>
                         </button>
                     </OverlayTrigger>
+                    <button onClick={(e) => {
+                        e.preventDefault();
+                        this.props.videoConferenceChangeCallback();
+                    }}>
+                        Se connecter au salon vocal
+                    </button>
                 </div>
                 <div className="w-100"/>
             </>
