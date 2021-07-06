@@ -31,9 +31,11 @@ interface RoomState {
     currentRoomId: string | null,
     groups: Group[],
     meUser: User | null,
-    openViduSession: Session,
+    openViduSessionInfos: null | {
+        sessionId: string,
+        targetWebSocketURL: string,
+    },
     selectedGroup: Group | null,
-    targetWebSocketURL: string | null,
     videoconferencePublisher: VideoconferencePublisher | null,
     videoconferenceSubscribersConnections: VideoconferenceSubscriber[],
 }
@@ -46,20 +48,21 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
     private _active = false;
 
     private _openVidu: OpenVidu;
+    private _openViduSession: Session;
 
     public constructor(props: RoomProps) {
         super(props);
 
         this._openVidu = new OpenVidu();
+        this._openViduSession = this._openVidu.initSession();
 
         this.state = {
             currentMessageContent: "",
             currentRoomId: this.props.currentRoomId,
             groups: [],
             meUser: null,
-            openViduSession: this._openVidu.initSession(),
+            openViduSessionInfos: null,
             selectedGroup: null,
-            targetWebSocketURL: null,
             videoconferencePublisher: null,
             videoconferenceSubscribersConnections: [],
         };
@@ -158,15 +161,17 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         }
     }
 
-    public componentDidUpdate(prevProps: RoomProps, prevState: RoomState): void {
-        if (this.state.targetWebSocketURL !== null && this.state.targetWebSocketURL !== prevState.targetWebSocketURL) {
+    public componentDidUpdate(_prevProps: RoomProps, prevState: RoomState): void {
+        const curInfos = this.state.openViduSessionInfos;
+        const prevInfos = prevState.openViduSessionInfos;
+        if ((curInfos !== prevInfos || curInfos !== null) && (curInfos?.sessionId !== prevInfos?.sessionId)) {
             this._setOpenVidu();
         }
     }
 
     public componentWillUnmount(): void {
-        if (this.state.targetWebSocketURL !== null) {
-            this.state.openViduSession.disconnect();
+        if (this.state.openViduSessionInfos !== null) {
+            this._openViduSession.disconnect();
         }
 
         this._active = false;
@@ -204,11 +209,15 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
     }
 
     private _videoConferenceChangeCallback(newRoom: Room): void {
-        if (this.state.targetWebSocketURL !== null) {
-            this.state.openViduSession.disconnect();
-        }
+        const streamId = newRoom.id;
 
-        this._connectToVideoConference(newRoom.id);
+        if (streamId !== this.state.openViduSessionInfos?.sessionId) {
+            if (this.state.openViduSessionInfos !== null) {
+                this._openViduSession.disconnect();
+            }
+
+            this._connectToVideoConference(streamId);
+        }
     }
 
     private _updateGroupsFromAPI(): void {
@@ -271,7 +280,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                 ],
             });
 
-            this.state.openViduSession.subscribe(evt.stream, `video-subscriber_${connection.connectionId}`);
+            this._openViduSession.subscribe(evt.stream, `video-subscriber_${connection.connectionId}`);
         }
     }
 
@@ -300,12 +309,12 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             publishVideo: true,
         });
 
-        this.state.openViduSession.publish(publisher).then(() => {
+        this._openViduSession.publish(publisher).then(() => {
             this.setState({
                 videoconferencePublisher: {
                     connection: publisher.stream.connection,
                     publisher,
-                    DOM_id: `video-publisher-${this.state.openViduSession.sessionId}`,
+                    DOM_id: `video-publisher-${this._openViduSession.sessionId}`,
                 },
             });
         });
@@ -321,13 +330,18 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
     }
 
     private _setOpenVidu(): void {
-        if (this.state.targetWebSocketURL === null) {
+        if (this.state.openViduSessionInfos === null) {
             console.error("Invalid state");
             return;
         }
 
-        this.state.openViduSession.on("streamCreated", (evt) => this._onStreamCreated(evt as StreamEvent));
-        this.state.openViduSession.on("streamDestroyed", (evt) => this._onStreamDestroyed(evt as StreamEvent));
+        this._openViduSession.on("streamCreated", (evt) => {
+            this._onStreamCreated(evt as StreamEvent);
+        });
+
+        this._openViduSession.on("streamDestroyed", (evt) => {
+            this._onStreamDestroyed(evt as StreamEvent);
+        });
 
         /*
         session.on("publisherStartSpeaking", (evt) => {
@@ -344,16 +358,17 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
         const userData = this.state.meUser?.toJSON();
 
-        this.state.openViduSession.connect(this.state.targetWebSocketURL, userData)
+        this._openViduSession.connect(this.state.openViduSessionInfos.targetWebSocketURL, userData)
             .then(() => this._onConnected())
             .catch((error) => {
                 console.error("An error occurred while connecting to the session: " + error.code + " " + error.message);
             });
 
-        this.state.openViduSession.on("streamPropertyChanged", (evt) => {
+        this._openViduSession.on("streamPropertyChanged", (evt) => {
             this._onStreamPropertyChanged(evt as StreamEvent & { changedProperty: string });
         });
-        this.state.openViduSession.on("sessionDisconnected", () => {
+
+        this._openViduSession.on("sessionDisconnected", () => {
             // console.warn("session disconnected");
         });
     }
@@ -383,7 +398,10 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             })
             .onSuccess((status, data) => {
                 this.setState({
-                    targetWebSocketURL: data.payload.targetWebSocketURL,
+                    openViduSessionInfos: {
+                        sessionId: data.payload.sessionId,
+                        targetWebSocketURL: data.payload.targetWebSocketURL,
+                    },
                 });
             })
             .onFailure((status, data) => {
