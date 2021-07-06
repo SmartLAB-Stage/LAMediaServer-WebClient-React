@@ -1,7 +1,10 @@
 import {SingleMessage} from "components/messageList/singleMessage";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
-import {Message} from "model/message";
+import {
+    Message,
+    RawMessage,
+} from "model/message";
 import React from "react";
 import {
     Button,
@@ -61,8 +64,9 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
         this._getAllMessages();
 
-        this._setSocketSentMessages();
-        this._setSocketDeletedMessages();
+        this._setSocketMessagesSent();
+        this._setSocketMessagesDeleted();
+        this._setSocketMessagesEdited();
 
         for (const sock of this._sockets) {
             sock.open();
@@ -111,14 +115,14 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             .then();
     }
 
-    private _setSocketSentMessages() {
+    private _setSocketMessagesSent() {
         this._sockets.push(APIWebSocket
             .getSocket("/group/room/message/sent")
             .withToken()
             .withPayload({
                 roomId: this.props.roomId,
             })
-            .onResponse((data) => {
+            .onResponse((data: RawMessage[]) => {
                 const messages = this.state.messages;
 
                 for (const message of data) {
@@ -132,7 +136,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         );
     }
 
-    private _setSocketDeletedMessages() {
+    private _setSocketMessagesDeleted() {
         this._sockets.push(APIWebSocket
             .getSocket("/group/room/message/deleted")
             .withToken()
@@ -153,7 +157,44 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
                 this.setState({
                     messages,
-                })
+                });
+            }),
+        );
+    }
+
+    private _setSocketMessagesEdited() {
+        interface EditedMessage {
+            editor: {
+                timestamp: Date,
+                user: {
+                    id: string,
+                    username: string,
+                },
+            }
+            message: RawMessage,
+        }
+
+        this._sockets.push(APIWebSocket
+            .getSocket("/group/room/message/edited")
+            .withToken()
+            .withPayload({
+                roomId: this.props.roomId,
+            })
+            .onResponse((data: EditedMessage[]) => {
+                const messages = this.state.messages;
+
+                for (const editedMessage of data) {
+                    for (let i = 0; i < messages.length; ++i) {
+                        if (messages[i].id === editedMessage.message.id) {
+                            messages[i] = Message.fromFullMessage(editedMessage.message);
+                            break;
+                        }
+                    }
+                }
+
+                this.setState({
+                    messages,
+                });
             }),
         );
     }

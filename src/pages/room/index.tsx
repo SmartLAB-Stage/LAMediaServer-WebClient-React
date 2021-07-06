@@ -32,7 +32,6 @@ interface RoomState {
     groups: Group[],
     meUser: User | null,
     selectedGroup: Group | null,
-    users: User[],
     videoconferencePublisher: VideoconferencePublisher | null,
     videoconferenceSubscribersConnections: VideoconferenceSubscriber[],
 }
@@ -59,7 +58,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             groups: [],
             meUser: null,
             selectedGroup: null,
-            users: [],
             videoconferencePublisher: null,
             videoconferenceSubscribersConnections: [],
         };
@@ -77,7 +75,11 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                                         this._currentRoomChangeCallback(room, group);
                                     }}
                                     groups={this.state.groups}
-                                    selectedRoomFound={(group: Group) => this._updateUsersFromAPI(group)}
+                                    selectedRoomFound={(group: Group) => {
+                                        this.setState({
+                                            selectedGroup: group,
+                                        });
+                                    }}
                                     selectedRoomId={this.state.currentRoomId}
                                 />
                             </div>
@@ -134,7 +136,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                         </Form>
                     </div>
                     <div className={"col-2 px-0"}>
-                        <UserList users={this.state.users}/>
+                        <UserList selectedGroup={this.state.selectedGroup}/>
                     </div>
                 </div>
             </main>
@@ -144,10 +146,9 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
     public componentDidMount(): void {
         this._active = true;
         this._updateGroupsFromAPI();
+        this._updateMyInfos();
 
-        if (this.state.currentRoomId === null) {
-            this._updateMyInfos();
-        } else {
+        if (this.state.currentRoomId !== null) {
             window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentRoomId));
         }
     }
@@ -159,14 +160,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
     public componentDidUpdate(prevProps: {}, prevState: RoomState): void {
         if (prevState.meUser === null && this.state.meUser !== null) {
-            this._createVideoConferenceRoom();
-            /*
-            const id = window.prompt("Room ID");
-            if (id === "" || id === null) {
-                this._createVideoConferenceRoom();
-            } else {
-                this._connectToVideoConference(id);
-            }*/
+            this._connectToVideoConference();
         }
     }
 
@@ -198,7 +192,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         state.videoconferencePublisher = undefined;
 
         window.history.pushState(state, "", this.props.fullURL.replace(/:[^/]*/, newRoom.id));
-        this._updateUsersFromAPI(newGroup);
     }
 
     private _updateGroupsFromAPI(): void {
@@ -215,40 +208,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
                 this.setState({
                     groups,
-                });
-            })
-            .send()
-            .then();
-    }
-
-    private _updateUsersFromAPI(selectedGroup: Group): void {
-        APIRequest
-            .get("/group/user/list")
-            .authenticate()
-            .withPayload({
-                groupId: selectedGroup.id,
-            })
-            .canceledWhen(() => !this._active)
-            .onSuccess((status, data) => {
-                const users: User[] = [];
-
-                for (const user of data.payload) {
-                    users.push(User.fromFullUser(user));
-                }
-
-                if (this.state.meUser === null) {
-                    for (const user of users) {
-                        if (user.isMe) {
-                            this.setState({
-                                meUser: user,
-                            });
-                            break;
-                        }
-                    }
-                }
-
-                this.setState({
-                    users,
                 });
             })
             .send()
@@ -281,28 +240,22 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
     private _onStreamCreated(evt: StreamEvent) {
         const connection = evt.stream.connection;
-        const data = JSON.parse(connection.data);
+        const user = User.fromFullUser(JSON.parse(connection.data));
 
-        console.warn(data);
+        if (user.username !== this.state.meUser?.username) {
+            console.warn(user);
+            this.setState({
+                videoconferenceSubscribersConnections: [
+                    ...this.state.videoconferenceSubscribersConnections,
+                    {
+                        user,
+                        connection,
+                    },
+                ],
+            });
 
-        this.setState({
-            videoconferenceSubscribersConnections: [
-                ...this.state.videoconferenceSubscribersConnections,
-                {
-                    username: data.username,
-                    connection,
-                },
-            ],
-        });
-
-        this._session.subscribe(evt.stream, `video-subscriber_${connection.connectionId}`);
-
-        /*
-        if(e.stream.hasVideo == false){
-            $('#'+e.stream.connection.connectionId+' > video').hide();
-        }else{
-            $('#'+e.stream.connection.connectionId+' > img').hide();
-        }*/
+            this._session.subscribe(evt.stream, `video-subscriber_${connection.connectionId}`);
+        }
     }
 
     private _onStreamDestroyed(evt: StreamEvent) {
@@ -367,9 +320,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             console.warn(id, "arrête de parler");
         });*/
 
-        const userData = {
-            username: this.state.meUser?.username,
-        };
+        const userData = this.state.meUser?.toJSON();
 
         this._session.connect(targetWebSocketURL, userData)
             .then(() => this._onConnected())
@@ -398,38 +349,19 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         }
     }
 
-    private _createVideoConferenceRoom(): void {
-        APIRequest
-            .post("/videoconference/session/create")
-            .unauthorizedErrorsAllowed()
-            .canceledWhen(() => !this._active)
-            .authenticate()
-            .onSuccess((status, data) => {
-                // alert(data.payload.id);
-                this._connectToVideoConference(data.payload.id as string);
-            })
-            .onFailure((status, data) => {
-                console.warn(status, data);
-            })
-            .send()
-            .then();
-    }
-
-    private _connectToVideoConference(sessionId: string): void {
+    private _connectToVideoConference(): void {
         APIRequest
             .post("/videoconference/session/connect")
-            .unauthorizedErrorsAllowed()
             .canceledWhen(() => !this._active)
             .authenticate()
             .withPayload({
-                sessionId,
+                sessionId: this.state.currentRoomId
             })
             .onSuccess((status, data) => {
                 this._setOpenVidu(data.payload.targetWebSocketURL);
             })
             .onFailure((status, data) => {
                 console.warn("connect nok", status, data);
-                this._createVideoConferenceRoom();
             })
             .send()
             .then();
