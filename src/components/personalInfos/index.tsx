@@ -20,7 +20,7 @@ class PersonalInfos extends React.Component<PersonalInfosProps, {}> {
                 <div className="personal-infos-body card-body text-dark">
                     <p className="card-text">
                         {this.props.user === null
-                            ? <i>En cours de rafraichissement...</i>
+                            ? ""
                             : this.props.user.name
                         }
                     </p>
