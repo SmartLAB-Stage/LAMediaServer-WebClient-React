@@ -99,6 +99,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                             <div className={"col personal-infos"}>
                                 <PersonalInfos
                                     user={this.state.meUser}
+                                    videoconferenceDisconnectCallback={() => this._disconnectVideoconference()}
                                     videoconferencePublisher={this.state.videoconferencePublisher}
                                 />
                             </div>
@@ -169,7 +170,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
     public componentDidUpdate(_prevProps: RoomProps, prevState: RoomState): void {
         const curInfos = this.state.openViduSessionInfos;
         const prevInfos = prevState.openViduSessionInfos;
-        if ((curInfos !== prevInfos || curInfos !== null) && (curInfos?.sessionId !== prevInfos?.sessionId)) {
+        if (curInfos !== prevInfos && curInfos !== null && curInfos?.sessionId !== prevInfos?.sessionId) {
             this._setOpenVidu();
         }
     }
@@ -211,6 +212,16 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         state.videoconferencePublisher = undefined;
 
         window.history.pushState(state, "", this.props.fullURL.replace(/:[^/]*/, newRoom.id));
+    }
+
+    private _disconnectVideoconference(): void {
+        if (this.state.openViduSessionInfos !== null) {
+            this._openViduSession.disconnect();
+            this.setState({
+                openViduSessionInfos: null,
+                videoconferencePublisher: null,
+            });
+        }
     }
 
     private _videoConferenceChangeCallback(newRoom: Room): void {

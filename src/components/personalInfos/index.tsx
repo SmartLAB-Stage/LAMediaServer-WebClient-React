@@ -1,3 +1,4 @@
+import {PersonalVideoControls} from "components/personalInfos/personalVideoControls";
 import {PersonalVideoPreview} from "components/personalInfos/personalVideoPreview";
 import {ProfilePicture} from "components/profilePicture";
 import {User} from "model/user";
@@ -7,6 +8,7 @@ import "./personalInfos.scss";
 
 interface PersonalInfosProps {
     user: User | null,
+    videoconferenceDisconnectCallback: () => void,
     videoconferencePublisher: VideoconferencePublisher | null,
 }
 
@@ -23,6 +25,9 @@ class PersonalInfos extends React.Component<PersonalInfosProps, {}> {
                             ? ""
                             : this.props.user.name
                         }
+                        <PersonalVideoControls
+                            videoconferenceDisconnectCallback={this.props.videoconferenceDisconnectCallback}
+                            videoconferencePublisher={this.props.videoconferencePublisher}/>
                     </p>
                 </div>
                 {
