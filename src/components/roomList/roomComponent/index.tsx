@@ -22,8 +22,11 @@ class RoomComponent extends React.Component<RoomComponentProps, {}> {
                 <div className={"col"}>
                     <OverlayTrigger placement="top"
                                     overlay={
-                                        // @ts-ignore
-                                        (props) => <Tooltip {...props}>{this.props.room.name}</Tooltip>
+                                        (props) => (
+                                            <Tooltip id={`tooltip-${this.props.room.id}`} {...props}>
+                                                {this.props.room.name}
+                                            </Tooltip>
+                                        )
                                     }>
                         <div onClick={() => this.props.currentRoomChangeCallback()}
                              className={
@@ -66,6 +69,7 @@ class RoomComponent extends React.Component<RoomComponentProps, {}> {
                                     </p>
                                 </div>
                             </div>
+                            {/* eslint-disable-next-line */}
                             <a href={"#"} className={"stretched-link"}/>
                         </div>
                     </OverlayTrigger>
