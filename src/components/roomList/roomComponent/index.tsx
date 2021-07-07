@@ -70,7 +70,7 @@ class RoomComponent extends React.Component<RoomComponentProps, {}> {
                                 </div>
                             </div>
                             {/* eslint-disable-next-line */}
-                            <a href={"#"} className={"stretched-link"}/>
+                            { /* <a href={"#"} className={"stretched-link"}/> */ }
                         </div>
                     </OverlayTrigger>
                 </div>
