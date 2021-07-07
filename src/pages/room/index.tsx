@@ -128,7 +128,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                             <div className={"input-group"}>
                                 <input type={"text"}
                                        placeholder={"Entrez votre message"}
-                                       aria-describedby={"button-addon2"}
+                                       aria-describedby={"button-send-message"}
                                        className={"form-control rounded-0 border-0 py-4 bg-light"}
                                        disabled={this.state.currentRoomId === null}
                                        value={this.state.currentMessageContent}
@@ -139,10 +139,13 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                                        }}
                                 />
                                 <div className={"input-group-append"}>
-                                    <button id={"button-addon2"}
-                                            type={"submit"}
+                                    <button className={"btn btn-link"}
+                                            data-placement={"top"}
+                                            data-toggle={"tooltip"}
                                             disabled={this.state.currentMessageContent.length === 0}
-                                            className={"btn btn-link"}>
+                                            id={"button-send-message"}
+                                            title={"Envoyer ce message"}
+                                            type={"submit"}>
                                         <FontAwesomeIcon icon={"paper-plane"} style={{color: colors.accentColor}}/>
                                     </button>
                                 </div>

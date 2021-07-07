@@ -26,9 +26,16 @@ class PersonalVideoControls extends React.Component<PersonalVideoControlsProps, 
 
         return (
             <>
-                <Button className={"btn btn-primary m-1 p-2"}
+                <Button className={"btn btn-primary ml-4 mr-1 p-0"}
+                        data-toggle={"tooltip"}
+                        data-placement={"top"}
                         disabled={!connected}
                         onClick={() => void null}
+                        title={
+                            muted
+                                ? "Réactiver le micro"
+                                : "Se rendre muet"
+                        }
                         type={"button"}>
                     <FontAwesomeIcon icon={
                         muted || !connected
@@ -36,9 +43,12 @@ class PersonalVideoControls extends React.Component<PersonalVideoControlsProps, 
                             : faMicrophone
                     }/>
                 </Button>
-                <Button className={"btn btn-primary m-1 p-2"}
+                <Button className={"btn btn-primary ml-1 mr-0 p-0"}
+                        data-toggle={"tooltip"}
+                        data-placement={"right"}
                         disabled={!connected}
                         onClick={() => this.props.videoconferenceDisconnectCallback()}
+                        title={"Se déconnecter du canal audio actuel"}
                         type={"button"}>
                     <FontAwesomeIcon icon={faPhoneSlash}/>
                 </Button>
