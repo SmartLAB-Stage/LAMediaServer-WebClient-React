@@ -30,6 +30,7 @@ class RoomComponent extends React.Component<RoomComponentProps, {}> {
                                     }>
                         <div onClick={() => this.props.currentRoomChangeCallback()}
                              className={
+                                 "room-button " +
                                  "button " +
                                  "list-group-item " +
                                  "list-group-item-action " +

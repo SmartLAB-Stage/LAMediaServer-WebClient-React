@@ -1,6 +1,11 @@
 @import "../../../colors.css";
 
 .room-list {
+    .room-button {
+        cursor: pointer;
+        pointer-events: all !important;
+    }
+
     .svg-align {
         text-align: center;
     }
