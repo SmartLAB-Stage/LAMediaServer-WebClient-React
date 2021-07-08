@@ -1,8 +1,11 @@
+import {faPlus} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {RoomList} from "components/roomList";
 import {APIRequest} from "helper/APIRequest";
 import {Group} from "model/group";
 import {Room} from "model/room";
 import React from "react";
+import {Button} from "react-bootstrap";
 
 interface GroupListProps {
     currentRoomChangeCallback: (room: Room, group: Group) => void,
@@ -70,6 +73,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                                       currentRoomChangeCallback={
                                           (room: Room) => this.props.currentRoomChangeCallback(room, group)
                                       }
+                                      group={group}
                                       rooms={this.state.rooms[group.id] !== undefined
                                           ? this.state.rooms[group.id]
                                           : []
@@ -91,10 +95,25 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         return (
             <div className={"room-list bg-white"}>
                 <div id={"accordion"}>
+                    <Button className={"btn btn-sm btn-success"}
+                            onClick={(e) => this._createNewGroup()}>
+                        <FontAwesomeIcon icon={faPlus}/>
+                    </Button>
                     {groupsComponent}
                 </div>
             </div>
         );
+    }
+
+    private async _createNewGroup(): Promise<void> {
+        await APIRequest
+            .post("/group/room/create")
+            .authenticate()
+            .canceledWhen(() => !this._active)
+            .withPayload({
+                name: "bonjour", // TODO: Set ce nom
+            })
+            .send();
     }
 
     private _updateRoomsFromAPI(): void {
