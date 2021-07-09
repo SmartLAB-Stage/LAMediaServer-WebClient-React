@@ -107,7 +107,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
 
     private async _createNewGroup(): Promise<void> {
         await APIRequest
-            .post("/group/room/create")
+            .post("/group/create")
             .authenticate()
             .canceledWhen(() => !this._active)
             .withPayload({
