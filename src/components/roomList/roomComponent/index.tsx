@@ -56,14 +56,14 @@ class RoomComponent extends React.Component<RoomComponentProps, {}> {
                                                 videoConferenceChangeCallback={this.props.videoConferenceChangeCallback}/>
                                         </div>
                                         <small className={"small font-weight-bold"}>
-                                            {this.props.room.lastMessage !== undefined
+                                            {this.props.room.lastMessage
                                                 ? this.props.room.lastMessage.parentUser.name
-                                                : <i>Expéditeur inconnu</i>
+                                                : <i>Inconnu</i>
                                             }
                                         </small>
                                     </div>
                                     <p className={"message"}>
-                                        {this.props.room.lastMessage !== undefined
+                                        {this.props.room.lastMessage
                                             ? this.props.room.lastMessage.content
                                             : <i>Dernier message non disponible</i>
                                         }
