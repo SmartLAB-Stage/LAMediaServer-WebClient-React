@@ -2,7 +2,6 @@ import {faPlus} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {RoomComponent} from "components/roomList/roomComponent";
 import "components/roomList/roomComponent/roomComponent.scss";
-import {APIRequest} from "helper/APIRequest";
 import {Group} from "model/group";
 import {Room} from "model/room";
 import React from "react";
@@ -11,6 +10,7 @@ import {Button} from "react-bootstrap";
 interface RoomListProps {
     currentRoomChangeCallback: (room: Room) => void,
     group: Group,
+    newRoomCreatedCallback: () => void,
     rooms: Room[],
     selectedRoomId: string | null,
     videoConferenceChangeCallback: (room: Room) => void,
@@ -59,7 +59,7 @@ class RoomList extends React.Component<RoomListProps, {}> {
             <div className={"room-list"}>
                 <div className="container">
                     <Button className={"btn btn-sm btn-success"}
-                            onClick={(e) => this._createNewRoom()}>
+                            onClick={() => this.props.newRoomCreatedCallback()}>
                         <FontAwesomeIcon icon={faPlus}/>
                     </Button>
                     <div className={"row"}>
@@ -68,18 +68,6 @@ class RoomList extends React.Component<RoomListProps, {}> {
                 </div>
             </div>
         );
-    }
-
-    private async _createNewRoom(): Promise<void> {
-        await APIRequest
-            .post("/group/room/create")
-            .authenticate()
-            .canceledWhen(() => !this._active)
-            .withPayload({
-                groupRoomId: this.props.group.roomId,
-                name: "au-revoir",
-            })
-            .send();
     }
 }
 

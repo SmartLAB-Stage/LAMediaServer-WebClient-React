@@ -88,3 +88,4 @@ class Group {
 }
 
 export {Group};
+export type {RawFullGroup};
