@@ -14,7 +14,7 @@ class CallButton extends React.Component<CallButtonProps, {}> {
                     className={
                         "list-group-item " +
                         "list-group-item-action " +
-                        (this.props.selected ? "list-group-item-info " : "")
+                        (this.props.selected ? "list-group-item-info " : null)
                     }
                     onClick={(e) => {
                         e.stopPropagation();

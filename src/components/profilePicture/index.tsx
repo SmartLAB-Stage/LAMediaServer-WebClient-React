@@ -16,7 +16,7 @@ class ProfilePicture extends React.Component<ProfilePictureProps, {}> {
         }
 
         const img = (
-            <img className={"profile-picture align-self-center " + (this.props.flex === false ? "" : "d-flex")}
+            <img className={"profile-picture align-self-center " + (this.props.flex === false ? null : "d-flex")}
                  src={url}
                  onClick={() =>
                      this.props.onClick

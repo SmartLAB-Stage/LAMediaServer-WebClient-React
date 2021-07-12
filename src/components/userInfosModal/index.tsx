@@ -48,7 +48,7 @@ class UserInfosModal extends React.Component<OtherUserInfosModalProps, {}> {
                                         <th scope={"row"}>Adresse mail</th>
                                         <td>{this.props.user.email}</td>
                                     </tr>
-                                ) : ""
+                                ) : null
                         }
                         </tbody>
                     </table>

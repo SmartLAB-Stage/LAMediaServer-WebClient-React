@@ -34,7 +34,7 @@ class RoomComponent extends React.Component<RoomComponentProps, {}> {
                                  "button " +
                                  "list-group-item " +
                                  "list-group-item-action " +
-                                 (this.props.selected ? "list-group-item-info " : "")
+                                 (this.props.selected ? "list-group-item-info " : null)
                              }>
                             <div className={"media"}>
                                 <div className={"svg-align-container"}>

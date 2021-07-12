@@ -112,8 +112,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                     </div>
 
                     <div className={"col-8 px-0"}>
-                        <div
-                            className={"px-4 py-5 chat-box bg-white " + (this.state.currentRoomId === null ? "" : "message-list")}>
+                        <div className={"px-4 py-5 chat-box bg-white " + (this.state.currentRoomId === null ? null : "message-list")}>
                             {this.state.currentRoomId === null
                                 ? (
                                     <i>

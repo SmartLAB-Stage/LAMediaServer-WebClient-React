@@ -47,7 +47,7 @@ class SingleUser extends React.Component<SingleUserProps, {}> {
                                 onClick={() => this.props.openModalUserInfos()}/>
                 <div className="media-body">
                     <span className={"name"}>{this.props.user.name}</span>
-                    {this.props.user.isMe ? <span className={"descriptor-me"}> (vous)</span> : ""}
+                    {this.props.user.isMe ? <span className={"descriptor-me"}> (vous)</span> : null}
                     <br/>
                     <span className={"username"}>{this.props.user.username}</span>
                     <br/>

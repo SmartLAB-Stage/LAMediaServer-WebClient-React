@@ -41,7 +41,7 @@ class PersonalInfos extends React.Component<PersonalInfosProps, PersonalInfosSta
                     <div className="personal-infos-body card-body text-dark">
                         <p className="card-text">
                             {this.props.user === null
-                                ? ""
+                                ? null
                                 : this.props.user.name
                             }
                             <PersonalVideoControls
@@ -51,14 +51,14 @@ class PersonalInfos extends React.Component<PersonalInfosProps, PersonalInfosSta
                     </div>
                     {
                         this.props.videoconferencePublisher === null || this.props.user === null
-                            ? ""
+                            ? null
                             : <PersonalVideoPreview user={this.props.user}
                                                     videoconferencePublisher={this.props.videoconferencePublisher}/>
                     }
                 </div>
                 {
                     this.props.user === null
-                        ? ""
+                        ? null
                         : <UserInfosModal user={this.props.user}
                                           closeModalAction={() => {
                                               this.setState({
