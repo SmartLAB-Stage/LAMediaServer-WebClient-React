@@ -5,6 +5,7 @@ import {MessageList} from "components/messageList";
 import {PersonalInfos} from "components/personalInfos";
 import {UserList} from "components/userList";
 import {APIRequest} from "helper/APIRequest";
+import {CurrentUser} from "model/currentUser";
 import {
     Group,
     RawFullGroup,
@@ -33,7 +34,7 @@ interface RoomState {
     currentMessageContent: string,
     currentRoomId: string | null,
     groups: Group[],
-    meUser: User | null,
+    meUser: CurrentUser | null,
     openViduSessionInfos: null | {
         sessionId: string,
         targetWebSocketURL: string,
@@ -111,8 +112,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                     </div>
 
                     <div className={"col-8 px-0"}>
-                        <div
-                            className={"px-4 py-5 chat-box bg-white " + (this.state.currentRoomId === null ? "" : "message-list")}>
+                        <div className={"px-4 py-5 chat-box bg-white " + (this.state.currentRoomId === null ? null : "message-list")}>
                             {this.state.currentRoomId === null
                                 ? (
                                     <i>
@@ -196,10 +196,8 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .authenticate()
             .canceledWhen(() => !this._active)
             .onSuccess((status, data) => {
-                const me = User.fromFullUser(data.payload);
-
                 this.setState({
-                    meUser: me,
+                    meUser: CurrentUser.fromFullUser(data.payload),
                 });
             })
             .send()

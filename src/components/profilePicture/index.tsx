@@ -3,6 +3,8 @@ import {User} from "model/user";
 import React from "react";
 
 interface ProfilePictureProps {
+    flex?: boolean,
+    onClick?: () => void | null,
     user: User | null,
 }
 
@@ -13,9 +15,14 @@ class ProfilePicture extends React.Component<ProfilePictureProps, {}> {
             url = APIRequest.getFullRoute(`/user/avatar/get?username=${this.props.user.username}`);
         }
 
-        return (
-            <img className="profile-picture d-flex align-self-center"
+        const img = (
+            <img className={"profile-picture align-self-center " + (this.props.flex === false ? null : "d-flex")}
                  src={url}
+                 onClick={() =>
+                     this.props.onClick
+                         ? this.props.onClick()
+                         : void null
+                 }
                  onError={(elt) => {
                      // @ts-ignore
                      const img: HTMLImageElement = elt.target;
@@ -25,6 +32,16 @@ class ProfilePicture extends React.Component<ProfilePictureProps, {}> {
                  width={"100%"}
                  alt="Utilisateur"/>
         );
+
+        if (this.props.onClick) {
+            return (
+                <button type={"button"} className={"btn btn-link"}>
+                    {img}
+                </button>
+            );
+        } else {
+            return img;
+        }
     }
 }
 

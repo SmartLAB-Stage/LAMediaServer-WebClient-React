@@ -1,3 +1,4 @@
+import {DeleteModal} from "components/messageList/deleteModal";
 import {SingleMessage} from "components/messageList/singleMessage";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
@@ -6,10 +7,6 @@ import {
     RawMessage,
 } from "model/message";
 import React from "react";
-import {
-    Button,
-    Modal,
-} from "react-bootstrap";
 import "./messageList.scss";
 
 interface MessageListProps {
@@ -48,9 +45,29 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
     }
 
     public render(): React.ReactNode {
+        const handleClose = () => this.setState({
+            deletedMessage: null,
+            deleteModalOpen: false,
+        });
+
+        const handleDeleteMessage = () => {
+            const deletedMessage = this.state.deletedMessage;
+            this.setState({
+                deletedMessage: null,
+                deleteModalOpen: false,
+            });
+
+            if (deletedMessage !== null) {
+                this._deleteMessage(deletedMessage);
+            }
+        };
+
         return (
             <>
-                {this._renderDeleteModal()}
+                <DeleteModal closeModalAction={() => handleClose()}
+                             deleteMessageAction={() => handleDeleteMessage()}
+                             deleteModalOpen={this.state.deleteModalOpen}
+                />
                 {this._renderMessageList()}
             </>
         );
@@ -226,44 +243,6 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         }
 
         return messages;
-    }
-
-    private _renderDeleteModal(): React.ReactNode {
-        const handleClose = () => this.setState({
-            deletedMessage: null,
-            deleteModalOpen: false,
-        });
-
-        const handleDeleteMessage = () => {
-            const deletedMessage = this.state.deletedMessage;
-            this.setState({
-                deletedMessage: null,
-                deleteModalOpen: false,
-            });
-
-            if (deletedMessage !== null) {
-                this._deleteMessage(deletedMessage);
-            }
-        };
-
-        return (
-            <>
-                <Modal show={this.state.deleteModalOpen} onHide={handleClose}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Supprimer ce message</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>Voulez-vous vraiment supprimer ce message ?</Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={handleClose}>
-                            Annuler
-                        </Button>
-                        <Button variant="primary" onClick={handleDeleteMessage}>
-                            Confirmer
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
-            </>
-        );
     }
 
     private _openModalDeleteMessage(message: Message): void {

@@ -1,3 +1,4 @@
+import {UserInfosModal} from "components/userInfosModal";
 import {SingleUser} from "components/userList/singleUser";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
@@ -12,6 +13,8 @@ interface UserListProps {
 }
 
 interface UserListState {
+    modalUserInfosOpen: boolean,
+    selectedUserForInfos: User | null,
     users: User[],
 }
 
@@ -26,6 +29,8 @@ class UserList extends React.Component<UserListProps, UserListState> {
         this._sockets = [];
 
         this.state = {
+            modalUserInfosOpen: false,
+            selectedUserForInfos: null,
             users: [],
         };
     }
@@ -42,7 +47,7 @@ class UserList extends React.Component<UserListProps, UserListState> {
     }
 
     public componentDidUpdate(prevProps: UserListProps): void {
-        if (this.props.selectedGroup !== null && prevProps.selectedGroup === null) {
+        if (this.props.selectedGroup !== null && prevProps.selectedGroup !== this.props.selectedGroup) {
             this._updateUsersFromAPI();
         }
     }
@@ -61,6 +66,7 @@ class UserList extends React.Component<UserListProps, UserListState> {
         for (const user of this.state.users) {
             users.push(
                 <SingleUser key={user.id}
+                            openModalUserInfos={() => this._openModalUserInfos(user)}
                             user={user}
                 />,
             );
@@ -70,9 +76,37 @@ class UserList extends React.Component<UserListProps, UserListState> {
             <div className={"user-list"}>
                 <ul className={"list-unstyled"}>
                     {users}
+                    {
+                        this.state.selectedUserForInfos
+                            ? (
+                                <UserInfosModal user={this.state.selectedUserForInfos}
+                                                closeModalAction={() => {
+                                                    this.setState({
+                                                        modalUserInfosOpen: false,
+                                                    });
+                                                }}
+                                                userInfosModalOpen={this.state.modalUserInfosOpen}/>
+                            ) : null
+                    }
                 </ul>
             </div>
         );
+    }
+
+    private _openModalUserInfos(user: User): void {
+        APIRequest
+            .get("/user/get")
+            .authenticate()
+            .withPayload({userId: user.id})
+            .canceledWhen(() => !this._active)
+            .onSuccess((status, data) => {
+                this.setState({
+                    selectedUserForInfos: User.fromFullUser(data.payload),
+                    modalUserInfosOpen: true,
+                });
+            })
+            .send()
+            .then();
     }
 
     private _updateUsersFromAPI(): void {

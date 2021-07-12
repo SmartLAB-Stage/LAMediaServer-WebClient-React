@@ -58,7 +58,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                 <div key={`group-list-group-${group.id}`} className={"card"}>
                     <div className={"card-header"} id={`heading_${group.id}`}>
                         <h5 className={"mb-0"}>
-                            <button className={"btn btn-link " + (expanded ? "" : "collapsed")}
+                            <button className={"btn btn-link " + (expanded ? null : "collapsed")}
                                     data-toggle={"collapse"}
                                     data-target={`#collapse_${group.id}`}
                                     aria-expanded={expanded ? "true" : "false"}
@@ -69,7 +69,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                     </div>
 
                     <div id={`collapse_${group.id}`}
-                         className={"collapse " + (expanded ? "show" : "")}
+                         className={"collapse " + (expanded ? "show" : null)}
                          aria-labelledby={`heading_${group.id}`}
                          data-parent={"#accordion"}>
                         <div className={"card-body"}>
