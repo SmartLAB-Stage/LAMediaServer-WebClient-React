@@ -9,6 +9,8 @@ interface GroupListProps {
     groups: Group[],
     selectedRoomFound: (parentGroup: Group) => void,
     selectedRoomId: string | null,
+    videoConferenceChangeCallback: (room: Room, group: Group) => void,
+    videoConferenceConnectedRoomId: string | null,
 }
 
 interface GroupListState {
@@ -64,13 +66,19 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                          aria-labelledby={`heading_${group.id}`}
                          data-parent={"#accordion"}>
                         <div className={"card-body"}>
-                            <RoomList parentGroup={group}
-                                      currentRoomChangeCallback={this.props.currentRoomChangeCallback}
-                                      selectedRoomId={this.props.selectedRoomId}
+                            <RoomList key={"roomList-" + group.id}
+                                      currentRoomChangeCallback={
+                                          (room: Room) => this.props.currentRoomChangeCallback(room, group)
+                                      }
                                       rooms={this.state.rooms[group.id] !== undefined
                                           ? this.state.rooms[group.id]
                                           : []
                                       }
+                                      selectedRoomId={this.props.selectedRoomId}
+                                      videoConferenceChangeCallback={
+                                          (room: Room) => this.props.videoConferenceChangeCallback(room, group)
+                                      }
+                                      videoConferenceConnectedRoomId={this.props.videoConferenceConnectedRoomId}
                             />
                         </div>
                     </div>

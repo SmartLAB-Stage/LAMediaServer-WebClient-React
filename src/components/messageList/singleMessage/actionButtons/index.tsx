@@ -17,15 +17,21 @@ class ActionButtons extends React.Component<ActionButtonsProps, {}> {
         return (
             <div className={"action-buttons"}>
                 &nbsp;
-                <Button type={"button"}
-                        className={"btn btn-secondary btn-sm px-1 py-0"}
-                        onClick={(evt) => this.props.editMessage(evt)}>
+                <Button className={"btn btn-secondary btn-sm px-1 py-0"}
+                        data-placement={"top"}
+                        data-toggle={"tooltip"}
+                        onClick={(evt) => this.props.editMessage(evt)}
+                        title={"Modifier ce message"}
+                        type={"button"}>
                     <FontAwesomeIcon icon={faEdit}/>
                 </Button>
                 &nbsp;
-                <Button type={"button"}
-                        className={"btn btn-danger btn-sm px-1 py-0"}
-                        onClick={() => this.props.openModalDeleteMessage()}>
+                <Button className={"btn btn-danger btn-sm px-1 py-0"}
+                        data-placement={"top"}
+                        data-toggle={"tooltip"}
+                        onClick={() => this.props.openModalDeleteMessage()}
+                        title={"Supprimer ce message"}
+                        type={"button"}>
                     <FontAwesomeIcon icon={faTrash}/>
                 </Button>
             </div>
