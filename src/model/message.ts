@@ -115,12 +115,7 @@ class Message {
         return new this(
             rawMessage.id,
             rawMessage.content,
-            User.fromPartialUser(
-                rawMessage.parentUser.id,
-                rawMessage.parentUser.isMe,
-                rawMessage.parentUser.username,
-                rawMessage.parentUser.name,
-            ),
+            User.fromPartialUser(rawMessage.parentUser),
             rawMessage.roomId,
             new Date(rawMessage.timestamp),
             undefined,

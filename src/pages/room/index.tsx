@@ -5,6 +5,7 @@ import {MessageList} from "components/messageList";
 import {PersonalInfos} from "components/personalInfos";
 import {UserList} from "components/userList";
 import {APIRequest} from "helper/APIRequest";
+import {CurrentUser} from "model/currentUser";
 import {
     Group,
     RawFullGroup,
@@ -33,7 +34,7 @@ interface RoomState {
     currentMessageContent: string,
     currentRoomId: string | null,
     groups: Group[],
-    meUser: User | null,
+    meUser: CurrentUser | null,
     openViduSessionInfos: null | {
         sessionId: string,
         targetWebSocketURL: string,
@@ -196,10 +197,8 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .authenticate()
             .canceledWhen(() => !this._active)
             .onSuccess((status, data) => {
-                const me = User.fromFullUser(data.payload);
-
                 this.setState({
-                    meUser: me,
+                    meUser: CurrentUser.fromFullUser(data.payload),
                 });
             })
             .send()
