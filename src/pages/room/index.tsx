@@ -5,7 +5,10 @@ import {MessageList} from "components/messageList";
 import {PersonalInfos} from "components/personalInfos";
 import {UserList} from "components/userList";
 import {APIRequest} from "helper/APIRequest";
-import {Group} from "model/group";
+import {
+    Group,
+    RawFullGroup,
+} from "model/group";
 import {Room} from "model/room";
 import {User} from "model/user";
 import {
@@ -80,6 +83,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                                         this._currentRoomChangeCallback(room, group);
                                     }}
                                     groups={this.state.groups}
+                                    newGroupCreatedCallback={() => this._createNewGroup("monGroupe")} // TODO: Set ce nom
                                     selectedRoomFound={(group: Group) => {
                                         this.setState({
                                             selectedGroup: group,
@@ -253,6 +257,23 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
                 this.setState({
                     groups,
+                });
+            })
+            .send()
+            .then();
+    }
+
+    private _createNewGroup(name: string): void {
+        APIRequest
+            .post("/group/create")
+            .authenticate()
+            .canceledWhen(() => !this._active)
+            .withPayload({
+                name,
+            })
+            .onSuccess((status, data) => {
+                this.setState({
+                    groups: [...this.state.groups, Group.fromFullObject(data.payload as RawFullGroup)],
                 });
             })
             .send()

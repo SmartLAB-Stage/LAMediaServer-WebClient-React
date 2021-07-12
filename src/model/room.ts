@@ -9,7 +9,7 @@ import {
 /**
  * Room raw
  */
-interface RawRoom {
+interface RawFullRoom {
     id: string,
     isDefault: boolean,
     lastMessage: RawMessage,
@@ -39,7 +39,7 @@ class Room {
      * Dernier message
      * @private
      */
-    private readonly _lastMessage: Message | undefined;
+    private readonly _lastMessage: Message | null;
 
     private readonly _messagesCount: number;
 
@@ -66,7 +66,7 @@ class Room {
     public constructor(id: string,
                        name: string,
                        defaultRoom: boolean,
-                       lastMessage: Message | undefined,
+                       lastMessage: Message | null,
                        parentRoomId: string,
                        usersCount: number,
                        messagesCount: number,
@@ -88,7 +88,7 @@ class Room {
         return this._isDefault;
     }
 
-    public get lastMessage(): Message | undefined {
+    public get lastMessage(): Message | null {
         return this._lastMessage;
     }
 
@@ -108,12 +108,12 @@ class Room {
         return this._usersCount;
     }
 
-    public static fromFullObject(obj: RawRoom): Room {
+    public static fromFullObject(obj: RawFullRoom): Room {
         return new this(
             obj.id,
             obj.name,
             obj.isDefault,
-            Message.fromFullMessage(obj.lastMessage),
+            obj.lastMessage ? Message.fromFullMessage(obj.lastMessage) : null,
             obj.parentRoomId,
             obj.usersCount,
             obj.messagesCount,
@@ -137,3 +137,4 @@ class Room {
 }
 
 export {Room};
+export type {RawFullRoom};
