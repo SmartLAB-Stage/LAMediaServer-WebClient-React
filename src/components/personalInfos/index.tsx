@@ -1,43 +1,73 @@
 import {PersonalVideoControls} from "components/personalInfos/personalVideoControls";
 import {PersonalVideoPreview} from "components/personalInfos/personalVideoPreview";
 import {ProfilePicture} from "components/profilePicture";
-import {User} from "model/user";
+import {UserInfosModal} from "components/userInfosModal";
+import {CurrentUser} from "model/currentUser";
 import {VideoconferencePublisher} from "model/videoconference";
 import React from "react";
 import "./personalInfos.scss";
 
 interface PersonalInfosProps {
-    user: User | null,
+    user: CurrentUser | null,
     videoconferenceDisconnectCallback: () => void,
     videoconferencePublisher: VideoconferencePublisher | null,
 }
 
-class PersonalInfos extends React.Component<PersonalInfosProps, {}> {
+interface PersonalInfosState {
+    personalInfosModalOpen: boolean,
+}
+
+class PersonalInfos extends React.Component<PersonalInfosProps, PersonalInfosState> {
+    public constructor(props: PersonalInfosProps) {
+        super(props);
+
+        this.state = {
+            personalInfosModalOpen: false,
+        };
+    }
+
     public render(): React.ReactNode {
         return (
-            <div className="card border-secondary mb-0 flex-row flex-wrap">
-                <div className="profile-picture-parent card-header border-0">
-                    <ProfilePicture user={this.props.user}/>
-                </div>
-                <div className="personal-infos-body card-body text-dark">
-                    <p className="card-text">
-                        {this.props.user === null
+            <>
+                <div className="card border-secondary mb-0 flex-row flex-wrap">
+                    <div className="profile-picture-parent card-header border-0">
+                        <ProfilePicture user={this.props.user}
+                                        onClick={() => {
+                                            this.setState({
+                                                personalInfosModalOpen: true,
+                                            });
+                                        }}/>
+                    </div>
+                    <div className="personal-infos-body card-body text-dark">
+                        <p className="card-text">
+                            {this.props.user === null
+                                ? ""
+                                : this.props.user.name
+                            }
+                            <PersonalVideoControls
+                                videoconferenceDisconnectCallback={this.props.videoconferenceDisconnectCallback}
+                                videoconferencePublisher={this.props.videoconferencePublisher}/>
+                        </p>
+                    </div>
+                    {
+                        this.props.videoconferencePublisher === null || this.props.user === null
                             ? ""
-                            : this.props.user.name
-                        }
-                        <PersonalVideoControls
-                            videoconferenceDisconnectCallback={this.props.videoconferenceDisconnectCallback}
-                            videoconferencePublisher={this.props.videoconferencePublisher}/>
-                    </p>
+                            : <PersonalVideoPreview user={this.props.user}
+                                                    videoconferencePublisher={this.props.videoconferencePublisher}/>
+                    }
                 </div>
                 {
-                    this.props.videoconferencePublisher === null || this.props.user === null
+                    this.props.user === null
                         ? ""
-                        : <PersonalVideoPreview user={this.props.user}
-                                                videoconferencePublisher={this.props.videoconferencePublisher}/>
+                        : <UserInfosModal user={this.props.user}
+                                          closeModalAction={() => {
+                                              this.setState({
+                                                  personalInfosModalOpen: false,
+                                              });
+                                          }}
+                                          userInfosModalOpen={this.state.personalInfosModalOpen}/>
                 }
-
-            </div>
+            </>
         );
     }
 }

@@ -5,6 +5,7 @@ import React from "react";
 import "./singleUser.scss";
 
 interface SingleUserProps {
+    openModalUserInfos: () => void,
     user: User,
 }
 
@@ -42,7 +43,8 @@ class SingleUser extends React.Component<SingleUserProps, {}> {
 
         return (
             <li className={"media single-user"}>
-                <ProfilePicture user={this.props.user}/>
+                <ProfilePicture user={this.props.user}
+                                onClick={() => this.props.openModalUserInfos()}/>
                 <div className="media-body">
                     <span className={"name"}>{this.props.user.name}</span>
                     {this.props.user.isMe ? <span className={"descriptor-me"}> (vous)</span> : ""}
