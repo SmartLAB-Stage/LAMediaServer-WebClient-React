@@ -42,7 +42,7 @@ class UserList extends React.Component<UserListProps, UserListState> {
     }
 
     public componentDidUpdate(prevProps: UserListProps): void {
-        if (this.props.selectedGroup !== null && prevProps.selectedGroup === null) {
+        if (this.props.selectedGroup !== null && prevProps.selectedGroup !== this.props.selectedGroup) {
             this._updateUsersFromAPI();
         }
     }
