@@ -1,8 +1,5 @@
 import {ProfilePicture} from "components/profilePicture";
-import {
-    Presence,
-    presenceToReadableInfos,
-} from "model/presence";
+import {presenceToReadableInfos} from "model/presence";
 import {User} from "model/user";
 import React from "react";
 import "./singleUser.scss";
