@@ -52,7 +52,10 @@ type RequestInfos = {
     status: number,
 }
 
-type APIDataType = {
+interface APIResponseData {
+    error?: {
+        type: string,
+    },
     message: string,
     payload: any | any[],
 }
@@ -65,12 +68,12 @@ type ProgressCallback = (loaded: number, total: number, evt: ProgressEvent) => v
 /**
  * Callback de succès
  */
-type SuccessCallback = (status: number, data: APIDataType) => any | void;
+type SuccessCallback = (status: number, data: APIResponseData) => any | void;
 
 /**
  * Callback d'échec
  */
-type FailureCallback = (status: number, data: APIDataType | null, evt: ProgressEvent) => any | void;
+type FailureCallback = (status: number, data: APIResponseData | null, evt: ProgressEvent) => any | void;
 
 /**
  * Requête API
@@ -290,7 +293,7 @@ class APIRequest {
     public async send(): Promise<any | void> {
         const start = Date.now();
 
-        const onFailure = (status: number, data: APIDataType | null, evt: ProgressEvent): any => {
+        const onFailure = (status: number, data: APIResponseData | null, evt: ProgressEvent): any => {
             if (status === 401 && !this._unauthorizedErrorsAllowed) {
                 console.debug("Vous avez été déconnecté");
                 Authentication.clearToken();

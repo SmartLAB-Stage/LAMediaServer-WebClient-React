@@ -158,14 +158,14 @@ class UserList extends React.Component<UserListProps, UserListState> {
         this._sockets.push(APIWebSocket
             .getSocket("/user/presence/updated")
             .withToken()
-            .onResponse((data: WebSocketData[]) => {
+            .onResponse((data: unknown) => {
                 const users = this.state.users;
+                const updatedUser = data as WebSocketData;
 
-                for (const elt of data) {
-                    for (let i = 0; i < users.length; ++i) {
-                        if (elt.user.id === users[i].id) {
-                            users[i].setStatus(elt.presence);
-                        }
+                for (let i = 0; i < users.length; ++i) {
+                    if (updatedUser.user.id === users[i].id) {
+                        users[i].setStatus(updatedUser.presence);
+                        break;
                     }
                 }
 

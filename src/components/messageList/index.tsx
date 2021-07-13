@@ -139,15 +139,12 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             .withPayload({
                 roomId: this.props.roomId,
             })
-            .onResponse((data: RawMessage[]) => {
-                const messages = this.state.messages;
-
-                for (const message of data) {
-                    messages.push(Message.fromFullMessage(message));
-                }
-
+            .onResponse((data: unknown) => {
                 this.setState({
-                    messages,
+                    messages: [
+                        ...this.state.messages,
+                        Message.fromFullMessage(data as RawMessage),
+                    ],
                 });
             }),
         );
@@ -160,15 +157,14 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             .withPayload({
                 roomId: this.props.roomId,
             })
-            .onResponse((data: { id: string }[]) => {
+            .onResponse((data: unknown) => {
                 const messages = this.state.messages;
+                const deletedMessage = data as { id: string };
 
-                for (const deletedMessage of data) {
-                    for (let i = messages.length - 1; i >= 0; --i) {
-                        if (messages[i].id === deletedMessage.id) {
-                            messages.splice(i, 1);
-                            break;
-                        }
+                for (let i = messages.length - 1; i >= 0; --i) {
+                    if (messages[i].id === deletedMessage.id) {
+                        messages.splice(i, 1);
+                        break;
                     }
                 }
 
@@ -197,15 +193,14 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             .withPayload({
                 roomId: this.props.roomId,
             })
-            .onResponse((data: EditedMessage[]) => {
+            .onResponse((data: unknown) => {
                 const messages = this.state.messages;
+                const editedMessage = data as EditedMessage;
 
-                for (const editedMessage of data) {
-                    for (let i = 0; i < messages.length; ++i) {
-                        if (messages[i].id === editedMessage.message.id) {
-                            messages[i] = Message.fromFullMessage(editedMessage.message);
-                            break;
-                        }
+                for (let i = 0; i < messages.length; ++i) {
+                    if (messages[i].id === editedMessage.message.id) {
+                        messages[i] = Message.fromFullMessage(editedMessage.message);
+                        break;
                     }
                 }
 

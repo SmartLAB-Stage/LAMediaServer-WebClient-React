@@ -1,20 +1,31 @@
 import {Authentication} from "helper/authentication";
 import {setGetPayload} from "helper/utils";
 
-type APIWebSocketCallback = (data: any) => void;
+interface APIResponseData {
+    error?: {
+        type: string,
+    },
+    message: string,
+    payload: unknown | unknown[],
+}
+
+type ResponseCallback = (data: unknown) => void;
+
+type OpenCallback = () => void;
 
 class APIWebSocket {
     private readonly _endpoint: string;
+    private _openCallback: OpenCallback;
     private _payload: object;
-    private _responseCallback: APIWebSocketCallback;
+    private _responseCallback: ResponseCallback;
     private _token: string;
     private _webSocket: WebSocket | null;
 
     private constructor(endpoint: string) {
         this._endpoint = endpoint;
+        this._openCallback = () => void null;
         this._payload = {};
-        this._responseCallback = () => {
-        };
+        this._responseCallback = () => void null;
         this._token = "";
         this._webSocket = null;
     }
@@ -60,8 +71,13 @@ class APIWebSocket {
         return this;
     }
 
-    public onResponse(responseCallback: APIWebSocketCallback) {
+    public onResponse(responseCallback: ResponseCallback): APIWebSocket {
         this._responseCallback = responseCallback;
+        return this;
+    }
+
+    public onOpen(openCallback: () => void): APIWebSocket {
+        this._openCallback = openCallback;
         return this;
     }
 
@@ -73,7 +89,7 @@ class APIWebSocket {
 
         this._webSocket = new WebSocket(uri);
         this._webSocket.onmessage = (evt) => {
-            let data = null;
+            let data: APIResponseData | null = null;
             try {
                 data = JSON.parse(evt.data);
             } catch (e) {
@@ -81,16 +97,17 @@ class APIWebSocket {
             }
 
             if (data !== null) {
-                this._responseCallback(data);
+                this._responseCallback(data.payload);
             }
         };
+        this._webSocket.onopen = () => this._openCallback();
     }
 
-    public send(msg: string): void {
+    public send(msg: Record<string, unknown>): void {
         if (this._webSocket === null) {
             console.warn("WebSocket is null");
         } else {
-            this._webSocket.send(msg);
+            this._webSocket.send(JSON.stringify(msg));
         }
     }
 
