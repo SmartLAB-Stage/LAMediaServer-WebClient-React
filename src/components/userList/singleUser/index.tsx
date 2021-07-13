@@ -1,5 +1,8 @@
 import {ProfilePicture} from "components/profilePicture";
-import {Presence} from "model/presence";
+import {
+    Presence,
+    presenceToReadableInfos,
+} from "model/presence";
 import {User} from "model/user";
 import React from "react";
 import "./singleUser.scss";
@@ -11,36 +14,7 @@ interface SingleUserProps {
 
 class SingleUser extends React.Component<SingleUserProps, {}> {
     public render(): React.ReactNode {
-        let badgeColor = "primary";
-        let status = "?";
-
-        switch (this.props.user.status) {
-            case Presence.AWAY:
-                badgeColor = "warning";
-                status = "Absent";
-                break;
-
-            case Presence.BUSY:
-                badgeColor = "danger";
-                status = "Occupé";
-                break;
-
-            case Presence.ONLINE:
-                badgeColor = "success";
-                status = "En ligne";
-                break;
-
-
-            case Presence.OFFLINE:
-                badgeColor = "secondary";
-                status = "Hors-ligne";
-                break;
-
-            case Presence.UNKNOWN:
-            default:
-                break;
-        }
-
+        const infos = presenceToReadableInfos(this.props.user.status);
         return (
             <li className={"media single-user"}>
                 <ProfilePicture user={this.props.user}
@@ -51,8 +25,8 @@ class SingleUser extends React.Component<SingleUserProps, {}> {
                     <br/>
                     <span className={"username"}>{this.props.user.username}</span>
                     <br/>
-                    <span className={"badge badge-outline badge-sm badge-pill badge-" + badgeColor}>
-                        {status}
+                    <span className={"badge badge-outline badge-sm badge-pill badge-" + infos.badgeColor}>
+                        {infos.status}
                     </span>
                 </div>
             </li>
