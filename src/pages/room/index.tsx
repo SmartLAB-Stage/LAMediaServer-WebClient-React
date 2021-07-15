@@ -3,6 +3,7 @@ import colors from "colors.module.scss";
 import {GroupList} from "components/groupList";
 import {MessageList} from "components/messageList";
 import {PersonalInfos} from "components/personalInfos";
+import {RoomOrGroupCreationModal} from "components/roomOrGroupCreationModal";
 import {UserList} from "components/userList";
 import {APIRequest} from "helper/APIRequest";
 import {CurrentUser} from "model/currentUser";
@@ -31,6 +32,8 @@ interface RoomProps {
 }
 
 interface RoomState {
+    allUsers: User[],
+    createModalOpen: boolean,
     currentMessageContent: string,
     currentRoomId: string | null,
     groups: Group[],
@@ -61,6 +64,8 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         this._openViduSession = this._openVidu.initSession();
 
         this.state = {
+            allUsers: [],
+            createModalOpen: false,
             currentMessageContent: "",
             currentRoomId: this.props.currentRoomId,
             groups: [],
@@ -84,7 +89,9 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                                         this._currentRoomChangeCallback(room, group);
                                     }}
                                     groups={this.state.groups}
-                                    newGroupCreatedCallback={() => this._createNewGroup("monGroupe")} // TODO: Set ce nom
+                                    newGroupCreatedCallback={() => this.setState({
+                                        createModalOpen: true,
+                                    })}
                                     selectedRoomFound={(group: Group) => {
                                         this.setState({
                                             selectedGroup: group,
@@ -166,6 +173,11 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                         <UserList selectedGroup={this.state.selectedGroup}/>
                     </div>
                 </div>
+                <RoomOrGroupCreationModal closeModalAction={() => this.setState({createModalOpen: false})}
+                                          createAction={(name: string, memberIds: string[]) => this._createNewGroup(name, memberIds)}
+                                          modalOpen={this.state.createModalOpen}
+                                          isRoom={true}
+                                          users={this.state.allUsers}/>
             </main>
         );
     }
@@ -174,6 +186,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         this._active = true;
         this._updateGroupsFromAPI();
         this._updateMyInfos();
+        this._fetchAllUsers();
 
         if (this.state.currentRoomId !== null) {
             window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentRoomId));
@@ -204,6 +217,25 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .onSuccess((status, data) => {
                 this.setState({
                     meUser: CurrentUser.fromFullUser(data.payload),
+                });
+            })
+            .send()
+            .then();
+    }
+
+    private _fetchAllUsers(): void {
+        APIRequest
+            .get("/user/list")
+            .authenticate()
+            .canceledWhen(() => !this._active)
+            .onSuccess((status, data) => {
+                const users: User[] = [];
+                for (const user of data.payload) {
+                    users.push(User.fromFullUser(user));
+                }
+
+                this.setState({
+                    allUsers: users,
                 });
             })
             .send()
@@ -267,13 +299,14 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .then();
     }
 
-    private _createNewGroup(name: string): void {
+    private _createNewGroup(name: string, memberIds: string[]): void {
         APIRequest
             .post("/group/create")
             .authenticate()
             .canceledWhen(() => !this._active)
             .withPayload({
                 name,
+                memberIds,
             })
             .onSuccess((status, data) => {
                 this.setState({
