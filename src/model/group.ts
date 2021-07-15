@@ -1,4 +1,4 @@
-type RawFullGroup = {
+type RawGroup = {
     createdAt: Date,
     id: string,
     name: string,
@@ -62,7 +62,7 @@ class Group {
         return this._usersCount;
     }
 
-    public static fromFullObject(obj: RawFullGroup): Group {
+    public static fromObject(obj: RawGroup): Group {
         return new this(
             obj.id,
             obj.name,
@@ -88,4 +88,4 @@ class Group {
 }
 
 export {Group};
-export type {RawFullGroup};
+export type {RawGroup};

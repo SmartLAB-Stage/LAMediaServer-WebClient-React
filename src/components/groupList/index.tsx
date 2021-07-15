@@ -4,7 +4,7 @@ import {RoomList} from "components/roomList";
 import {APIRequest} from "helper/APIRequest";
 import {Group} from "model/group";
 import {
-    RawFullRoom,
+    RawRoom,
     Room,
 } from "model/room";
 import React from "react";
@@ -122,8 +122,8 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                 .onSuccess((payload) => {
                     const rooms: Room[] = [];
 
-                    for (const room of payload.rooms as RawFullRoom[]) {
-                        const roomObject = Room.fromFullObject(room);
+                    for (const room of payload.rooms as RawRoom[]) {
+                        const roomObject = Room.fromObject(room);
                         rooms.push(roomObject);
                         if (roomObject.id === this.props.selectedRoomId) {
                             this.props.selectedRoomFound(group);
@@ -141,13 +141,13 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                     }
                 })
                 .send()
-                .then((rooms) => {
+                .then((rooms: unknown) => {
                     if (this.state.rooms[group.id] === undefined && rooms !== null) {
                         // FIXME: Va set mais pas update
                         this.setState({
                             rooms: {
                                 ...this.state.rooms,
-                                [group.id]: rooms,
+                                [group.id]: rooms as Room[],
                             },
                         });
                     }
@@ -170,7 +170,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                         ...this.state.rooms,
                         [parentGroup.id]: [
                             ...this.state.rooms[parentGroup.id],
-                            Room.fromFullObject(payload as unknown as RawFullRoom),
+                            Room.fromObject(payload as unknown as RawRoom),
                         ],
                     },
                 });

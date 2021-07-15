@@ -8,7 +8,7 @@ import {Button} from "react-bootstrap";
 import "./actionButtons.scss";
 
 interface ActionButtonsProps {
-    editMessage: (evt: any) => void,
+    editMessage: (evt: React.MouseEvent<HTMLElement, MouseEvent>) => void,
     openModalDeleteMessage: () => void,
 }
 
@@ -20,7 +20,7 @@ class ActionButtons extends React.Component<ActionButtonsProps, {}> {
                 <Button className={"btn btn-secondary btn-sm px-1 py-0"}
                         data-placement={"top"}
                         data-toggle={"tooltip"}
-                        onClick={(evt) => this.props.editMessage(evt)}
+                        onClick={(evt: React.MouseEvent<HTMLElement, MouseEvent>) => this.props.editMessage(evt)}
                         title={"Modifier ce message"}
                         type={"button"}>
                     <FontAwesomeIcon icon={faEdit}/>

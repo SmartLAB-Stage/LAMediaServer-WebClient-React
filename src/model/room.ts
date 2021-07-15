@@ -9,7 +9,7 @@ import {
 /**
  * Room raw
  */
-interface RawFullRoom {
+interface RawRoom {
     id: string,
     isDefault: boolean,
     lastMessage: RawMessage,
@@ -108,12 +108,12 @@ class Room {
         return this._usersCount;
     }
 
-    public static fromFullObject(obj: RawFullRoom): Room {
+    public static fromObject(obj: RawRoom): Room {
         return new this(
             obj.id,
             obj.name,
             obj.isDefault,
-            obj.lastMessage ? Message.fromFullMessage(obj.lastMessage) : null,
+            obj.lastMessage ? Message.fromObject(obj.lastMessage) : null,
             obj.parentRoomId,
             obj.usersCount,
             obj.messagesCount,
@@ -137,4 +137,4 @@ class Room {
 }
 
 export {Room};
-export type {RawFullRoom};
+export type {RawRoom};

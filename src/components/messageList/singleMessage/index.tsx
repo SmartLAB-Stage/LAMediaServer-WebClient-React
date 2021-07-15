@@ -7,7 +7,7 @@ import "./singleMessage.scss";
 
 interface SingleMessageProps {
     concatenate: boolean,
-    editMessage: (evt: any) => void,
+    editMessage: (evt: React.MouseEvent<HTMLElement, MouseEvent>) => void,
     message: Message,
     openModalDeleteMessage: () => void,
 }

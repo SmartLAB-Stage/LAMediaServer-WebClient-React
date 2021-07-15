@@ -121,7 +121,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                 const messages: Message[] = [];
 
                 for (const message of payload.messages as RawMessage[]) {
-                    messages.unshift(Message.fromFullMessage(message));
+                    messages.unshift(Message.fromObject(message));
                 }
 
                 this.setState({
@@ -143,7 +143,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                 this.setState({
                     messages: [
                         ...this.state.messages,
-                        Message.fromFullMessage(data as RawMessage),
+                        Message.fromObject(data as RawMessage),
                     ],
                 });
             }),
@@ -199,7 +199,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
                 for (let i = 0; i < messages.length; ++i) {
                     if (messages[i].id === editedMessage.message.id) {
-                        messages[i] = Message.fromFullMessage(editedMessage.message);
+                        messages[i] = Message.fromObject(editedMessage.message);
                         break;
                     }
                 }
@@ -231,7 +231,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                 <SingleMessage key={message.id}
                                message={message}
                                concatenate={concatenate}
-                               editMessage={(evt) => this._editMessage(evt)}
+                               editMessage={(evt) => void null} /* TODO: Gérer cet event */
                                openModalDeleteMessage={() => this._openModalDeleteMessage(message)}
                 />,
             );
@@ -245,10 +245,6 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             deletedMessage: message,
             deleteModalOpen: true,
         });
-    }
-
-    private _editMessage(evt: any): void {
-
     }
 
     private _deleteMessage(message: Message): void {

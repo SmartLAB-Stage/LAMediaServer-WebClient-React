@@ -12,11 +12,11 @@ import {
 } from "model/currentUser";
 import {
     Group,
-    RawFullGroup,
+    RawGroup,
 } from "model/group";
 import {Room} from "model/room";
 import {
-    RawFullUser,
+    RawUser,
     User,
 } from "model/user";
 import {
@@ -223,7 +223,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .onSuccess((payload) => {
                 if (payload !== null) {
                     this.setState({
-                        meUser: CurrentUser.fromFullUser(payload as unknown as RawCurrentUser),
+                        meUser: CurrentUser.fromObject(payload as unknown as RawCurrentUser),
                     });
                 }
             })
@@ -238,8 +238,8 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .canceledWhen(() => !this._active)
             .onSuccess((payload) => {
                 const users: User[] = [];
-                for (const user of payload.users as RawFullUser[]) {
-                    users.push(User.fromFullUser(user));
+                for (const user of payload.users as RawUser[]) {
+                    users.push(User.fromObject(user));
                 }
 
                 this.setState({
@@ -256,7 +256,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             selectedGroup: newGroup,
         });
 
-        let state: any = {
+        let state: Record<string, unknown> = {
             ...this.state,
         };
         state.openViduSession = undefined;
@@ -295,8 +295,8 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .onSuccess((payload) => {
                 const groups: Group[] = [];
 
-                for (const group of payload.groups as RawFullGroup[]) {
-                    groups.push(Group.fromFullObject(group));
+                for (const group of payload.groups as RawGroup[]) {
+                    groups.push(Group.fromObject(group));
                 }
 
                 this.setState({
@@ -318,7 +318,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             })
             .onSuccess((status, data) => {
                 this.setState({
-                    groups: [...this.state.groups, Group.fromFullObject(data.payload as RawFullGroup)],
+                    groups: [...this.state.groups, Group.fromObject(data.payload as RawGroup)],
                 });
             })
             .send()
@@ -351,7 +351,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
     private _onStreamCreated(evt: StreamEvent) {
         const connection = evt.stream.connection;
-        const user = User.fromFullUser(JSON.parse(connection.data));
+        const user = User.fromObject(JSON.parse(connection.data));
 
         if (user.username !== this.state.meUser?.username) {
             console.warn(user);

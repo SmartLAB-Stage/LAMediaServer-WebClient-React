@@ -5,7 +5,7 @@ import {APIWebSocket} from "helper/APIWebSocket";
 import {Group} from "model/group";
 import {Presence} from "model/presence";
 import {
-    RawFullUser,
+    RawUser,
     User,
 } from "model/user";
 import React from "react";
@@ -106,7 +106,7 @@ class UserList extends React.Component<UserListProps, UserListState> {
             .canceledWhen(() => !this._active)
             .onSuccess((payload) => {
                 this.setState({
-                    selectedUserForInfos: User.fromFullUser(payload as unknown as RawFullUser),
+                    selectedUserForInfos: User.fromObject(payload as unknown as RawUser),
                     modalUserInfosOpen: true,
                 });
             })
@@ -129,8 +129,8 @@ class UserList extends React.Component<UserListProps, UserListState> {
             .onSuccess((payload) => {
                 const users: User[] = [];
 
-                for (const user of payload.users as RawFullUser[]) {
-                    users.push(User.fromFullUser(user));
+                for (const user of payload.users as RawUser[]) {
+                    users.push(User.fromObject(user));
                 }
 
                 this.setState({

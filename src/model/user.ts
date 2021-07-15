@@ -1,17 +1,14 @@
 import {Presence} from "model/presence";
 import {Role} from "model/role";
 
-interface RawPartialUser {
+interface RawUser {
     id: string,
     isMe: boolean,
     name: string,
     roles: Role[] | null,
-    username: string,
-}
-
-interface RawFullUser extends RawPartialUser {
     status: Presence,
     statusMessage: string | null,
+    username: string,
 }
 
 /**
@@ -84,18 +81,7 @@ class User {
         return this._username;
     }
 
-    public static fromPartialUser(rawUser: RawPartialUser): User {
-        return new this(
-            rawUser.id,
-            rawUser.username,
-            rawUser.name,
-            rawUser.isMe,
-            null,
-            Presence.UNKNOWN,
-        );
-    }
-
-    public static fromFullUser(rawUser: RawFullUser): User {
+    public static fromObject(rawUser: RawUser): User {
         return new this(
             rawUser.id,
             rawUser.username,
@@ -126,7 +112,4 @@ class User {
 }
 
 export {User};
-export type {
-    RawFullUser,
-    RawPartialUser,
-};
+export type {RawUser};
