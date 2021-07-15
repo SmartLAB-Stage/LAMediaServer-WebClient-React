@@ -3,22 +3,15 @@ import colors from "colors.module.scss";
 import {GroupList} from "components/groupList";
 import {MessageList} from "components/messageList";
 import {PersonalInfos} from "components/personalInfos";
-import {RoomOrGroupCreationModal} from "components/shared/roomOrGroupCreationModal";
 import {UserList} from "components/userList";
 import {APIRequest} from "helper/APIRequest";
 import {
     CurrentUser,
     RawCurrentUser,
 } from "model/currentUser";
-import {
-    Group,
-    RawGroup,
-} from "model/group";
+import {Group} from "model/group";
 import {Room} from "model/room";
-import {
-    RawUser,
-    User,
-} from "model/user";
+import {User} from "model/user";
 import {
     VideoconferencePublisher,
     VideoconferenceSubscriber,
@@ -38,11 +31,8 @@ interface RoomProps {
 }
 
 interface RoomState {
-    allUsers: User[],
-    createModalOpen: boolean,
     currentMessageContent: string,
     currentRoomId: string | null,
-    groups: Group[],
     meUser: CurrentUser | null,
     openViduSessionInfos: null | {
         sessionId: string,
@@ -69,11 +59,8 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         this._openViduSession = this._openVidu.initSession();
 
         this.state = {
-            allUsers: [],
-            createModalOpen: false,
             currentMessageContent: "",
             currentRoomId: this.props.currentRoomId,
-            groups: [],
             meUser: null,
             openViduSessionInfos: null,
             videoconferencePublisher: null,
@@ -92,10 +79,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                                     currentRoomChangeCallback={(room: Room, group: Group) => {
                                         this._currentRoomChangeCallback(room, group);
                                     }}
-                                    groups={this.state.groups}
-                                    newGroupCreatedCallback={() => this.setState({
-                                        createModalOpen: true,
-                                    })}
                                     selectedRoomId={this.state.currentRoomId}
                                     videoConferenceChangeCallback={(room: Room, _group: Group) => {
                                         this._videoConferenceChangeCallback(room);
@@ -172,20 +155,13 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                         <UserList currentRoomId={this.state.currentRoomId}/>
                     </div>
                 </div>
-                <RoomOrGroupCreationModal closeModalAction={() => this.setState({createModalOpen: false})}
-                                          createAction={(name: string, memberIds: string[]) => this._createNewGroup(name, memberIds)}
-                                          modalOpen={this.state.createModalOpen}
-                                          isRoom={true}
-                                          users={this.state.allUsers}/>
             </main>
         );
     }
 
     public componentDidMount(): void {
         this._active = true;
-        this._updateGroupsFromAPI();
         this._updateMyInfos();
-        this._fetchAllUsers();
 
         if (this.state.currentRoomId !== null) {
             window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentRoomId));
@@ -224,26 +200,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .then();
     }
 
-    private _fetchAllUsers(): void {
-        APIRequest
-            .get("/user/list")
-            .authenticate()
-            .canceledWhen(() => !this._active)
-            .onSuccess((payload) => {
-                const users: User[] = [];
-                for (const user of payload.users as RawUser[]) {
-                    users.push(User.fromObject(user));
-                }
-
-                this.setState({
-                    allUsers: users,
-                });
-            })
-            .send()
-            .then();
-    }
-
-    private _currentRoomChangeCallback(newRoom: Room, newGroup: Group): void {
+    private _currentRoomChangeCallback(newRoom: Room, _newGroup: Group): void {
         this.setState({
             currentRoomId: newRoom.id,
         });
@@ -277,44 +234,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
             this._connectToVideoConference(streamId);
         }
-    }
-
-    private _updateGroupsFromAPI(): void {
-        APIRequest
-            .get("/group/list")
-            .authenticate()
-            .canceledWhen(() => !this._active)
-            .onSuccess((payload) => {
-                const groups: Group[] = [];
-
-                for (const group of payload.groups as RawGroup[]) {
-                    groups.push(Group.fromObject(group));
-                }
-
-                this.setState({
-                    groups,
-                });
-            })
-            .send()
-            .then();
-    }
-
-    private _createNewGroup(name: string, memberIds: string[]): void {
-        APIRequest
-            .post("/group/create")
-            .authenticate()
-            .canceledWhen(() => !this._active)
-            .withPayload({
-                name,
-                memberIds,
-            })
-            .onSuccess((status, data) => {
-                this.setState({
-                    groups: [...this.state.groups, Group.fromObject(data.payload as RawGroup)],
-                });
-            })
-            .send()
-            .then();
     }
 
     private async _handleSendMessage(evt: FormEvent): Promise<void> {

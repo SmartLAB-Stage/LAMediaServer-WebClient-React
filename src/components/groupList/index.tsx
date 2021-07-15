@@ -1,26 +1,34 @@
-import {faPlus} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {APIRequest} from "helper/APIRequest";
-import {Group} from "model/group";
 import {
-    RawRoom,
-    Room,
-} from "model/room";
+    faPlus,
+    faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {RoomOrGroupCreationModal} from "components/shared/roomOrGroupCreationModal";
+import {APIRequest} from "helper/APIRequest";
+import {
+    Group,
+    RawGroup,
+} from "model/group";
+import {Room} from "model/room";
+import {
+    RawUser,
+    User,
+} from "model/user";
 import React from "react";
 import {Button} from "react-bootstrap";
 import {RoomList} from "./roomList";
 
 interface GroupListProps {
     currentRoomChangeCallback: (room: Room, group: Group) => void,
-    groups: Group[],
-    newGroupCreatedCallback: () => void,
     selectedRoomId: string | null,
     videoConferenceChangeCallback: (room: Room, group: Group) => void,
     videoConferenceConnectedRoomId: string | null,
 }
 
 interface GroupListState {
-    rooms: Record<string, Room[]>,
+    allUsers: User[],
+    createModalOpen: boolean,
+    groups: Group[],
 }
 
 class GroupList extends React.Component<GroupListProps, GroupListState> {
@@ -30,33 +38,35 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         super(props);
 
         this.state = {
-            rooms: {},
+            allUsers: [],
+            createModalOpen: false,
+            groups: [],
         };
     }
 
     public componentDidMount(): void {
         this._active = true;
+        this._updateGroupsFromAPI();
+        this._fetchAllUsers();
     }
 
     public componentWillUnmount(): void {
         this._active = false;
     }
 
-    componentDidUpdate(prevProps: GroupListProps): void {
-        if (prevProps.groups !== this.props.groups) {
-            this._updateRoomsFromAPI();
-        }
-    }
-
     public render(): React.ReactNode {
         const groupsComponent: React.ReactNode[] = [];
         let expanded = true;
 
-        for (const group of this.props.groups) {
+        for (const group of this.state.groups) {
             groupsComponent.push(
                 <div key={`group-list-group-${group.id}`} className={"card"}>
                     <div className={"card-header"} id={`heading_${group.id}`}>
                         <h5 className={"mb-0"}>
+                            <Button className={"btn btn-sm btn-danger"}
+                                    onClick={() => this._deleteGroup(group)}>
+                                <FontAwesomeIcon icon={faTrash}/>
+                            </Button>
                             <button className={"btn btn-link " + (expanded ? null : "collapsed")}
                                     data-toggle={"collapse"}
                                     data-target={`#collapse_${group.id}`}
@@ -77,11 +87,6 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                                           (room: Room) => this.props.currentRoomChangeCallback(room, group)
                                       }
                                       group={group}
-                                      newRoomCreatedCallback={() => this._createNewRoom(group, "test-room")} // TODO: Set ce nom
-                                      rooms={this.state.rooms[group.id] !== undefined
-                                          ? this.state.rooms[group.id]
-                                          : []
-                                      }
                                       selectedRoomId={this.props.selectedRoomId}
                                       videoConferenceChangeCallback={
                                           (room: Room) => this.props.videoConferenceChangeCallback(room, group)
@@ -100,72 +105,79 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
             <div className={"room-list bg-white"}>
                 <div id={"accordion"}>
                     <Button className={"btn btn-sm btn-success"}
-                            onClick={() => this.props.newGroupCreatedCallback()}>
+                            onClick={() => this.setState({
+                                createModalOpen: true,
+                            })}>
                         <FontAwesomeIcon icon={faPlus}/>
                     </Button>
                     {groupsComponent}
                 </div>
+                <RoomOrGroupCreationModal closeModalAction={() => this.setState({createModalOpen: false})}
+                                          createAction={(name: string, memberIds: string[]) => {
+                                              this._createNewGroup(name, memberIds);
+                                          }}
+                                          modalOpen={this.state.createModalOpen}
+                                          isRoom={true}
+                                          users={this.state.allUsers}/>
             </div>
         );
     }
 
-    private _updateRoomsFromAPI(): void {
-        for (const group of this.props.groups) {
-            APIRequest
-                .get("/group/room/list")
-                .authenticate()
-                .canceledWhen(() => !this._active)
-                .withPayload({
-                    groupRoomId: group.roomId,
-                })
-                .onSuccess((payload) => {
-                    const rooms: Room[] = [];
-                    for (const room of payload.rooms as RawRoom[]) {
-                        rooms.push(Room.fromObject(room));
-                    }
-                    return rooms;
-                })
-                .onFailure((status) => {
-                    // FIXME: Si ce cas de figure arrive c'est que ce groupe a été supprimé
-                    if (status === 404) {
-                        return [] as Room[];
-                    } else {
-                        return null;
-                    }
-                })
-                .send()
-                .then((rooms: unknown) => {
-                    if (this.state.rooms[group.id] === undefined && rooms !== null) {
-                        // FIXME: Va set mais pas update
-                        this.setState({
-                            rooms: {
-                                ...this.state.rooms,
-                                [group.id]: rooms as Room[],
-                            },
-                        });
-                    }
-                });
-        }
+    private _deleteGroup(deletedGroup: Group): void {
+
     }
 
-    private _createNewRoom(parentGroup: Group, name: string): void {
+    private _updateGroupsFromAPI(): void {
         APIRequest
-            .post("/group/room/create")
+            .get("/group/list")
+            .authenticate()
+            .canceledWhen(() => !this._active)
+            .onSuccess((payload) => {
+                const groups: Group[] = [];
+
+                for (const group of payload.groups as RawGroup[]) {
+                    groups.push(Group.fromObject(group));
+                }
+
+                this.setState({
+                    groups,
+                });
+            })
+            .send()
+            .then();
+    }
+
+    private _createNewGroup(name: string, memberIds: string[]): void {
+        APIRequest
+            .post("/group/create")
             .authenticate()
             .canceledWhen(() => !this._active)
             .withPayload({
-                groupRoomId: parentGroup.roomId,
                 name,
+                memberIds,
             })
-            .onSuccess((payload) => {
+            .onSuccess((status, data) => {
                 this.setState({
-                    rooms: {
-                        ...this.state.rooms,
-                        [parentGroup.id]: [
-                            ...this.state.rooms[parentGroup.id],
-                            Room.fromObject(payload as unknown as RawRoom),
-                        ],
-                    },
+                    groups: [...this.state.groups, Group.fromObject(data.payload as RawGroup)],
+                });
+            })
+            .send()
+            .then();
+    }
+
+    private _fetchAllUsers(): void {
+        APIRequest
+            .get("/user/list")
+            .authenticate()
+            .canceledWhen(() => !this._active)
+            .onSuccess((payload) => {
+                const users: User[] = [];
+                for (const user of payload.users as RawUser[]) {
+                    users.push(User.fromObject(user));
+                }
+
+                this.setState({
+                    allUsers: users,
                 });
             })
             .send()
