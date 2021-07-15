@@ -40,14 +40,22 @@ class RoomOrGroupCreationModal extends React.Component<RoomOrGroupCreationModalP
             checkboxes.push(
                 <div key={key} className={"form-check"}>
                     <input className={"form-check-input"}
-                           defaultChecked={false}
+                           defaultChecked={user.isMe}
+                           disabled={user.isMe}
                            id={id}
                            onClick={() => this._childInputClicked()}
                            ref={this._inputRefs[user.id]}
                            type={"checkbox"}/>
                     <label className={"form-check-label"} htmlFor={id}>
                         <div className={"d-flex justify-content-between bd-highlight mb-0"}>
-                            <div className="pr-2 bd-highlight">{user.name}</div>
+                            <div className="pr-2 bd-highlight">
+                                {user.name}
+                                {
+                                    user.isMe
+                                        ? <span>&nbsp;<i>(vous)</i></span>
+                                        : null
+                                }
+                            </div>
                             <div className={"pl-1 bd-highlight"}>
                                 <PresenceBadge presence={user.status}/>
                             </div>
@@ -113,7 +121,7 @@ class RoomOrGroupCreationModal extends React.Component<RoomOrGroupCreationModalP
     private _enableOrDisableAll(): void {
         for (const key of Object.keys(this._inputRefs)) {
             const ref = this._inputRefs[key];
-            if (ref.current !== null) {
+            if (ref.current !== null && !ref.current.disabled) {
                 ref.current.checked = this._checkAll;
             }
         }
@@ -132,7 +140,7 @@ class RoomOrGroupCreationModal extends React.Component<RoomOrGroupCreationModalP
 
         for (const key of Object.keys(this._inputRefs)) {
             const ref = this._inputRefs[key];
-            if (ref.current !== null) {
+            if (ref.current !== null && !ref.current.disabled) {
                 if (ref.current.checked) {
                     allUnchecked = false;
                 } else {
