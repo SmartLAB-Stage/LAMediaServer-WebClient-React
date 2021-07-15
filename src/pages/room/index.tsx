@@ -48,7 +48,6 @@ interface RoomState {
         sessionId: string,
         targetWebSocketURL: string,
     },
-    selectedGroup: Group | null,
     videoconferencePublisher: VideoconferencePublisher | null,
     videoconferenceSubscribersConnections: VideoconferenceSubscriber[],
 }
@@ -77,7 +76,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             groups: [],
             meUser: null,
             openViduSessionInfos: null,
-            selectedGroup: null,
             videoconferencePublisher: null,
             videoconferenceSubscribersConnections: [],
         };
@@ -98,11 +96,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                                     newGroupCreatedCallback={() => this.setState({
                                         createModalOpen: true,
                                     })}
-                                    selectedRoomFound={(group: Group) => {
-                                        this.setState({
-                                            selectedGroup: group,
-                                        });
-                                    }}
                                     selectedRoomId={this.state.currentRoomId}
                                     videoConferenceChangeCallback={(room: Room, _group: Group) => {
                                         this._videoConferenceChangeCallback(room);
@@ -176,7 +169,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                         </Form>
                     </div>
                     <div className={"col-2 px-0"}>
-                        <UserList selectedGroup={this.state.selectedGroup}/>
+                        <UserList currentRoomId={this.state.currentRoomId}/>
                     </div>
                 </div>
                 <RoomOrGroupCreationModal closeModalAction={() => this.setState({createModalOpen: false})}
@@ -253,7 +246,6 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
     private _currentRoomChangeCallback(newRoom: Room, newGroup: Group): void {
         this.setState({
             currentRoomId: newRoom.id,
-            selectedGroup: newGroup,
         });
 
         let state: Record<string, unknown> = {

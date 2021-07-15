@@ -1,7 +1,6 @@
 import {UserInfosModal} from "components/shared/userInfosModal";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
-import {Group} from "model/group";
 import {Presence} from "model/presence";
 import {
     RawUser,
@@ -12,7 +11,7 @@ import {SingleUser} from "./singleUser";
 import "./userList.scss";
 
 interface UserListProps {
-    selectedGroup: Group | null,
+    currentRoomId: string | null,
 }
 
 interface UserListState {
@@ -44,13 +43,17 @@ class UserList extends React.Component<UserListProps, UserListState> {
         this._setSocketNameUpdated();
         this._setSocketPresenceUpdated();
 
+        if (this.props.currentRoomId !== null) {
+            this._updateUsersFromAPI();
+        }
+
         for (const sock of this._sockets) {
             sock.open();
         }
     }
 
     public componentDidUpdate(prevProps: UserListProps): void {
-        if (this.props.selectedGroup !== null && prevProps.selectedGroup !== this.props.selectedGroup) {
+        if (this.props.currentRoomId !== null && prevProps.currentRoomId !== this.props.currentRoomId) {
             this._updateUsersFromAPI();
         }
     }
@@ -115,15 +118,15 @@ class UserList extends React.Component<UserListProps, UserListState> {
     }
 
     private _updateUsersFromAPI(): void {
-        if (this.props.selectedGroup === null) {
+        if (this.props.currentRoomId === null) {
             return;
         }
 
         APIRequest
-            .get("/group/user/list")
+            .get("/group/room/user/list")
             .authenticate()
             .withPayload({
-                groupId: this.props.selectedGroup.id,
+                roomId: this.props.currentRoomId,
             })
             .canceledWhen(() => !this._active)
             .onSuccess((payload) => {

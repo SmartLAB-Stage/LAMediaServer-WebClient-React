@@ -14,7 +14,6 @@ interface GroupListProps {
     currentRoomChangeCallback: (room: Room, group: Group) => void,
     groups: Group[],
     newGroupCreatedCallback: () => void,
-    selectedRoomFound: (parentGroup: Group) => void,
     selectedRoomId: string | null,
     videoConferenceChangeCallback: (room: Room, group: Group) => void,
     videoConferenceConnectedRoomId: string | null,
@@ -121,15 +120,9 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                 })
                 .onSuccess((payload) => {
                     const rooms: Room[] = [];
-
                     for (const room of payload.rooms as RawRoom[]) {
-                        const roomObject = Room.fromObject(room);
-                        rooms.push(roomObject);
-                        if (roomObject.id === this.props.selectedRoomId) {
-                            this.props.selectedRoomFound(group);
-                        }
+                        rooms.push(Room.fromObject(room));
                     }
-
                     return rooms;
                 })
                 .onFailure((status) => {
