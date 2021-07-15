@@ -3,6 +3,7 @@ import {
     faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {ConfirmationModal} from "components/shared/confirmationModal";
 import {RoomOrGroupCreationModal} from "components/shared/roomOrGroupCreationModal";
 import {APIRequest} from "helper/APIRequest";
 import {
@@ -28,7 +29,9 @@ interface GroupListProps {
 interface GroupListState {
     allUsers: User[],
     createModalOpen: boolean,
+    deleteModalOpen: boolean,
     groups: Group[],
+    selectedGroupToDelete: Group | null,
 }
 
 class GroupList extends React.Component<GroupListProps, GroupListState> {
@@ -40,7 +43,9 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         this.state = {
             allUsers: [],
             createModalOpen: false,
+            deleteModalOpen: false,
             groups: [],
+            selectedGroupToDelete: null,
         };
     }
 
@@ -64,7 +69,10 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                     <div className={"card-header"} id={`heading_${group.id}`}>
                         <h5 className={"mb-0"}>
                             <Button className={"btn btn-sm btn-danger"}
-                                    onClick={() => this._deleteGroup(group)}>
+                                    onClick={() => this.setState({
+                                        selectedGroupToDelete: group,
+                                        deleteModalOpen: true,
+                                    })}>
                                 <FontAwesomeIcon icon={faTrash}/>
                             </Button>
                             <button className={"btn btn-link " + (expanded ? null : "collapsed")}
@@ -112,6 +120,14 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                     </Button>
                     {groupsComponent}
                 </div>
+                <ConfirmationModal body={"Voulez-vous vraiment supprimer ce groupe ?"}
+                                   modalClosedCallback={() => this.setState({
+                                       selectedGroupToDelete: null,
+                                       deleteModalOpen: false,
+                                   })}
+                                   modalActionCallback={() => this._deleteGroup()}
+                                   open={this.state.deleteModalOpen}
+                                   title={"Supprimer ce message"}/>
                 <RoomOrGroupCreationModal closeModalAction={() => this.setState({createModalOpen: false})}
                                           createAction={(name: string, memberIds: string[]) => {
                                               this._createNewGroup(name, memberIds);
@@ -123,8 +139,35 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         );
     }
 
-    private _deleteGroup(deletedGroup: Group): void {
+    private _deleteGroup(): void {
+        if (this.state.selectedGroupToDelete !== null) {
+            const groupId = this.state.selectedGroupToDelete.id;
+            APIRequest
+                .delete("/group/delete")
+                .authenticate()
+                .canceledWhen(() => !this._active)
+                .withPayload({
+                    groupId,
+                })
+                .onSuccess(() => {
+                    const groups: Group[] = [];
+                    for (const group of this.state.groups) {
+                        if (group.id !== groupId) {
+                            groups.push(group);
+                        }
+                    }
+                    this.setState({
+                        groups,
+                    });
+                })
+                .send()
+                .then();
+        }
 
+        this.setState({
+            selectedGroupToDelete: null,
+            deleteModalOpen: false,
+        });
     }
 
     private _updateGroupsFromAPI(): void {
