@@ -300,6 +300,8 @@ class APIRequest {
                 window.location.href = "/";
             }
 
+            console.warn(`Erreur de requête: code ${status}, data:`, data);
+
             return this._onFailure(status, data, evt);
         };
 
