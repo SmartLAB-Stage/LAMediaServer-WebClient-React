@@ -1,6 +1,6 @@
+import {PresenceBadge} from "components/presenceBadge";
 import {ProfilePicture} from "components/profilePicture";
 import {CurrentUser} from "model/currentUser";
-import {presenceToReadableInfos} from "model/presence";
 import {User} from "model/user";
 import React from "react";
 import {
@@ -17,7 +17,6 @@ interface OtherUserInfosModalProps {
 
 class UserInfosModal extends React.Component<OtherUserInfosModalProps, {}> {
     public render(): React.ReactNode {
-        const infos = presenceToReadableInfos(this.props.user.status);
         return (
             <Modal className={"user-infos-modal"}
                    show={this.props.modalOpen}
@@ -55,9 +54,7 @@ class UserInfosModal extends React.Component<OtherUserInfosModalProps, {}> {
                             <tr>
                                 <th scope={"row"}>Statut</th>
                                 <td>
-                                    <span className={"badge badge-outline badge-sm badge-pill badge-" + infos.badgeColor}>
-                                        {infos.status}
-                                    </span>
+                                    <PresenceBadge presence={this.props.user.status}/>
                                 </td>
                             </tr>
                             <tr>
