@@ -1,3 +1,4 @@
+import {ConfirmationModal} from "components/shared/confirmationModal";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
 import {
@@ -5,7 +6,6 @@ import {
     RawMessage,
 } from "model/message";
 import React from "react";
-import {DeleteModal} from "./deleteModal";
 import "./messageList.scss";
 import {SingleMessage} from "./singleMessage";
 
@@ -64,10 +64,11 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
         return (
             <>
-                <DeleteModal closeModalAction={() => handleClose()}
-                             deleteMessageAction={() => handleDeleteMessage()}
-                             deleteModalOpen={this.state.deleteModalOpen}
-                />
+                <ConfirmationModal body={"Voulez-vous vraiment supprimer ce message ?"}
+                                   modalClosedCallback={() => handleClose()}
+                                   modalActionCallback={() => handleDeleteMessage()}
+                                   open={this.state.deleteModalOpen}
+                                   title={"Supprimer ce message"}/>
                 {this._renderMessageList()}
             </>
         );
