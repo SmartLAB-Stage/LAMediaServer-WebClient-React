@@ -85,7 +85,7 @@ class UserList extends React.Component<UserListProps, UserListState> {
                                                         modalUserInfosOpen: false,
                                                     });
                                                 }}
-                                                userInfosModalOpen={this.state.modalUserInfosOpen}/>
+                                                modalOpen={this.state.modalUserInfosOpen}/>
                             ) : null
                     }
                 </ul>

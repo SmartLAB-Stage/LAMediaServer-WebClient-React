@@ -65,7 +65,7 @@ class PersonalInfos extends React.Component<PersonalInfosProps, PersonalInfosSta
                                                   personalInfosModalOpen: false,
                                               });
                                           }}
-                                          userInfosModalOpen={this.state.personalInfosModalOpen}/>
+                                          modalOpen={this.state.personalInfosModalOpen}/>
                 }
             </>
         );

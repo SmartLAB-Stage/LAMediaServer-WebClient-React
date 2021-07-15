@@ -12,7 +12,7 @@ import "./userInfosModal.scss";
 interface OtherUserInfosModalProps {
     user: User | CurrentUser,
     closeModalAction: () => void,
-    userInfosModalOpen: boolean,
+    modalOpen: boolean,
 }
 
 class UserInfosModal extends React.Component<OtherUserInfosModalProps, {}> {
@@ -20,7 +20,7 @@ class UserInfosModal extends React.Component<OtherUserInfosModalProps, {}> {
         const infos = presenceToReadableInfos(this.props.user.status);
         return (
             <Modal className={"user-infos-modal"}
-                   show={this.props.userInfosModalOpen}
+                   show={this.props.modalOpen}
                    onHide={this.props.closeModalAction}>
                 <Modal.Header closeButton={true}>
                     <Modal.Title>
