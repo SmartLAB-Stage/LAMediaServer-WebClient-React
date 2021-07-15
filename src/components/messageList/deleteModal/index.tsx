@@ -14,15 +14,15 @@ class DeleteModal extends React.Component<DeleteModalProps, {}> {
     public render(): React.ReactNode {
         return (
             <Modal show={this.props.deleteModalOpen} onHide={this.props.closeModalAction}>
-                <Modal.Header closeButton>
+                <Modal.Header closeButton={true}>
                     <Modal.Title>Supprimer ce message</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>Voulez-vous vraiment supprimer ce message ?</Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={this.props.closeModalAction}>
+                    <Button variant={"secondary"} onClick={this.props.closeModalAction}>
                         Annuler
                     </Button>
-                    <Button variant="primary" onClick={this.props.deleteMessageAction}>
+                    <Button variant={"primary"} onClick={this.props.deleteMessageAction}>
                         Confirmer
                     </Button>
                 </Modal.Footer>
