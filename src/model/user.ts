@@ -11,6 +11,7 @@ interface RawPartialUser {
 
 interface RawFullUser extends RawPartialUser {
     status: Presence,
+    statusMessage: string | null,
 }
 
 /**
