@@ -14,17 +14,16 @@ interface MessageListProps {
 }
 
 interface MessageListState {
-    deletedMessage: Message | null,
     deleteModalOpen: boolean,
-    editedMessage: Message | null,
     messages: Message[],
+    selectedMessageToDelete: Message | null,
+    selectedMessageToEdit: Message | null,
 }
 
 class MessageList extends React.Component<MessageListProps, MessageListState> {
     private static _currentUpdateVersion = NaN;
     private _active: boolean;
     private _alreadyScrolledDown: boolean;
-    private _currentUpdateVersion: number;
     private readonly _sockets: APIWebSocket[];
 
     public constructor(props: MessageListProps) {
@@ -33,40 +32,25 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         this._active = false;
 
         this._alreadyScrolledDown = false;
-        this._currentUpdateVersion = NaN;
         this._sockets = [];
 
         this.state = {
-            deletedMessage: null,
+            selectedMessageToDelete: null,
             deleteModalOpen: false,
-            editedMessage: null,
+            selectedMessageToEdit: null,
             messages: [],
         };
     }
 
     public render(): React.ReactNode {
-        const handleClose = () => this.setState({
-            deletedMessage: null,
-            deleteModalOpen: false,
-        });
-
-        const handleDeleteMessage = () => {
-            const deletedMessage = this.state.deletedMessage;
-            this.setState({
-                deletedMessage: null,
-                deleteModalOpen: false,
-            });
-
-            if (deletedMessage !== null) {
-                this._deleteMessage(deletedMessage);
-            }
-        };
-
         return (
             <>
                 <ConfirmationModal body={"Voulez-vous vraiment supprimer ce message ?"}
-                                   modalClosedCallback={() => handleClose()}
-                                   modalActionCallback={() => handleDeleteMessage()}
+                                   modalClosedCallback={() => this.setState({
+                                       selectedMessageToDelete: null,
+                                       deleteModalOpen: false,
+                                   })}
+                                   modalActionCallback={() => this._deleteMessage()}
                                    open={this.state.deleteModalOpen}
                                    title={"Supprimer ce message"}/>
                 {this._renderMessageList()}
@@ -76,9 +60,6 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
     public componentDidMount(): void {
         this._active = true;
-
-        MessageList._currentUpdateVersion = Math.random();
-        this._currentUpdateVersion = MessageList._currentUpdateVersion;
 
         this._getAllMessages();
 
@@ -108,6 +89,26 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         }
 
         this._active = false;
+    }
+
+    private _deleteMessage(): void {
+        if (this.state.selectedMessageToDelete !== null) {
+            APIRequest
+                .delete("/group/room/message/delete")
+                .authenticate()
+                .canceledWhen(() => !this._active)
+                .withPayload({
+                    messageId: this.state.selectedMessageToDelete.id,
+                    roomId: this.props.roomId, // Ou `message.roomId` ?
+                })
+                .send()
+                .then();
+        }
+
+        this.setState({
+            selectedMessageToDelete: null,
+            deleteModalOpen: false,
+        });
     }
 
     private _getAllMessages() {
@@ -233,32 +234,15 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                                message={message}
                                concatenate={concatenate}
                                editMessage={(evt) => void null} /* TODO: Gérer cet event */
-                               openModalDeleteMessage={() => this._openModalDeleteMessage(message)}
+                               openModalDeleteMessage={() => this.setState({
+                                   selectedMessageToDelete: message,
+                                   deleteModalOpen: true,
+                               })}
                 />,
             );
         }
 
         return messages;
-    }
-
-    private _openModalDeleteMessage(message: Message): void {
-        this.setState({
-            deletedMessage: message,
-            deleteModalOpen: true,
-        });
-    }
-
-    private _deleteMessage(message: Message): void {
-        APIRequest
-            .delete("/group/room/message/delete")
-            .authenticate()
-            .canceledWhen(() => this._currentUpdateVersion !== MessageList._currentUpdateVersion)
-            .withPayload({
-                messageId: message.id,
-                roomId: this.props.roomId, // Ou `message.roomId` ?
-            })
-            .send()
-            .then();
     }
 }
 
