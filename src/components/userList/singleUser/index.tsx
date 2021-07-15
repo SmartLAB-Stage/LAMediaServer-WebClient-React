@@ -1,5 +1,5 @@
-import {PresenceBadge} from "components/presenceBadge";
-import {ProfilePicture} from "components/profilePicture";
+import {PresenceBadge} from "components/shared/presenceBadge";
+import {ProfilePicture} from "components/shared/profilePicture";
 import {User} from "model/user";
 import React from "react";
 import "./singleUser.scss";

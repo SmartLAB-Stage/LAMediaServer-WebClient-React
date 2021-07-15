@@ -1,11 +1,11 @@
-import {PersonalVideoControls} from "components/personalInfos/personalVideoControls";
-import {PersonalVideoPreview} from "components/personalInfos/personalVideoPreview";
-import {ProfilePicture} from "components/profilePicture";
-import {UserInfosModal} from "components/userInfosModal";
+import {ProfilePicture} from "components/shared/profilePicture";
+import {UserInfosModal} from "components/shared/userInfosModal";
 import {CurrentUser} from "model/currentUser";
 import {VideoconferencePublisher} from "model/videoconference";
 import React from "react";
 import "./personalInfos.scss";
+import {PersonalVideoControls} from "./personalVideoControls";
+import {PersonalVideoPreview} from "./personalVideoPreview";
 
 interface PersonalInfosProps {
     user: CurrentUser | null,

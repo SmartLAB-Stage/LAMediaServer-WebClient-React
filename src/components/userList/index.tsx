@@ -1,5 +1,4 @@
-import {UserInfosModal} from "components/userInfosModal";
-import {SingleUser} from "components/userList/singleUser";
+import {UserInfosModal} from "components/shared/userInfosModal";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
 import {Group} from "model/group";
@@ -9,6 +8,7 @@ import {
     User,
 } from "model/user";
 import React from "react";
+import {SingleUser} from "./singleUser";
 import "./userList.scss";
 
 interface UserListProps {

@@ -1,6 +1,5 @@
 import {faPlus} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {RoomList} from "components/roomList";
 import {APIRequest} from "helper/APIRequest";
 import {Group} from "model/group";
 import {
@@ -9,6 +8,7 @@ import {
 } from "model/room";
 import React from "react";
 import {Button} from "react-bootstrap";
+import {RoomList} from "./roomList";
 
 interface GroupListProps {
     currentRoomChangeCallback: (room: Room, group: Group) => void,

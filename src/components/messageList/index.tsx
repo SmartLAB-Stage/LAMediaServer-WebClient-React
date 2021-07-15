@@ -1,5 +1,3 @@
-import {DeleteModal} from "components/messageList/deleteModal";
-import {SingleMessage} from "components/messageList/singleMessage";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
 import {
@@ -7,7 +5,9 @@ import {
     RawMessage,
 } from "model/message";
 import React from "react";
+import {DeleteModal} from "./deleteModal";
 import "./messageList.scss";
+import {SingleMessage} from "./singleMessage";
 
 interface MessageListProps {
     roomId: string,

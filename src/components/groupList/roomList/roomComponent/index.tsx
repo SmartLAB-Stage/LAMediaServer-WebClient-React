@@ -1,10 +1,11 @@
-import {CallButton} from "components/roomList/roomComponent/callButton";
 import {Room} from "model/room";
 import React from "react";
 import {
     OverlayTrigger,
     Tooltip,
 } from "react-bootstrap";
+import {CallButton} from "./callButton";
+import "./roomComponent.scss";
 
 interface RoomComponentProps {
     currentRoomChangeCallback: () => void,
@@ -71,7 +72,7 @@ class RoomComponent extends React.Component<RoomComponentProps, {}> {
                                 </div>
                             </div>
                             {/* eslint-disable-next-line */}
-                            { /* <a href={"#"} className={"stretched-link"}/> */ }
+                            { /* <a href={"#"} className={"stretched-link"}/> */}
                         </div>
                     </OverlayTrigger>
                 </div>

@@ -1,4 +1,4 @@
-import {PresenceBadge} from "components/presenceBadge";
+import {PresenceBadge} from "components/shared/presenceBadge";
 import {User} from "model/user";
 import React from "react";
 import {

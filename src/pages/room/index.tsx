@@ -3,7 +3,7 @@ import colors from "colors.module.scss";
 import {GroupList} from "components/groupList";
 import {MessageList} from "components/messageList";
 import {PersonalInfos} from "components/personalInfos";
-import {RoomOrGroupCreationModal} from "components/roomOrGroupCreationModal";
+import {RoomOrGroupCreationModal} from "components/shared/roomOrGroupCreationModal";
 import {UserList} from "components/userList";
 import {APIRequest} from "helper/APIRequest";
 import {
