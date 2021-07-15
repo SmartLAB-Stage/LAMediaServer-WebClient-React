@@ -4,7 +4,7 @@ import React from "react";
 
 interface ProfilePictureProps {
     flex?: boolean,
-    onClick?: () => void | null,
+    onClick?: () => void,
     user: User | null,
 }
 
@@ -18,11 +18,6 @@ class ProfilePicture extends React.Component<ProfilePictureProps, {}> {
         const img = (
             <img className={"profile-picture align-self-center " + (this.props.flex === false ? null : "d-flex")}
                  src={url}
-                 onClick={() =>
-                     this.props.onClick
-                         ? this.props.onClick()
-                         : void null
-                 }
                  onError={(elt) => {
                      // @ts-ignore
                      const img: HTMLImageElement = elt.target;
@@ -35,7 +30,8 @@ class ProfilePicture extends React.Component<ProfilePictureProps, {}> {
 
         if (this.props.onClick) {
             return (
-                <button type={"button"} className={"btn btn-link"}>
+                // @ts-ignore
+                <button type={"button"} className={"btn btn-link"} onClick={() => this.props.onClick()}>
                     {img}
                 </button>
             );
