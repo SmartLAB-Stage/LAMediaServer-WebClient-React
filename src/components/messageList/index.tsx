@@ -117,10 +117,10 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             .withPayload({
                 roomId: this.props.roomId,
             })
-            .onSuccess((status, data) => {
+            .onSuccess((payload) => {
                 const messages: Message[] = [];
 
-                for (const message of data.payload) {
+                for (const message of payload.messages as RawMessage[]) {
                     messages.unshift(Message.fromFullMessage(message));
                 }
 

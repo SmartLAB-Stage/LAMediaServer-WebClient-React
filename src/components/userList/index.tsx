@@ -4,7 +4,10 @@ import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
 import {Group} from "model/group";
 import {Presence} from "model/presence";
-import {User} from "model/user";
+import {
+    RawFullUser,
+    User,
+} from "model/user";
 import React from "react";
 import "./userList.scss";
 
@@ -97,11 +100,13 @@ class UserList extends React.Component<UserListProps, UserListState> {
         APIRequest
             .get("/user/get")
             .authenticate()
-            .withPayload({userId: user.id})
+            .withPayload({
+                userId: user.id,
+            })
             .canceledWhen(() => !this._active)
-            .onSuccess((status, data) => {
+            .onSuccess((payload) => {
                 this.setState({
-                    selectedUserForInfos: User.fromFullUser(data.payload),
+                    selectedUserForInfos: User.fromFullUser(payload as unknown as RawFullUser),
                     modalUserInfosOpen: true,
                 });
             })
@@ -121,10 +126,10 @@ class UserList extends React.Component<UserListProps, UserListState> {
                 groupId: this.props.selectedGroup.id,
             })
             .canceledWhen(() => !this._active)
-            .onSuccess((status, data) => {
+            .onSuccess((payload) => {
                 const users: User[] = [];
 
-                for (const user of data.payload) {
+                for (const user of payload.users as RawFullUser[]) {
                     users.push(User.fromFullUser(user));
                 }
 

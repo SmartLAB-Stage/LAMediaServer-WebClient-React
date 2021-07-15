@@ -119,10 +119,10 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                 .withPayload({
                     groupRoomId: group.roomId,
                 })
-                .onSuccess((status, data) => {
+                .onSuccess((payload) => {
                     const rooms: Room[] = [];
 
-                    for (const room of data.payload) {
+                    for (const room of payload.rooms as RawFullRoom[]) {
                         const roomObject = Room.fromFullObject(room);
                         rooms.push(roomObject);
                         if (roomObject.id === this.props.selectedRoomId) {
@@ -164,13 +164,13 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                 groupRoomId: parentGroup.roomId,
                 name,
             })
-            .onSuccess((code, data) => {
+            .onSuccess((payload) => {
                 this.setState({
                     rooms: {
                         ...this.state.rooms,
                         [parentGroup.id]: [
                             ...this.state.rooms[parentGroup.id],
-                            Room.fromFullObject(data.payload as RawFullRoom),
+                            Room.fromFullObject(payload as unknown as RawFullRoom),
                         ],
                     },
                 });

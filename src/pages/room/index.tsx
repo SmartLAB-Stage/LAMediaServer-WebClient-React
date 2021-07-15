@@ -6,13 +6,19 @@ import {PersonalInfos} from "components/personalInfos";
 import {RoomOrGroupCreationModal} from "components/roomOrGroupCreationModal";
 import {UserList} from "components/userList";
 import {APIRequest} from "helper/APIRequest";
-import {CurrentUser} from "model/currentUser";
+import {
+    CurrentUser,
+    RawCurrentUser,
+} from "model/currentUser";
 import {
     Group,
     RawFullGroup,
 } from "model/group";
 import {Room} from "model/room";
-import {User} from "model/user";
+import {
+    RawFullUser,
+    User,
+} from "model/user";
 import {
     VideoconferencePublisher,
     VideoconferenceSubscriber,
@@ -214,10 +220,12 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .get("/me/get")
             .authenticate()
             .canceledWhen(() => !this._active)
-            .onSuccess((status, data) => {
-                this.setState({
-                    meUser: CurrentUser.fromFullUser(data.payload),
-                });
+            .onSuccess((payload) => {
+                if (payload !== null) {
+                    this.setState({
+                        meUser: CurrentUser.fromFullUser(payload as unknown as RawCurrentUser),
+                    });
+                }
             })
             .send()
             .then();
@@ -228,9 +236,9 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .get("/user/list")
             .authenticate()
             .canceledWhen(() => !this._active)
-            .onSuccess((status, data) => {
+            .onSuccess((payload) => {
                 const users: User[] = [];
-                for (const user of data.payload) {
+                for (const user of payload.users as RawFullUser[]) {
                     users.push(User.fromFullUser(user));
                 }
 
@@ -284,10 +292,10 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .get("/group/list")
             .authenticate()
             .canceledWhen(() => !this._active)
-            .onSuccess((status, data) => {
+            .onSuccess((payload) => {
                 const groups: Group[] = [];
 
-                for (const group of data.payload) {
+                for (const group of payload.groups as RawFullGroup[]) {
                     groups.push(Group.fromFullObject(group));
                 }
 
@@ -473,13 +481,15 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .withPayload({
                 sessionId: id,
             })
-            .onSuccess((status, data) => {
-                this.setState({
-                    openViduSessionInfos: {
-                        sessionId: data.payload.sessionId,
-                        targetWebSocketURL: data.payload.targetWebSocketURL,
-                    },
-                });
+            .onSuccess((payload) => {
+                if (payload !== null) {
+                    this.setState({
+                        openViduSessionInfos: {
+                            sessionId: payload.sessionId as string,
+                            targetWebSocketURL: payload.targetWebSocketURL as string,
+                        },
+                    });
+                }
             })
             .onFailure((status, data) => {
                 console.warn("connect nok", status, data);

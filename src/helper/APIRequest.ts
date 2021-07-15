@@ -52,12 +52,14 @@ type RequestInfos = {
     status: number,
 }
 
+type APIResponsePayload = Record<string, unknown>;
+
 interface APIResponseData {
     error?: {
         type: string,
     },
     message: string,
-    payload: any | any[],
+    payload: APIResponsePayload,
 }
 
 /**
@@ -68,7 +70,7 @@ type ProgressCallback = (loaded: number, total: number, evt: ProgressEvent) => v
 /**
  * Callback de succès
  */
-type SuccessCallback = (status: number, data: APIResponseData) => any | void;
+type SuccessCallback = (payload: APIResponsePayload, data: APIResponseData, status: number) => any | void;
 
 /**
  * Callback d'échec
@@ -327,7 +329,7 @@ class APIRequest {
                 if (infos.data === null || !APIRequest._isGoodStatusCode(infos.status)) {
                     resolve(onFailure(infos.status, infos.data, evt));
                 } else {
-                    resolve(this._onSuccess(infos.status, infos.data));
+                    resolve(this._onSuccess(infos.data.payload, infos.data, infos.status));
                 }
             });
 
