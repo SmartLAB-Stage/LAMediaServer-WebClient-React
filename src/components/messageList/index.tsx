@@ -14,7 +14,6 @@ interface MessageListProps {
 }
 
 interface MessageListState {
-    deleteModalOpen: boolean,
     messages: Message[],
     selectedMessageToDelete: Message | null,
     selectedMessageToEdit: Message | null,
@@ -35,7 +34,6 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
         this.state = {
             selectedMessageToDelete: null,
-            deleteModalOpen: false,
             selectedMessageToEdit: null,
             messages: [],
         };
@@ -47,10 +45,9 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                 <ConfirmationModal body={"Voulez-vous vraiment supprimer ce message ?"}
                                    modalClosedCallback={() => this.setState({
                                        selectedMessageToDelete: null,
-                                       deleteModalOpen: false,
                                    })}
                                    modalActionCallback={() => this._deleteMessage()}
-                                   open={this.state.deleteModalOpen}
+                                   open={this.state.selectedMessageToDelete !== null}
                                    title={"Supprimer ce message"}/>
                 {this._renderMessageList()}
             </>
@@ -102,11 +99,6 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                 .send()
                 .then();
         }
-
-        this.setState({
-            selectedMessageToDelete: null,
-            deleteModalOpen: false,
-        });
     }
 
     private _getAllMessages() {
@@ -234,7 +226,6 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                                editMessage={(evt) => void null} /* TODO: Gérer cet event */
                                openModalDeleteMessage={() => this.setState({
                                    selectedMessageToDelete: message,
-                                   deleteModalOpen: true,
                                })}
                 />,
             );
