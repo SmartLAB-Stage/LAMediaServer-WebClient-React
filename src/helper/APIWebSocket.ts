@@ -6,10 +6,10 @@ interface APIResponseData {
         type: string,
     },
     message: string,
-    payload: unknown | unknown[],
+    payload: Record<string, unknown>,
 }
 
-type ResponseCallback = (data: unknown) => void;
+type ResponseCallback = (data: Record<string, unknown>) => void;
 
 type OpenCallback = () => void;
 
