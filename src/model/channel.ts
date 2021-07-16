@@ -7,9 +7,9 @@ import {
 } from "./message";
 
 /**
- * Room raw
+ * Canal raw
  */
-interface RawRoom {
+interface RawChannel {
     id: string,
     isDefault: boolean,
     lastMessage: RawMessage,
@@ -22,7 +22,7 @@ interface RawRoom {
 /**
  * Canal
  */
-class Room {
+class Channel {
     /**
      * ID
      * @private
@@ -108,7 +108,7 @@ class Room {
         return this._usersCount;
     }
 
-    public static fromObject(obj: RawRoom): Room {
+    public static fromObject(obj: RawChannel): Channel {
         return new this(
             obj.id,
             obj.name,
@@ -136,5 +136,5 @@ class Room {
     }
 }
 
-export {Room};
-export type {RawRoom};
+export {Channel};
+export type {RawChannel};

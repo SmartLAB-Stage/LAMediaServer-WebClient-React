@@ -25,7 +25,7 @@ class ProfilePicture extends React.Component<ProfilePictureProps, {}> {
                      img.onerror = null;
                  }}
                  width={"100%"}
-                 alt="Utilisateur"/>
+                 alt={"Utilisateur"}/>
         );
 
         if (this.props.onClick) {

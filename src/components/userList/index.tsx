@@ -11,7 +11,7 @@ import {SingleUser} from "./singleUser";
 import "./userList.scss";
 
 interface UserListProps {
-    currentRoomId: string | null,
+    currentChannelId: string | null,
 }
 
 interface UserListState {
@@ -43,7 +43,7 @@ class UserList extends React.Component<UserListProps, UserListState> {
         this._setSocketNameUpdated();
         this._setSocketPresenceUpdated();
 
-        if (this.props.currentRoomId !== null) {
+        if (this.props.currentChannelId !== null) {
             this._updateUsersFromAPI();
         }
 
@@ -53,7 +53,7 @@ class UserList extends React.Component<UserListProps, UserListState> {
     }
 
     public componentDidUpdate(prevProps: UserListProps): void {
-        if (this.props.currentRoomId !== null && prevProps.currentRoomId !== this.props.currentRoomId) {
+        if (this.props.currentChannelId !== null && prevProps.currentChannelId !== this.props.currentChannelId) {
             this._updateUsersFromAPI();
         }
     }
@@ -118,15 +118,15 @@ class UserList extends React.Component<UserListProps, UserListState> {
     }
 
     private _updateUsersFromAPI(): void {
-        if (this.props.currentRoomId === null) {
+        if (this.props.currentChannelId === null) {
             return;
         }
 
         APIRequest
-            .get("/group/room/user/list")
+            .get("/module/channel/user/list")
             .authenticate()
             .withPayload({
-                roomId: this.props.currentRoomId,
+                channelId: this.props.currentChannelId,
             })
             .canceledWhen(() => !this._active)
             .onSuccess((payload) => {

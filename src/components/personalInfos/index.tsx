@@ -29,8 +29,8 @@ class PersonalInfos extends React.Component<PersonalInfosProps, PersonalInfosSta
     public render(): React.ReactNode {
         return (
             <>
-                <div className="card border-secondary mb-0 flex-row flex-wrap">
-                    <div className="profile-picture-parent card-header border-0">
+                <div className={"card border-secondary mb-0 flex-row flex-wrap"}>
+                    <div className={"profile-picture-parent card-header border-0"}>
                         <ProfilePicture user={this.props.user}
                                         onClick={() => {
                                             this.setState({
@@ -38,8 +38,8 @@ class PersonalInfos extends React.Component<PersonalInfosProps, PersonalInfosSta
                                             });
                                         }}/>
                     </div>
-                    <div className="personal-infos-body card-body text-dark">
-                        <p className="card-text">
+                    <div className={"personal-infos-body card-body text-dark"}>
+                        <p className={"card-text"}>
                             {this.props.user === null
                                 ? null
                                 : this.props.user.name

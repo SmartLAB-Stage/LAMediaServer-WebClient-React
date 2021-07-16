@@ -10,7 +10,7 @@ import "./messageList.scss";
 import {SingleMessage} from "./singleMessage";
 
 interface MessageListProps {
-    roomId: string,
+    channelId: string,
 }
 
 interface MessageListState {
@@ -21,7 +21,6 @@ interface MessageListState {
 }
 
 class MessageList extends React.Component<MessageListProps, MessageListState> {
-    private static _currentUpdateVersion = NaN;
     private _active: boolean;
     private _alreadyScrolledDown: boolean;
     private readonly _sockets: APIWebSocket[];
@@ -83,7 +82,6 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
     }
 
     public componentWillUnmount(): void {
-        MessageList._currentUpdateVersion = Math.random();
         for (const sock of this._sockets) {
             sock.close();
         }
@@ -94,12 +92,12 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
     private _deleteMessage(): void {
         if (this.state.selectedMessageToDelete !== null) {
             APIRequest
-                .delete("/group/room/message/delete")
+                .delete("/module/channel/message/delete")
                 .authenticate()
                 .canceledWhen(() => !this._active)
                 .withPayload({
                     messageId: this.state.selectedMessageToDelete.id,
-                    roomId: this.props.roomId, // Ou `message.roomId` ?
+                    channelId: this.props.channelId, // Ou `message.channelId` ?
                 })
                 .send()
                 .then();
@@ -113,11 +111,11 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
     private _getAllMessages() {
         APIRequest
-            .get("/group/room/message/list")
+            .get("/module/channel/message/list")
             .authenticate()
             .canceledWhen(() => !this._active)
             .withPayload({
-                roomId: this.props.roomId,
+                channelId: this.props.channelId,
             })
             .onSuccess((payload) => {
                 const messages: Message[] = [];
@@ -136,10 +134,10 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
     private _setSocketMessagesSent() {
         this._sockets.push(APIWebSocket
-            .getSocket("/group/room/message/sent")
+            .getSocket("/module/channel/message/sent")
             .withToken()
             .withPayload({
-                roomId: this.props.roomId,
+                channelId: this.props.channelId,
             })
             .onResponse((data: unknown) => {
                 this.setState({
@@ -154,10 +152,10 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
     private _setSocketMessagesDeleted() {
         this._sockets.push(APIWebSocket
-            .getSocket("/group/room/message/deleted")
+            .getSocket("/module/channel/message/deleted")
             .withToken()
             .withPayload({
-                roomId: this.props.roomId,
+                channelId: this.props.channelId,
             })
             .onResponse((data: unknown) => {
                 const messages = this.state.messages;
@@ -190,10 +188,10 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         }
 
         this._sockets.push(APIWebSocket
-            .getSocket("/group/room/message/edited")
+            .getSocket("/module/channel/message/edited")
             .withToken()
             .withPayload({
-                roomId: this.props.roomId,
+                channelId: this.props.channelId,
             })
             .onResponse((data: unknown) => {
                 const messages = this.state.messages;

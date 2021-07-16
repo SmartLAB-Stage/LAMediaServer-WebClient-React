@@ -3,44 +3,43 @@ import {
     faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {ChannelOrModuleCreationModal} from "components/shared/channelOrModuleCreationModal";
 import {ConfirmationModal} from "components/shared/confirmationModal";
-import {RoomOrGroupCreationModal} from "components/shared/roomOrGroupCreationModal";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
-import {Authentication} from "helper/authentication";
+import {Channel} from "model/channel";
 import {
-    Group,
-    RawGroup,
-} from "model/group";
-import {Room} from "model/room";
+    Module,
+    RawModule,
+} from "model/module";
 import {
     RawUser,
     User,
 } from "model/user";
 import React from "react";
 import {Button} from "react-bootstrap";
-import {RoomList} from "./roomList";
+import {ChannelList} from "./channelList";
 
-interface GroupListProps {
-    currentRoomChangeCallback: (room: Room, group: Group) => void,
-    selectedRoomId: string | null,
-    videoConferenceChangeCallback: (room: Room, group: Group) => void,
+interface ModuleListProps {
+    currentChannelChangeCallback: (channel: Channel, mod: Module) => void,
+    selectedChannelId: string | null,
+    videoConferenceChangeCallback: (channel: Channel, mod: Module) => void,
     videoConferenceConnectedRoomId: string | null,
 }
 
-interface GroupListState {
+interface ModuleListState {
     allUsers: User[],
     createModalOpen: boolean,
     deleteModalOpen: boolean,
-    groups: Group[],
-    selectedGroupToDelete: Group | null,
+    modules: Module[],
+    selectedModuleToDelete: Module | null,
 }
 
-class GroupList extends React.Component<GroupListProps, GroupListState> {
+class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
     private _active;
     private readonly _sockets: APIWebSocket[];
 
-    public constructor(props: GroupListProps) {
+    public constructor(props: ModuleListProps) {
         super(props);
 
         this._active = false;
@@ -50,18 +49,18 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
             allUsers: [],
             createModalOpen: false,
             deleteModalOpen: false,
-            groups: [],
-            selectedGroupToDelete: null,
+            modules: [],
+            selectedModuleToDelete: null,
         };
     }
 
     public componentDidMount(): void {
         this._active = true;
-        this._updateGroupsFromAPI();
+        this._updateModulesFromAPI();
         this._fetchAllUsers();
 
-        this._setSocketGroupCreated();
-        this._setSocketGroupDeleted();
+        this._openSocketModuleCreated();
+        this._openSocketModuleDeleted();
 
         for (const sock of this._sockets) {
             sock.open();
@@ -77,46 +76,50 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
     }
 
     public render(): React.ReactNode {
-        const groupsComponent: React.ReactNode[] = [];
+        const moduleComponents: React.ReactNode[] = [];
         let expanded = true;
 
-        for (const group of this.state.groups) {
-            groupsComponent.push(
-                <div key={`group-list-group-${group.id}`} className={"card"}>
-                    <div className={"card-header"} id={`heading_${group.id}`}>
+        for (const currentModule of this.state.modules) {
+            moduleComponents.push(
+                <div key={`module-list-module-${currentModule.id}`} className={"card"}>
+                    <div className={"card-header"} id={`heading_${currentModule.id}`}>
                         <h5 className={"mb-0"}>
                             <Button className={"btn btn-sm btn-danger"}
                                     onClick={() => this.setState({
-                                        selectedGroupToDelete: group,
+                                        selectedModuleToDelete: currentModule,
                                         deleteModalOpen: true,
                                     })}>
                                 <FontAwesomeIcon icon={faTrash}/>
                             </Button>
                             <button className={"btn btn-link " + (expanded ? null : "collapsed")}
                                     data-toggle={"collapse"}
-                                    data-target={`#collapse_${group.id}`}
+                                    data-target={`#collapse_${currentModule.id}`}
                                     aria-expanded={expanded ? "true" : "false"}
-                                    aria-controls={`collapse_${group.id}`}>
-                                {group.name}
+                                    aria-controls={`collapse_${currentModule.id}`}>
+                                {currentModule.name}
                             </button>
                         </h5>
                     </div>
 
-                    <div id={`collapse_${group.id}`}
+                    <div id={`collapse_${currentModule.id}`}
                          className={"collapse " + (expanded ? "show" : null)}
-                         aria-labelledby={`heading_${group.id}`}
+                         aria-labelledby={`heading_${currentModule.id}`}
                          data-parent={"#accordion"}>
                         <div className={"card-body"}>
-                            <RoomList key={"roomList-" + group.id}
-                                      currentRoomChangeCallback={
-                                          (room: Room) => this.props.currentRoomChangeCallback(room, group)
-                                      }
-                                      group={group}
-                                      selectedRoomId={this.props.selectedRoomId}
-                                      videoConferenceChangeCallback={
-                                          (room: Room) => this.props.videoConferenceChangeCallback(room, group)
-                                      }
-                                      videoConferenceConnectedRoomId={this.props.videoConferenceConnectedRoomId}
+                            <ChannelList key={"channel-list-" + currentModule.id}
+                                         currentChannelChangeCallback={
+                                             (chan: Channel) => {
+                                                 this.props.currentChannelChangeCallback(chan, currentModule);
+                                             }
+                                         }
+                                         currentModule={currentModule}
+                                         selectedChannelId={this.props.selectedChannelId}
+                                         videoConferenceChangeCallback={
+                                             (chan: Channel) => {
+                                                 this.props.videoConferenceChangeCallback(chan, currentModule);
+                                             }
+                                         }
+                                         videoConferenceConnectedRoomId={this.props.videoConferenceConnectedRoomId}
                             />
                         </div>
                     </div>
@@ -127,7 +130,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         }
 
         return (
-            <div className={"room-list bg-white"}>
+            <div className={"channel-list bg-white"}>
                 <div id={"accordion"}>
                     <Button className={"btn btn-sm btn-success"}
                             onClick={() => this.setState({
@@ -135,70 +138,69 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                             })}>
                         <FontAwesomeIcon icon={faPlus}/>
                     </Button>
-                    {groupsComponent}
+                    {moduleComponents}
                 </div>
-                <ConfirmationModal body={"Voulez-vous vraiment supprimer ce groupe ?"}
+                <ConfirmationModal body={"Voulez-vous vraiment supprimer ce module ?"}
                                    modalClosedCallback={() => this.setState({
-                                       selectedGroupToDelete: null,
+                                       selectedModuleToDelete: null,
                                        deleteModalOpen: false,
                                    })}
-                                   modalActionCallback={() => this._deleteGroup()}
+                                   modalActionCallback={() => this._deleteModule()}
                                    open={this.state.deleteModalOpen}
                                    title={"Supprimer ce message"}/>
-                <RoomOrGroupCreationModal closeModalAction={() => this.setState({createModalOpen: false})}
-                                          createAction={(name: string, memberIds: string[]) => {
-                                              this._createNewGroup(name, memberIds);
-                                          }}
-                                          modalOpen={this.state.createModalOpen}
-                                          type={"module"}
-                                          users={this.state.allUsers}/>
+                <ChannelOrModuleCreationModal closeModalAction={() => this.setState({createModalOpen: false})}
+                                              createAction={(name: string, memberIds: string[]) => {
+                                                  this._createNewModule(name, memberIds);
+                                              }}
+                                              modalOpen={this.state.createModalOpen}
+                                              type={"module"}
+                                              users={this.state.allUsers}/>
             </div>
         );
     }
 
-    private _deleteGroup(): void {
-        if (this.state.selectedGroupToDelete !== null) {
-            const groupId = this.state.selectedGroupToDelete.id;
+    private _deleteModule(): void {
+        if (this.state.selectedModuleToDelete !== null) {
             APIRequest
-                .delete("/group/delete")
+                .delete("/module/delete")
                 .authenticate()
                 .canceledWhen(() => !this._active)
                 .withPayload({
-                    groupId,
+                    moduleId: this.state.selectedModuleToDelete.id,
                 })
                 .send()
                 .then();
         }
 
         this.setState({
-            selectedGroupToDelete: null,
+            selectedModuleToDelete: null,
             deleteModalOpen: false,
         });
     }
 
-    private _updateGroupsFromAPI(): void {
+    private _updateModulesFromAPI(): void {
         APIRequest
-            .get("/group/list")
+            .get("/module/list")
             .authenticate()
             .canceledWhen(() => !this._active)
             .onSuccess((payload) => {
-                const groups: Group[] = [];
+                const modules: Module[] = [];
 
-                for (const group of payload.groups as RawGroup[]) {
-                    groups.push(Group.fromObject(group));
+                for (const mod of payload.modules as RawModule[]) {
+                    modules.push(Module.fromObject(mod));
                 }
 
                 this.setState({
-                    groups,
+                    modules,
                 });
             })
             .send()
             .then();
     }
 
-    private _createNewGroup(name: string, memberIds: string[]): void {
+    private _createNewModule(name: string, memberIds: string[]): void {
         APIRequest
-            .post("/group/create")
+            .post("/module/create")
             .authenticate()
             .canceledWhen(() => !this._active)
             .withPayload({
@@ -228,42 +230,36 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
             .then();
     }
 
-    private _setSocketGroupCreated(): void {
+    private _openSocketModuleCreated(): void {
         this._sockets.push(APIWebSocket
-            .getSocket("/group/created")
+            .getSocket("/module/created")
             .withToken()
-            .withPayload({
-                userId: Authentication.getUserId(),
-            })
             .onResponse((data: unknown) => {
                 this.setState({
-                    groups: [...this.state.groups, Group.fromObject(data as unknown as RawGroup)],
+                    modules: [...this.state.modules, Module.fromObject(data as unknown as RawModule)],
                 });
             }),
         );
     }
 
-    private _setSocketGroupDeleted(): void {
+    private _openSocketModuleDeleted(): void {
         this._sockets.push(APIWebSocket
-            .getSocket("/group/deleted")
+            .getSocket("/module/deleted")
             .withToken()
-            .withPayload({
-                userId: Authentication.getUserId(),
-            })
             .onResponse((data: unknown) => {
-                const groupRoomId = (data as { groupRoomId: string }).groupRoomId;
-                const groups: Group[] = [];
-                for (const group of this.state.groups) {
-                    if (group.roomId !== groupRoomId) {
-                        groups.push(group);
+                const moduleRoomId = (data as { moduleRoomId: string }).moduleRoomId;
+                const modules: Module[] = [];
+                for (const mod of this.state.modules) {
+                    if (mod.roomId !== moduleRoomId) {
+                        modules.push(mod);
                     }
                 }
                 this.setState({
-                    groups,
+                    modules: modules,
                 });
             }),
         );
     }
 }
 
-export {GroupList};
+export {ModuleList};

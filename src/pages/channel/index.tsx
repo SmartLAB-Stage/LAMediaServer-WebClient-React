@@ -1,16 +1,15 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import colors from "colors.module.scss";
-import {GroupList} from "components/groupList";
 import {MessageList} from "components/messageList";
+import {ModuleList} from "components/moduleList";
 import {PersonalInfos} from "components/personalInfos";
 import {UserList} from "components/userList";
 import {APIRequest} from "helper/APIRequest";
+import {Channel} from "model/channel";
 import {
     CurrentUser,
     RawCurrentUser,
 } from "model/currentUser";
-import {Group} from "model/group";
-import {Room} from "model/room";
 import {User} from "model/user";
 import {
     VideoconferencePublisher,
@@ -21,18 +20,18 @@ import {
     Session,
     StreamEvent,
 } from "openvidu-browser";
+import "pages/channel/channel.scss";
 import React, {FormEvent} from "react";
 import {Form} from "react-bootstrap";
-import "./room.scss";
 
-interface RoomProps {
-    currentRoomId: string | null,
+interface ChannelProps {
+    currentChannelId: string | null,
     fullURL: string,
 }
 
-interface RoomState {
+interface ChannelState {
+    currentChannelId: string | null,
     currentMessageContent: string,
-    currentRoomId: string | null,
     meUser: CurrentUser | null,
     openViduSessionInfos: null | {
         sessionId: string,
@@ -42,7 +41,7 @@ interface RoomState {
     videoconferenceSubscribersConnections: VideoconferenceSubscriber[],
 }
 
-class RoomPage extends React.Component<RoomProps, RoomState> {
+class ChannelPage extends React.Component<ChannelProps, ChannelState> {
     /**
      * Permet d'annuler les Promise asynchrones une fois l'élément React courant recyclé / la vue changée.
      * @private
@@ -52,7 +51,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
     private _openVidu: OpenVidu;
     private _openViduSession: Session;
 
-    public constructor(props: RoomProps) {
+    public constructor(props: ChannelProps) {
         super(props);
 
         this._openVidu = new OpenVidu();
@@ -60,7 +59,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
         this.state = {
             currentMessageContent: "",
-            currentRoomId: this.props.currentRoomId,
+            currentChannelId: this.props.currentChannelId,
             meUser: null,
             openViduSessionInfos: null,
             videoconferencePublisher: null,
@@ -70,18 +69,18 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
     public render(): React.ReactNode {
         return (
-            <main className={"rooms container-fluid py-5 px-4"}>
+            <main className={"channels container-fluid py-5 px-4"}>
                 <div className={"row rounded-lg overflow-hidden shadow"}>
                     <div className={"col-2 px-0"}>
                         <div className={"row"}>
                             <div className={"col-sm-12"}>
-                                <GroupList
-                                    currentRoomChangeCallback={(room: Room, group: Group) => {
-                                        this._currentRoomChangeCallback(room, group);
+                                <ModuleList
+                                    currentChannelChangeCallback={(channel: Channel) => {
+                                        this._currentChannelChangeCallback(channel);
                                     }}
-                                    selectedRoomId={this.state.currentRoomId}
-                                    videoConferenceChangeCallback={(room: Room, _group: Group) => {
-                                        this._videoConferenceChangeCallback(room);
+                                    selectedChannelId={this.state.currentChannelId}
+                                    videoConferenceChangeCallback={(channel: Channel) => {
+                                        this._videoConferenceChangeCallback(channel);
                                     }}
                                     videoConferenceConnectedRoomId={
                                         this.state.openViduSessionInfos === null
@@ -106,17 +105,16 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                             "py-5 " +
                             "chat-box " +
                             "bg-white " +
-                            (this.state.currentRoomId === null ? null : "message-list ")
+                            (this.state.currentChannelId === null ? null : "message-list ")
                         }>
-                            {this.state.currentRoomId === null
+                            {this.state.currentChannelId === null
                                 ? (
                                     <i>
                                         Choisissez une discussion depuis la liste de gauche
                                     </i>
                                 ) : (
-                                    <MessageList
-                                        key={`message-list-${this.state.currentRoomId}`}
-                                        roomId={this.state.currentRoomId}
+                                    <MessageList channelId={this.state.currentChannelId}
+                                                 key={`message-list-${this.state.currentChannelId}`}
                                     />
                                 )
                             }
@@ -129,7 +127,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                                        placeholder={"Entrez votre message"}
                                        aria-describedby={"button-send-message"}
                                        className={"form-control rounded-0 border-0 py-4 bg-light"}
-                                       disabled={this.state.currentRoomId === null}
+                                       disabled={this.state.currentChannelId === null}
                                        value={this.state.currentMessageContent}
                                        onChange={(e) => {
                                            this.setState({
@@ -152,7 +150,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                         </Form>
                     </div>
                     <div className={"col-2 px-0"}>
-                        <UserList currentRoomId={this.state.currentRoomId}/>
+                        <UserList currentChannelId={this.state.currentChannelId}/>
                     </div>
                 </div>
             </main>
@@ -163,12 +161,12 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         this._active = true;
         this._updateMyInfos();
 
-        if (this.state.currentRoomId !== null) {
-            window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentRoomId));
+        if (this.state.currentChannelId !== null) {
+            window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentChannelId));
         }
     }
 
-    public componentDidUpdate(_prevProps: RoomProps, prevState: RoomState): void {
+    public componentDidUpdate(_prevProps: ChannelProps, prevState: ChannelState): void {
         const curInfos = this.state.openViduSessionInfos;
         const prevInfos = prevState.openViduSessionInfos;
         if (curInfos !== prevInfos && curInfos !== null && curInfos?.sessionId !== prevInfos?.sessionId) {
@@ -200,9 +198,9 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .then();
     }
 
-    private _currentRoomChangeCallback(newRoom: Room, _newGroup: Group): void {
+    private _currentChannelChangeCallback(newChannel: Channel): void {
         this.setState({
-            currentRoomId: newRoom.id,
+            currentChannelId: newChannel.id,
         });
 
         let state: Record<string, unknown> = {
@@ -211,7 +209,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         state.openViduSession = undefined;
         state.videoconferencePublisher = undefined;
 
-        window.history.pushState(state, "", this.props.fullURL.replace(/:[^/]*/, newRoom.id));
+        window.history.pushState(state, "", this.props.fullURL.replace(/:[^/]*/, newChannel.id));
     }
 
     private _disconnectVideoconference(): void {
@@ -224,8 +222,8 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         }
     }
 
-    private _videoConferenceChangeCallback(newRoom: Room): void {
-        const streamId = newRoom.id;
+    private _videoConferenceChangeCallback(newChannel: Channel): void {
+        const streamId = newChannel.id;
 
         if (streamId !== this.state.openViduSessionInfos?.sessionId) {
             if (this.state.openViduSessionInfos !== null) {
@@ -239,18 +237,18 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
     private async _handleSendMessage(evt: FormEvent): Promise<void> {
         evt.preventDefault();
 
-        if (this.state.currentMessageContent.length === 0 || this.state.currentRoomId === null) {
+        if (this.state.currentMessageContent.length === 0 || this.state.currentChannelId === null) {
             return;
         }
 
         await APIRequest
-            .post("/group/room/message/send")
+            .post("/module/channel/message/send")
             .authenticate()
             .canceledWhen(() => !this._active)
             .minTime(100)
             .withPayload({
                 message: this.state.currentMessageContent,
-                roomId: this.state.currentRoomId,
+                channelId: this.state.currentChannelId,
             })
             .send()
             .then();
@@ -410,4 +408,4 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
     }
 }
 
-export {RoomPage};
+export {ChannelPage};

@@ -6,7 +6,7 @@ import {
     Modal,
 } from "react-bootstrap";
 
-interface RoomOrGroupCreationModalProps {
+interface ChannelOrModuleCreationModalProps {
     closeModalAction: () => void,
     createAction: (name: string, memberIds: string[]) => void,
     modalOpen: boolean,
@@ -14,14 +14,14 @@ interface RoomOrGroupCreationModalProps {
     users: User[],
 }
 
-class RoomOrGroupCreationModal extends React.Component<RoomOrGroupCreationModalProps, {}> {
+class ChannelOrModuleCreationModal extends React.Component<ChannelOrModuleCreationModalProps, {}> {
     private _checkAll: boolean;
     private readonly _idPrefix: string;
     private readonly _inputRefs: Record<string, React.RefObject<HTMLInputElement>>;
     private readonly _mainInputRef: React.RefObject<HTMLInputElement>;
     private readonly _nameInputRef: React.RefObject<HTMLInputElement>;
 
-    constructor(props: RoomOrGroupCreationModalProps) {
+    constructor(props: ChannelOrModuleCreationModalProps) {
         super(props);
         this._idPrefix = "room-creation-form-user-" + String(Math.floor(Math.random() * Math.pow(10, 8)));
         this._inputRefs = {};
@@ -48,7 +48,7 @@ class RoomOrGroupCreationModal extends React.Component<RoomOrGroupCreationModalP
                            type={"checkbox"}/>
                     <label className={"form-check-label"} htmlFor={id}>
                         <div className={"d-flex justify-content-between bd-highlight mb-0"}>
-                            <div className="pr-2 bd-highlight">
+                            <div className={"pr-2 bd-highlight"}>
                                 {user.name}
                                 {
                                     user.isMe
@@ -170,4 +170,4 @@ class RoomOrGroupCreationModal extends React.Component<RoomOrGroupCreationModalP
     }
 }
 
-export {RoomOrGroupCreationModal};
+export {ChannelOrModuleCreationModal};
