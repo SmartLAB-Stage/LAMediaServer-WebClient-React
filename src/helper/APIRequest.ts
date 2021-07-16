@@ -299,7 +299,7 @@ class APIRequest {
         const onFailure = (status: number, data: APIResponseData | null, evt: ProgressEvent): unknown => {
             if (status === 401 && !this._unauthorizedErrorsAllowed) {
                 console.debug("Vous avez été déconnecté");
-                Authentication.clearToken();
+                Authentication.clearInfos();
                 window.location.href = "/";
             }
 

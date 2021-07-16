@@ -2,22 +2,29 @@ class Authentication {
     private static _storage: Storage = localStorage;
 
     public static isAuthenticated(): boolean {
-        return this.getToken() !== null;
+        return this.getToken() !== null && this.getUserId() !== null;
     }
 
     public static getToken(): string | null {
-        return this._storage.getItem("_token");
+        return this._storage.getItem("token");
     }
 
-    public static setToken(token: string): void {
-        this.clearToken();
-        this._storage.setItem("_token", token);
+    public static getUserId(): string | null {
+        return this._storage.getItem("userId");
     }
 
-    public static clearToken(): void {
-        localStorage.removeItem("_token");
-        sessionStorage.removeItem("_token");
-        this._storage.removeItem("_token");
+    public static setInfos(userId: string, token: string): void {
+        this.clearInfos();
+        this._storage.setItem("userId", userId);
+        this._storage.setItem("token", token);
+    }
+
+    public static clearInfos(): void {
+        for (const key of ["token", "userId"]) {
+            localStorage.removeItem(key);
+            sessionStorage.removeItem(key);
+            this._storage.removeItem(key);
+        }
     }
 }
 

@@ -72,7 +72,7 @@ class OAuthUserProfilePage extends React.Component<RouteProps, OAuthUserProfileP
                     return;
                 }
 
-                Authentication.setToken(payload.token as string);
+                Authentication.setInfos(payload.userId as string, payload.token as string);
                 this.setState({
                     connected: true,
                 });
