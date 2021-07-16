@@ -30,8 +30,12 @@ interface ModuleListProps {
 interface ModuleListState {
     allUsers: User[],
     createModalOpen: boolean,
-    deleteModalOpen: boolean,
     modules: Module[],
+    selectedChannelToDeleteInfos: null | {
+        channel: Channel,
+        parent: Module,
+        deleteChannelCallback: () => void,
+    },
     selectedModuleToDelete: Module | null,
 }
 
@@ -48,8 +52,8 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
         this.state = {
             allUsers: [],
             createModalOpen: false,
-            deleteModalOpen: false,
             modules: [],
+            selectedChannelToDeleteInfos: null,
             selectedModuleToDelete: null,
         };
     }
@@ -87,7 +91,6 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                             <Button className={"btn btn-sm btn-danger"}
                                     onClick={() => this.setState({
                                         selectedModuleToDelete: currentModule,
-                                        deleteModalOpen: true,
                                     })}>
                                 <FontAwesomeIcon icon={faTrash}/>
                             </Button>
@@ -113,6 +116,15 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                                              }
                                          }
                                          currentModule={currentModule}
+                                         openDeleteChannelModal={(channel: Channel, callback: () => void) => {
+                                             this.setState({
+                                                 selectedChannelToDeleteInfos: {
+                                                     channel,
+                                                     parent: currentModule,
+                                                     deleteChannelCallback: callback,
+                                                 },
+                                             });
+                                         }}
                                          selectedChannelId={this.props.selectedChannelId}
                                          videoConferenceChangeCallback={
                                              (chan: Channel) => {
@@ -140,14 +152,29 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                     </Button>
                     {moduleComponents}
                 </div>
-                <ConfirmationModal body={"Voulez-vous vraiment supprimer ce module ?"}
+                <ConfirmationModal title={"Supprimer un module"}
+                                   body={
+                                       "Voulez-vous vraiment supprimer le module" +
+                                       `"${this.state.selectedModuleToDelete?.name}" ?`
+                                   }
                                    modalClosedCallback={() => this.setState({
                                        selectedModuleToDelete: null,
-                                       deleteModalOpen: false,
                                    })}
                                    modalActionCallback={() => this._deleteModule()}
-                                   open={this.state.deleteModalOpen}
-                                   title={"Supprimer ce message"}/>
+                                   open={this.state.selectedModuleToDelete !== null}/>
+                <ConfirmationModal title={"Supprimer un canal"}
+                                   body={
+                                       "Voulez-vous vraiment supprimer le canal" +
+                                       `"${this.state.selectedChannelToDeleteInfos?.channel.name}"` +
+                                       `du module "${this.state.selectedChannelToDeleteInfos?.parent.name}" ?`
+                                   }
+                                   modalClosedCallback={() => this.setState({
+                                       selectedChannelToDeleteInfos: null,
+                                   })}
+                                   modalActionCallback={() => {
+                                       this.state.selectedChannelToDeleteInfos?.deleteChannelCallback();
+                                   }}
+                                   open={this.state.selectedChannelToDeleteInfos !== null}/>
                 <ChannelOrModuleCreationModal closeModalAction={() => this.setState({createModalOpen: false})}
                                               createAction={(name: string, memberIds: string[]) => {
                                                   this._createNewModule(name, memberIds);
@@ -171,11 +198,6 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                 .send()
                 .then();
         }
-
-        this.setState({
-            selectedModuleToDelete: null,
-            deleteModalOpen: false,
-        });
     }
 
     private _updateModulesFromAPI(): void {

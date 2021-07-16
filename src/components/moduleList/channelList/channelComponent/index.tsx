@@ -1,15 +1,19 @@
 import {Channel} from "model/channel";
 import React from "react";
 import {
+    Button,
     OverlayTrigger,
     Tooltip,
 } from "react-bootstrap";
 import {CallButton} from "./callButton";
 import "components/moduleList/channelList/channelComponent/channelComponent.scss";
+import {faTrash} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 interface ChannelComponentProps {
     currentChannelChangeCallback: () => void,
     channel: Channel,
+    deleteChannel: () => void,
     selected: boolean,
     videoConferenceChangeCallback: () => void,
     videoConferenceConnectedRoomId: string | null,
@@ -45,6 +49,10 @@ class ChannelComponent extends React.Component<ChannelComponentProps, {}> {
                                              width={"100%"}
                                         />
                                     </div>
+                                    <Button className={"btn btn-sm m-0 mt-5 btn-danger"}
+                                            onClick={() => this.props.deleteChannel()}>
+                                        <FontAwesomeIcon icon={faTrash}/>
+                                    </Button>
                                 </div>
                                 <div className={"media-body ml-4"}>
                                     <div className={"d-flex align-items-center justify-content-between mb-1"}>
