@@ -9,8 +9,8 @@ import {
 interface RoomOrGroupCreationModalProps {
     closeModalAction: () => void,
     createAction: (name: string, memberIds: string[]) => void,
-    isRoom: boolean,
     modalOpen: boolean,
+    type: "canal" | "module",
     users: User[],
 }
 
@@ -72,7 +72,7 @@ class RoomOrGroupCreationModal extends React.Component<RoomOrGroupCreationModalP
                 <form>
                     <Modal.Header closeButton={true}>
                         <Modal.Title>
-                            Création d'un nouveau {this.props.isRoom ? "salon" : "groupe"}
+                            Création d'un nouveau {this.props.type}
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
@@ -80,11 +80,11 @@ class RoomOrGroupCreationModal extends React.Component<RoomOrGroupCreationModalP
                             <input className={"form-check-input"}
                                    defaultValue={""}
                                    id={`${this._idPrefix}-name`}
-                                   placeholder={`Nom du ${this.props.isRoom ? "salon" : "groupe"}`}
+                                   placeholder={`Nom du ${this.props.type}`}
                                    ref={this._nameInputRef}
                                    type={"text"}/>
                             <label className={"form-check-label"} htmlFor={`${this._idPrefix}-name`}>
-                                Nom du {this.props.isRoom ? "salon" : "groupe"}
+                                Nom du nouveau {this.props.type}
                             </label>
                         </div>
                         <div className={"mb-3 form-check"}>

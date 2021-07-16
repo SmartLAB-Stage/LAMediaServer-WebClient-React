@@ -133,7 +133,7 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                                               this._createNewGroup(name, memberIds);
                                           }}
                                           modalOpen={this.state.createModalOpen}
-                                          isRoom={true}
+                                          type={"module"}
                                           users={this.state.allUsers}/>
             </div>
         );
