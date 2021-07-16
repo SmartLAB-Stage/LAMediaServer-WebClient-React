@@ -6,6 +6,8 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {ConfirmationModal} from "components/shared/confirmationModal";
 import {RoomOrGroupCreationModal} from "components/shared/roomOrGroupCreationModal";
 import {APIRequest} from "helper/APIRequest";
+import {APIWebSocket} from "helper/APIWebSocket";
+import {Authentication} from "helper/authentication";
 import {
     Group,
     RawGroup,
@@ -35,10 +37,14 @@ interface GroupListState {
 }
 
 class GroupList extends React.Component<GroupListProps, GroupListState> {
-    private _active = false;
+    private _active;
+    private readonly _sockets: APIWebSocket[];
 
     public constructor(props: GroupListProps) {
         super(props);
+
+        this._active = false;
+        this._sockets = [];
 
         this.state = {
             allUsers: [],
@@ -53,10 +59,21 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
         this._active = true;
         this._updateGroupsFromAPI();
         this._fetchAllUsers();
+
+        this._setSocketGroupCreated();
+        this._setSocketGroupDeleted();
+
+        for (const sock of this._sockets) {
+            sock.open();
+        }
     }
 
     public componentWillUnmount(): void {
         this._active = false;
+
+        for (const sock of this._sockets) {
+            sock.close();
+        }
     }
 
     public render(): React.ReactNode {
@@ -149,17 +166,6 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                 .withPayload({
                     groupId,
                 })
-                .onSuccess(() => {
-                    const groups: Group[] = [];
-                    for (const group of this.state.groups) {
-                        if (group.id !== groupId) {
-                            groups.push(group);
-                        }
-                    }
-                    this.setState({
-                        groups,
-                    });
-                })
                 .send()
                 .then();
         }
@@ -199,11 +205,6 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
                 name,
                 memberIds,
             })
-            .onSuccess((status, data) => {
-                this.setState({
-                    groups: [...this.state.groups, Group.fromObject(data.payload as RawGroup)],
-                });
-            })
             .send()
             .then();
     }
@@ -225,6 +226,43 @@ class GroupList extends React.Component<GroupListProps, GroupListState> {
             })
             .send()
             .then();
+    }
+
+    private _setSocketGroupCreated(): void {
+        this._sockets.push(APIWebSocket
+            .getSocket("/group/created")
+            .withToken()
+            .withPayload({
+                userId: Authentication.getUserId(),
+            })
+            .onResponse((data: unknown) => {
+                this.setState({
+                    groups: [...this.state.groups, Group.fromObject(data as unknown as RawGroup)],
+                });
+            }),
+        );
+    }
+
+    private _setSocketGroupDeleted(): void {
+        this._sockets.push(APIWebSocket
+            .getSocket("/group/deleted")
+            .withToken()
+            .withPayload({
+                userId: Authentication.getUserId(),
+            })
+            .onResponse((data: unknown) => {
+                const groupRoomId = (data as { groupRoomId: string }).groupRoomId;
+                const groups: Group[] = [];
+                for (const group of this.state.groups) {
+                    if (group.roomId !== groupRoomId) {
+                        groups.push(group);
+                    }
+                }
+                this.setState({
+                    groups,
+                });
+            }),
+        );
     }
 }
 
