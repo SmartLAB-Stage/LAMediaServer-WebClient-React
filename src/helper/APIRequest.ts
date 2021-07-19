@@ -157,6 +157,15 @@ class APIRequest {
     }
 
     /**
+     * Effectue une requête PATCH
+     * @param route Route
+     */
+
+    public static patch(route: string): APIRequest {
+        return new APIRequest(RequestMethod.PATCH, route);
+    }
+
+    /**
      * Effectue une requête POST
      * @param route Route
      */
