@@ -15,13 +15,17 @@ interface ConfirmationModalProps {
 class ConfirmationModal extends React.Component<ConfirmationModalProps, {}> {
     public render(): React.ReactNode {
         return (
-            <Modal show={this.props.open} onHide={() => this.props.modalClosedCallback}>
+            <Modal show={this.props.open} onHide={() => {
+                this.props.modalClosedCallback();
+            }}>
                 <Modal.Header closeButton={true}>
                     <Modal.Title>{this.props.title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>{this.props.body}</Modal.Body>
                 <Modal.Footer>
-                    <Button variant={"secondary"} onClick={() => this.props.modalClosedCallback}>
+                    <Button variant={"secondary"} onClick={() => {
+                        this.props.modalClosedCallback();
+                    }}>
                         Annuler
                     </Button>
                     <Button variant={"primary"} onClick={() => {
