@@ -111,7 +111,7 @@ class APIRequest {
      * Requête
      * @private
      */
-    private _request: XMLHttpRequest;
+    private readonly _request: XMLHttpRequest;
 
     private _token: string | null;
 
@@ -320,6 +320,7 @@ class APIRequest {
         const res = await new Promise<unknown | void>((resolve) => {
             this._request.addEventListener("progress", (evt: ProgressEvent<XMLHttpRequestEventTarget>) => {
                 if (this._canceledFunction()) {
+                    console.info("Requête annulée après succès:", this._route)
                     return;
                 }
 
@@ -332,6 +333,7 @@ class APIRequest {
 
             this._request.addEventListener("load", (evt: ProgressEvent<XMLHttpRequestEventTarget>) => {
                 if (this._canceledFunction()) {
+                    console.info("Requête annulée après chargement:", this._route)
                     return;
                 }
 
@@ -345,6 +347,7 @@ class APIRequest {
 
             this._request.addEventListener("error", (evt: ProgressEvent<XMLHttpRequestEventTarget>) => {
                 if (this._canceledFunction()) {
+                    console.info("Requête annulée après erreur:", this._route)
                     return;
                 }
 
