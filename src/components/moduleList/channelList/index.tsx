@@ -123,6 +123,9 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
             .withPayload({
                 channelId: channel.id,
             })
+            .onSuccess(() => {
+                window.location.replace("/channel");
+            })
             .send()
             .then();
     }

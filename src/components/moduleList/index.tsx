@@ -195,6 +195,9 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                 .withPayload({
                     moduleId: this.state.selectedModuleToDelete.id,
                 })
+                .onSuccess(() => {
+                    window.location.replace("/channel");
+                })
                 .send()
                 .then();
         }
