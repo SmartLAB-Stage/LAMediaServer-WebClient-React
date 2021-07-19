@@ -76,7 +76,7 @@ class APIWebSocket {
         return this;
     }
 
-    public onOpen(openCallback: () => void): APIWebSocket {
+    public onOpen(openCallback: OpenCallback): APIWebSocket {
         this._openCallback = openCallback;
         return this;
     }
