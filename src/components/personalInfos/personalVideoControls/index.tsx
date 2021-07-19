@@ -26,7 +26,7 @@ class PersonalVideoControls extends React.Component<PersonalVideoControlsProps, 
 
         return (
             <>
-                <Button className={"btn btn-primary ml-4 mr-1 p-0"}
+                <Button className={"btn btn-primary ml-4 mr-1 pb-0 pt-0 pl-1 pr-1"}
                         data-toggle={"tooltip"}
                         data-placement={"top"}
                         disabled={!connected}
