@@ -76,14 +76,14 @@ class ChannelOrModuleCreationModal extends React.Component<ChannelOrModuleCreati
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <div className={"mb-3 form-check"}>
-                            <input className={"form-check-input"}
+                        <div className={"form-input"}>
+                            <input className={"form-input mb-1"}
                                    defaultValue={""}
                                    id={`${this._idPrefix}-name`}
                                    placeholder={`Nom du ${this.props.type}`}
                                    ref={this._nameInputRef}
                                    type={"text"}/>
-                            <label className={"form-check-label"} htmlFor={`${this._idPrefix}-name`}>
+                            <label className={"form-check-label sr-only"} htmlFor={`${this._idPrefix}-name`}>
                                 Nom du nouveau {this.props.type}
                             </label>
                         </div>
