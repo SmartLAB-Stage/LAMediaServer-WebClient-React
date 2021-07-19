@@ -11,7 +11,7 @@ interface APIResponseData {
 
 type ResponseCallback = (data: Record<string, unknown>) => void;
 
-type OpenCallback = () => void;
+type OpenCallback = (socket: APIWebSocket) => void;
 
 class APIWebSocket {
     private readonly _endpoint: string;
@@ -100,7 +100,7 @@ class APIWebSocket {
                 this._responseCallback(data.payload);
             }
         };
-        this._webSocket.onopen = () => this._openCallback();
+        this._webSocket.onopen = () => this._openCallback(this);
     }
 
     public send(msg: Record<string, unknown>): void {
