@@ -44,9 +44,13 @@ class PersonalInfos extends React.Component<PersonalInfosProps, PersonalInfosSta
                                 ? null
                                 : this.props.user.name
                             }
-                            <PersonalVideoControls
-                                videoconferenceDisconnectCallback={this.props.videoconferenceDisconnectCallback}
-                                videoconferencePublisher={this.props.videoconferencePublisher}/>
+                            {
+                                this.props.videoconferencePublisher === null
+                                    ? null
+                                    : <PersonalVideoControls
+                                        videoconferenceDisconnectCallback={this.props.videoconferenceDisconnectCallback}
+                                        videoconferencePublisher={this.props.videoconferencePublisher}/>
+                            }
                         </p>
                     </div>
                     {
