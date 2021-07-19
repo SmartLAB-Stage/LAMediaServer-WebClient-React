@@ -17,6 +17,18 @@ interface OtherUserInfosModalProps {
 
 class UserInfosModal extends React.Component<OtherUserInfosModalProps, {}> {
     public render(): React.ReactNode {
+        let roles: string | null = null;
+
+        if (this.props.user.roles !== null) {
+            roles = "";
+
+            for (const role of this.props.user.roles) {
+                roles += role.name + ", ";
+            }
+
+            roles = roles.slice(0, -2);
+        }
+
         return (
             <Modal className={"user-infos-modal"}
                    show={this.props.modalOpen}
@@ -60,8 +72,8 @@ class UserInfosModal extends React.Component<OtherUserInfosModalProps, {}> {
                             <tr>
                                 <th scope={"row"}>Rôles</th>
                                 <td>{
-                                    this.props.user.roles
-                                        ? this.props.user.roles
+                                    roles !== null
+                                        ? roles
                                         : <i>Inconnus</i>
                                 }</td>
                             </tr>
