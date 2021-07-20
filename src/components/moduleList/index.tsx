@@ -177,8 +177,8 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                                    open={this.state.selectedModuleToDelete !== null}/>
                 <ConfirmationModal title={"Supprimer un canal"}
                                    body={
-                                       "Voulez-vous vraiment supprimer le canal" +
-                                       `"${this.state.selectedChannelToDeleteInfos?.channel.name}"` +
+                                       "Voulez-vous vraiment supprimer le canal " +
+                                       `"${this.state.selectedChannelToDeleteInfos?.channel.name}" ` +
                                        `du module "${this.state.selectedChannelToDeleteInfos?.parent.name}" ?`
                                    }
                                    modalClosedCallback={() => this.setState({
