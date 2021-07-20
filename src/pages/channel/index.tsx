@@ -42,7 +42,7 @@ interface ChannelState {
         targetWebSocketURL: string,
     },
     videoconferencePublisher: VideoconferencePublisher | null,
-    videoconferenceSubscribersConnections: VideoconferenceSubscriber[],
+    videoconferenceSubscribers: VideoconferenceSubscriber[],
 }
 
 class ChannelPage extends React.Component<ChannelProps, ChannelState> {
@@ -68,7 +68,7 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
             meUser: null,
             openViduSessionInfos: null,
             videoconferencePublisher: null,
-            videoconferenceSubscribersConnections: [],
+            videoconferenceSubscribers: [],
         };
     }
 
@@ -152,7 +152,8 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
                         </Form>
                     </div>
                     <div className={"col-2 px-0"}>
-                        <UserList currentChannel={this.state.activeTextChannel}/>
+                        <UserList currentChannel={this.state.activeTextChannel}
+                                  videoconferenceSubscribers={this.state.videoconferenceSubscribers}/>
                     </div>
                 </div>
             </main>
@@ -281,35 +282,38 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
 
     private _onStreamCreated(evt: StreamEvent) {
         const connection = evt.stream.connection;
+        const DOM_id = `video-subscriber_${connection.connectionId}`;
         const user = User.fromObject(JSON.parse(connection.data));
 
         if (user.username !== this.state.meUser?.username) {
             console.warn(user);
+            // @ts-ignore
+            const subscriber = this._openViduSession.subscribe(evt.stream, null);
             this.setState({
-                videoconferenceSubscribersConnections: [
-                    ...this.state.videoconferenceSubscribersConnections,
+                videoconferenceSubscribers: [
+                    ...this.state.videoconferenceSubscribers,
                     {
-                        user,
                         connection,
+                        DOM_id,
+                        subscriber,
+                        user,
                     },
                 ],
             });
-
-            this._openViduSession.subscribe(evt.stream, `video-subscriber_${connection.connectionId}`);
         }
     }
 
     private _onStreamDestroyed(evt: StreamEvent) {
         const subscribersConnections: VideoconferenceSubscriber[] = [];
 
-        for (const subscriber of this.state.videoconferenceSubscribersConnections) {
+        for (const subscriber of this.state.videoconferenceSubscribers) {
             if (subscriber.connection.connectionId !== evt.stream.connection.connectionId) {
                 subscribersConnections.push(subscriber);
             }
         }
 
         this.setState({
-            videoconferenceSubscribersConnections: subscribersConnections,
+            videoconferenceSubscribers: subscribersConnections,
         });
 
         /*

@@ -7,12 +7,14 @@ import {
     RawUser,
     User,
 } from "model/user";
+import {VideoconferenceSubscriber} from "model/videoconference";
 import React from "react";
 import {SingleUser} from "./singleUser";
 import "./userList.scss";
 
 interface UserListProps {
     currentChannel: Channel | null,
+    videoconferenceSubscribers: VideoconferenceSubscriber[],
 }
 
 interface UserListState {
@@ -71,11 +73,20 @@ class UserList extends React.Component<UserListProps, UserListState> {
         const users: React.ReactNode[] = [];
 
         for (const user of this.state.users) {
+            let sub: VideoconferenceSubscriber | null = null;
+
+            for (const subscriber of this.props.videoconferenceSubscribers) {
+                if (subscriber.user.id === user.id) {
+                    sub = subscriber;
+                    break;
+                }
+            }
+
             users.push(
                 <SingleUser key={user.id}
                             openModalUserInfos={() => this._openModalUserInfos(user)}
                             user={user}
-                />,
+                            videoconferenceSubscriber={sub}/>,
             );
         }
 
