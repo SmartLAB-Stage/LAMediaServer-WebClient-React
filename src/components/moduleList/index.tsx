@@ -5,6 +5,7 @@ import {
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {ChannelOrModuleCreationModal} from "components/shared/channelOrModuleCreationModal";
 import {ConfirmationModal} from "components/shared/confirmationModal";
+import {InformationModal} from "components/shared/informationModal";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
 import {Channel} from "model/channel";
@@ -30,6 +31,11 @@ interface ModuleListProps {
 interface ModuleListState {
     allUsers: User[],
     createModalOpen: boolean,
+    currentSelectedModule: Module | null,
+    informationsModal: null | {
+        title: string,
+        body: string,
+    },
     modules: Module[],
     selectedChannelToDeleteInfos: null | {
         channel: Channel,
@@ -52,6 +58,8 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
         this.state = {
             allUsers: [],
             createModalOpen: false,
+            currentSelectedModule: null,
+            informationsModal: null,
             modules: [],
             selectedChannelToDeleteInfos: null,
             selectedModuleToDelete: null,
@@ -81,9 +89,9 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
 
     public render(): React.ReactNode {
         const moduleComponents: React.ReactNode[] = [];
-        let expanded = true;
-
         for (const currentModule of this.state.modules) {
+            let expanded = currentModule === this.state.currentSelectedModule;
+
             moduleComponents.push(
                 <div key={`module-list-module-${currentModule.id}`} className={"card"}>
                     <div className={"card-header"} id={`heading_${currentModule.id}`}>
@@ -126,6 +134,11 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                                              });
                                          }}
                                          selectedChannelId={this.props.selectedChannelId}
+                                         selectedModuleFound={() => {
+                                             this.setState({
+                                                 currentSelectedModule: currentModule,
+                                             });
+                                         }}
                                          videoConferenceChangeCallback={
                                              (chan: Channel) => {
                                                  this.props.videoConferenceChangeCallback(chan, currentModule);
@@ -182,21 +195,52 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                                               modalOpen={this.state.createModalOpen}
                                               type={"module"}
                                               users={this.state.allUsers}/>
+                <InformationModal open={this.state.informationsModal !== null}
+                                  body={
+                                      this.state.informationsModal === null
+                                          ? null
+                                          : this.state.informationsModal.body
+                                  }
+                                  modalClosedCallback={() => {
+                                      this.setState({
+                                          informationsModal: null,
+                                      });
+                                  }}
+                                  title={
+                                      this.state.informationsModal === null
+                                          ? null
+                                          : this.state.informationsModal.title
+                                  }/>
             </div>
         );
     }
 
     private _deleteModule(): void {
         if (this.state.selectedModuleToDelete !== null) {
+            const selectedModuleToDelete = this.state.selectedModuleToDelete;
             APIRequest
                 .delete("/module/delete")
                 .authenticate()
                 .canceledWhen(() => !this._active)
+                .unauthorizedErrorsAllowed()
                 .withPayload({
-                    moduleId: this.state.selectedModuleToDelete.id,
+                    moduleId: selectedModuleToDelete.id,
                 })
                 .onSuccess(() => {
-                    window.location.replace("/channel");
+                    this.setState({
+                        informationsModal: {
+                            title: "Suppression d'un module",
+                            body: `Le module "${selectedModuleToDelete.name}" a bien été supprimé`,
+                        },
+                    });
+                })
+                .onFailure(() => {
+                    this.setState({
+                        informationsModal: {
+                            title: "Suppression d'un module",
+                            body: `Le module "${selectedModuleToDelete.name}" n'a pas pu être supprimé`,
+                        },
+                    });
                 })
                 .send()
                 .then();
@@ -231,6 +275,22 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
             .withPayload({
                 name,
                 memberIds,
+            })
+            .onSuccess(() => {
+                this.setState({
+                    informationsModal: {
+                        title: "Création d'un module",
+                        body: `Le module "${name}" a bien été créé`,
+                    },
+                });
+            })
+            .onFailure(() => {
+                this.setState({
+                    informationsModal: {
+                        title: "Création d'un module",
+                        body: `Le module "${name}" n'a pas pu être créé`,
+                    },
+                });
             })
             .send()
             .then();
@@ -277,6 +337,8 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                 for (const mod of this.state.modules) {
                     if (mod.roomId !== moduleRoomId) {
                         modules.push(mod);
+                    } else if (mod.id === this.state.currentSelectedModule?.id) {
+                        window.location.replace("/channel");
                     }
                 }
                 this.setState({

@@ -1,6 +1,7 @@
 import {faPlus} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {ChannelOrModuleCreationModal} from "components/shared/channelOrModuleCreationModal";
+import {InformationModal} from "components/shared/informationModal";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
 import {
@@ -21,6 +22,7 @@ interface ChannelListProps {
     currentModule: Module,
     openDeleteChannelModal: (channel: Channel, callback: () => void) => void,
     selectedChannelId: string | null,
+    selectedModuleFound: () => void,
     videoConferenceChangeCallback: (channel: Channel) => void,
     videoConferenceConnectedRoomId: string | null,
 }
@@ -28,6 +30,10 @@ interface ChannelListProps {
 interface ChannelListState {
     channels: Channel[],
     createModalOpen: boolean,
+    informationsModal: null | {
+        title: string,
+        body: string,
+    },
     moduleUsers: User[],
 }
 
@@ -44,6 +50,7 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
         this.state = {
             channels: [],
             createModalOpen: false,
+            informationsModal: null,
             moduleUsers: [],
         };
     }
@@ -111,6 +118,22 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
                                               modalOpen={this.state.createModalOpen}
                                               type={"canal"}
                                               users={this.state.moduleUsers}/>
+                <InformationModal open={this.state.informationsModal !== null}
+                                  body={
+                                      this.state.informationsModal === null
+                                          ? null
+                                          : this.state.informationsModal.body
+                                  }
+                                  modalClosedCallback={() => {
+                                      this.setState({
+                                          informationsModal: null,
+                                      });
+                                  }}
+                                  title={
+                                      this.state.informationsModal === null
+                                          ? null
+                                          : this.state.informationsModal.title
+                                  }/>
             </div>
         );
     }
@@ -120,11 +143,25 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
             .delete("/module/channel/delete")
             .authenticate()
             .canceledWhen(() => !this._active)
+            .unauthorizedErrorsAllowed()
             .withPayload({
                 channelId: channel.id,
             })
             .onSuccess(() => {
-                window.location.replace("/channel");
+                this.setState({
+                    informationsModal: {
+                        title: "Suppression d'un canal",
+                        body: `Le canal "${channel.name}" a bien été supprimé`,
+                    },
+                });
+            })
+            .onFailure(() => {
+                this.setState({
+                    informationsModal: {
+                        title: "Suppression d'un canal",
+                        body: `Le canal "${channel.name}" n'a pas pu être supprimé`,
+                    },
+                });
             })
             .send()
             .then();
@@ -160,6 +197,12 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
                     this.setState({
                         channels: channels as Channel[],
                     });
+
+                    for (const channel of channels as Channel[]) {
+                        if (channel.id === this.props.selectedChannelId) {
+                            this.props.selectedModuleFound();
+                        }
+                    }
                 }
             });
     }
@@ -173,6 +216,22 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
                 moduleRoomId: this.props.currentModule.roomId,
                 name,
                 memberIds,
+            })
+            .onSuccess(() => {
+                this.setState({
+                    informationsModal: {
+                        title: "Création d'un canal",
+                        body: `Le canal "${name}" a bien été créé`,
+                    },
+                });
+            })
+            .onFailure(() => {
+                this.setState({
+                    informationsModal: {
+                        title: "Création d'un canal",
+                        body: `Le canal "${name}" n'a pas pu être créé`,
+                    },
+                });
             })
             .send()
             .then();
@@ -217,14 +276,19 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
 
     private _openSocketChannelDeleted(): void {
         this._sockets.push(APIWebSocket
-            .getSocket("/module/channels/deleted")
+            .getSocket("/module/channel/deleted")
             .withToken()
+            .onOpen(() => {
+                console.log("bien ouvert !");
+            })
             .onResponse((data: unknown) => {
                 const channelId = (data as { channelId: string }).channelId;
                 const channels: Channel[] = [];
                 for (const channel of this.state.channels) {
                     if (channel.id !== channelId) {
                         channels.push(channel);
+                    } else if (channel.id === this.props.selectedChannelId) {
+                        window.location.replace("/channel");
                     }
                 }
                 this.setState({
