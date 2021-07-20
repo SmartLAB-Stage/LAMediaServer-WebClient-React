@@ -5,7 +5,10 @@ import {ModuleList} from "components/moduleList";
 import {PersonalInfos} from "components/personalInfos";
 import {UserList} from "components/userList";
 import {APIRequest} from "helper/APIRequest";
-import {Channel} from "model/channel";
+import {
+    Channel,
+    RawChannel,
+} from "model/channel";
 import {
     CurrentUser,
     RawCurrentUser,
@@ -30,7 +33,8 @@ interface ChannelProps {
 }
 
 interface ChannelState {
-    currentChannelId: string | null,
+    activeTextChannel: Channel | null,
+    activeVocalChannel: Channel | null,
     currentMessageContent: string,
     meUser: CurrentUser | null,
     openViduSessionInfos: null | {
@@ -59,7 +63,8 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
 
         this.state = {
             currentMessageContent: "",
-            currentChannelId: this.props.currentChannelId,
+            activeTextChannel: null,
+            activeVocalChannel: null,
             meUser: null,
             openViduSessionInfos: null,
             videoconferencePublisher: null,
@@ -75,22 +80,19 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
                         <div className={"row"}>
                             <div className={"col-sm-12"}>
                                 <ModuleList
-                                    currentChannelChangeCallback={(channel: Channel) => {
-                                        this._currentChannelChangeCallback(channel);
+                                    activeTextChannel={this.state.activeTextChannel}
+                                    activeTextChannelChangeCallback={(channel: Channel) => {
+                                        this._activeTextChannelChangeCallback(channel);
                                     }}
-                                    selectedChannelId={this.state.currentChannelId}
-                                    videoConferenceChangeCallback={(channel: Channel) => {
-                                        this._videoConferenceChangeCallback(channel);
+                                    activeVocalChannel={this.state.activeVocalChannel}
+                                    activeVocalChannelChangeCallback={(channel: Channel) => {
+                                        this._activeVocalChannelChangeCallback(channel);
                                     }}
-                                    videoConferenceConnectedRoomId={
-                                        this.state.openViduSessionInfos === null
-                                            ? null
-                                            : this.state.openViduSessionInfos.sessionId
-                                    }
                                 />
                             </div>
                             <div className={"col personal-infos"}>
                                 <PersonalInfos
+                                    activeVocalChannel={this.state.activeVocalChannel}
                                     user={this.state.meUser}
                                     videoconferenceDisconnectCallback={() => this._disconnectVideoconference()}
                                     videoconferencePublisher={this.state.videoconferencePublisher}
@@ -105,16 +107,16 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
                             "py-5 " +
                             "chat-box " +
                             "bg-white " +
-                            (this.state.currentChannelId === null ? null : "message-list ")
+                            (this.state.activeTextChannel === null ? null : "message-list ")
                         }>
-                            {this.state.currentChannelId === null
+                            {this.state.activeTextChannel === null
                                 ? (
                                     <i>
                                         Choisissez une discussion depuis la liste de gauche
                                     </i>
                                 ) : (
-                                    <MessageList channelId={this.state.currentChannelId}
-                                                 key={`message-list-${this.state.currentChannelId}`}
+                                    <MessageList channel={this.state.activeTextChannel}
+                                                 key={`message-list-${this.state.activeTextChannel.id}`}
                                     />
                                 )
                             }
@@ -127,7 +129,7 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
                                        placeholder={"Entrez votre message"}
                                        aria-describedby={"button-send-message"}
                                        className={"form-control rounded-0 border-0 py-4 bg-light"}
-                                       disabled={this.state.currentChannelId === null}
+                                       disabled={this.state.activeTextChannel === null}
                                        value={this.state.currentMessageContent}
                                        onChange={(e) => {
                                            this.setState({
@@ -150,7 +152,7 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
                         </Form>
                     </div>
                     <div className={"col-2 px-0"}>
-                        <UserList currentChannelId={this.state.currentChannelId}/>
+                        <UserList currentChannel={this.state.activeTextChannel}/>
                     </div>
                 </div>
             </main>
@@ -160,9 +162,10 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
     public componentDidMount(): void {
         this._active = true;
         this._updateMyInfos();
+        this._fetchCurrentChannel();
 
-        if (this.state.currentChannelId !== null) {
-            window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentChannelId));
+        if (this.state.activeTextChannel !== null) {
+            window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.activeTextChannel.id));
         }
     }
 
@@ -188,19 +191,38 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
             .authenticate()
             .canceledWhen(() => !this._active)
             .onSuccess((payload) => {
-                if (payload !== null) {
-                    this.setState({
-                        meUser: CurrentUser.fromObject(payload as unknown as RawCurrentUser),
-                    });
-                }
+                this.setState({
+                    meUser: CurrentUser.fromObject(payload as unknown as RawCurrentUser),
+                });
             })
             .send()
             .then();
     }
 
-    private _currentChannelChangeCallback(newChannel: Channel): void {
+    private _fetchCurrentChannel(): void {
+        if (this.props.currentChannelId === null) {
+            return;
+        }
+
+        APIRequest
+            .get("/module/channel/get")
+            .authenticate()
+            .canceledWhen(() => !this._active)
+            .withPayload({
+                channelId: this.props.currentChannelId,
+            })
+            .onSuccess((payload) => {
+                this.setState({
+                    activeTextChannel: Channel.fromObject(payload as unknown as RawChannel),
+                });
+            })
+            .send()
+            .then();
+    }
+
+    private _activeTextChannelChangeCallback(newChannel: Channel): void {
         this.setState({
-            currentChannelId: newChannel.id,
+            activeTextChannel: newChannel,
         });
 
         let state: Record<string, unknown> = {
@@ -216,28 +238,27 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
         if (this.state.openViduSessionInfos !== null) {
             this._openViduSession.disconnect();
             this.setState({
+                activeVocalChannel: null,
                 openViduSessionInfos: null,
                 videoconferencePublisher: null,
             });
         }
     }
 
-    private _videoConferenceChangeCallback(newChannel: Channel): void {
-        const streamId = newChannel.id;
-
-        if (streamId !== this.state.openViduSessionInfos?.sessionId) {
+    private _activeVocalChannelChangeCallback(channel: Channel): void {
+        if (channel.id !== this.state.openViduSessionInfos?.sessionId) {
             if (this.state.openViduSessionInfos !== null) {
                 this._openViduSession.disconnect();
             }
 
-            this._connectToVideoConference(streamId);
+            this._connectToVideoConference(channel);
         }
     }
 
     private async _handleSendMessage(evt: FormEvent): Promise<void> {
         evt.preventDefault();
 
-        if (this.state.currentMessageContent.length === 0 || this.state.currentChannelId === null) {
+        if (this.state.currentMessageContent.length === 0 || this.state.activeTextChannel === null) {
             return;
         }
 
@@ -248,7 +269,7 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
             .minTime(100)
             .withPayload({
                 message: this.state.currentMessageContent,
-                channelId: this.state.currentChannelId,
+                channelId: this.state.activeTextChannel.id,
             })
             .send()
             .then();
@@ -382,17 +403,18 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
         }
     }
 
-    private _connectToVideoConference(id: string): void {
+    private _connectToVideoConference(channel: Channel): void {
         APIRequest
             .post("/videoconference/session/connect")
             .canceledWhen(() => !this._active)
             .authenticate()
             .withPayload({
-                sessionId: id,
+                sessionId: channel.id,
             })
             .onSuccess((payload) => {
                 if (payload !== null) {
                     this.setState({
+                        activeVocalChannel: channel,
                         openViduSessionInfos: {
                             sessionId: payload.sessionId as string,
                             targetWebSocketURL: payload.targetWebSocketURL as string,

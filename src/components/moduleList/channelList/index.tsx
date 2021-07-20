@@ -18,13 +18,13 @@ import {Button} from "react-bootstrap";
 import {ChannelComponent} from "./channelComponent";
 
 interface ChannelListProps {
+    activeTextChannel: Channel | null,
+    activeVocalChannel: Channel | null,
     currentChannelChangeCallback: (channel: Channel) => void,
     currentModule: Module,
     openDeleteChannelModal: (channel: Channel, callback: () => void) => void,
-    selectedChannelId: string | null,
     selectedModuleFound: () => void,
     videoConferenceChangeCallback: (channel: Channel) => void,
-    videoConferenceConnectedRoomId: string | null,
 }
 
 interface ChannelListState {
@@ -81,7 +81,8 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
 
         for (const channel of this.state.channels) {
             channelComponents.push(
-                <ChannelComponent channel={channel}
+                <ChannelComponent activeVocalChannel={this.props.activeVocalChannel}
+                                  channel={channel}
                                   currentChannelChangeCallback={
                                       () => this.props.currentChannelChangeCallback(channel)
                                   }
@@ -89,11 +90,10 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
                                       this.props.openDeleteChannelModal(channel, () => this._deleteChannel(channel));
                                   }}
                                   key={"channel-list-element-" + channel.id}
-                                  selected={this.props.selectedChannelId === channel.id}
+                                  selected={this.props.activeTextChannel?.id === channel.id}
                                   videoConferenceChangeCallback={
                                       () => this.props.videoConferenceChangeCallback(channel)
                                   }
-                                  videoConferenceConnectedRoomId={this.props.videoConferenceConnectedRoomId}
                 />,
             );
         }
@@ -199,7 +199,7 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
                     });
 
                     for (const channel of channels as Channel[]) {
-                        if (channel.id === this.props.selectedChannelId) {
+                        if (channel.id === this.props.activeTextChannel?.id) {
                             this.props.selectedModuleFound();
                         }
                     }
@@ -284,7 +284,7 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
                 for (const channel of this.state.channels) {
                     if (channel.id !== channelId) {
                         channels.push(channel);
-                    } else if (channel.id === this.props.selectedChannelId) {
+                    } else if (channel.id === this.props.activeTextChannel?.id) {
                         window.location.replace("/channel");
                     }
                 }

@@ -1,5 +1,6 @@
 import {ProfilePicture} from "components/shared/profilePicture";
 import {UserInfosModal} from "components/shared/userInfosModal";
+import {Channel} from "model/channel";
 import {CurrentUser} from "model/currentUser";
 import {VideoconferencePublisher} from "model/videoconference";
 import React from "react";
@@ -8,6 +9,7 @@ import {PersonalVideoControls} from "./personalVideoControls";
 import {PersonalVideoPreview} from "./personalVideoPreview";
 
 interface PersonalInfosProps {
+    activeVocalChannel: Channel | null,
     user: CurrentUser | null,
     videoconferenceDisconnectCallback: () => void,
     videoconferencePublisher: VideoconferencePublisher | null,
@@ -39,6 +41,15 @@ class PersonalInfos extends React.Component<PersonalInfosProps, PersonalInfosSta
                                         }}/>
                     </div>
                     <div className={"personal-infos-body card-body text-dark"}>
+                        {
+                            this.props.activeVocalChannel === null
+                                ? null
+                                : (
+                                    <>
+                                        <i>Connecté à <br/> "{this.props.activeVocalChannel.name}"</i>
+                                    </>
+                                )
+                        }
                         <p className={"card-text"}>
                             {this.props.user === null
                                 ? null

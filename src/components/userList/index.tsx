@@ -1,6 +1,7 @@
 import {UserInfosModal} from "components/shared/userInfosModal";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
+import {Channel} from "model/channel";
 import {Presence} from "model/presence";
 import {
     RawUser,
@@ -11,7 +12,7 @@ import {SingleUser} from "./singleUser";
 import "./userList.scss";
 
 interface UserListProps {
-    currentChannelId: string | null,
+    currentChannel: Channel | null,
 }
 
 interface UserListState {
@@ -43,7 +44,7 @@ class UserList extends React.Component<UserListProps, UserListState> {
         this._setSocketNameUpdated();
         this._setSocketPresenceUpdated();
 
-        if (this.props.currentChannelId !== null) {
+        if (this.props.currentChannel !== null) {
             this._updateUsersFromAPI();
         }
 
@@ -53,7 +54,7 @@ class UserList extends React.Component<UserListProps, UserListState> {
     }
 
     public componentDidUpdate(prevProps: UserListProps): void {
-        if (this.props.currentChannelId !== null && prevProps.currentChannelId !== this.props.currentChannelId) {
+        if (this.props.currentChannel !== null && prevProps.currentChannel?.id !== this.props.currentChannel.id) {
             this._updateUsersFromAPI();
         }
     }
@@ -118,7 +119,7 @@ class UserList extends React.Component<UserListProps, UserListState> {
     }
 
     private _updateUsersFromAPI(): void {
-        if (this.props.currentChannelId === null) {
+        if (this.props.currentChannel === null) {
             return;
         }
 
@@ -126,7 +127,7 @@ class UserList extends React.Component<UserListProps, UserListState> {
             .get("/module/channel/user/list")
             .authenticate()
             .withPayload({
-                channelId: this.props.currentChannelId,
+                channelId: this.props.currentChannel.id,
             })
             .canceledWhen(() => !this._active)
             .onSuccess((payload) => {

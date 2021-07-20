@@ -1,6 +1,7 @@
 import {ConfirmationModal} from "components/shared/confirmationModal";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
+import {Channel} from "model/channel";
 import {
     Message,
     RawMessage,
@@ -10,7 +11,7 @@ import "./messageList.scss";
 import {SingleMessage} from "./singleMessage";
 
 interface MessageListProps {
-    channelId: string,
+    channel: Channel,
 }
 
 interface MessageListState {
@@ -94,7 +95,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                 .canceledWhen(() => !this._active)
                 .withPayload({
                     messageId: this.state.selectedMessageToDelete.id,
-                    channelId: this.props.channelId, // Ou `message.channelId` ?
+                    channelId: this.props.channel.id, // Ou `message.channelId` ?
                 })
                 .send()
                 .then();
@@ -107,7 +108,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             .authenticate()
             .canceledWhen(() => !this._active)
             .withPayload({
-                channelId: this.props.channelId,
+                channelId: this.props.channel.id,
             })
             .onSuccess((payload) => {
                 const messages: Message[] = [];
@@ -134,7 +135,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             .getSocket("/module/channel/message/sent")
             .withToken()
             .withPayload({
-                channelId: this.props.channelId,
+                channelId: this.props.channel.id,
             })
             .onResponse((data: unknown) => {
                 this.setState({
@@ -152,7 +153,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             .getSocket("/module/channel/message/deleted")
             .withToken()
             .withPayload({
-                channelId: this.props.channelId,
+                channelId: this.props.channel.id,
             })
             .onResponse((data: unknown) => {
                 const messages = this.state.messages;
@@ -188,7 +189,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             .getSocket("/module/channel/message/edited")
             .withToken()
             .withPayload({
-                channelId: this.props.channelId,
+                channelId: this.props.channel.id,
             })
             .onResponse((data: unknown) => {
                 const messages = this.state.messages;

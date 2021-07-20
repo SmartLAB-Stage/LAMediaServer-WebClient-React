@@ -11,12 +11,12 @@ import {faTrash} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 interface ChannelComponentProps {
+    activeVocalChannel: Channel | null,
     currentChannelChangeCallback: () => void,
     channel: Channel,
     deleteChannel: () => void,
     selected: boolean,
     videoConferenceChangeCallback: () => void,
-    videoConferenceConnectedRoomId: string | null,
 }
 
 class ChannelComponent extends React.Component<ChannelComponentProps, {}> {
@@ -64,7 +64,7 @@ class ChannelComponent extends React.Component<ChannelComponentProps, {}> {
                                         <div>
                                             <CallButton
                                                 selected={
-                                                    this.props.channel.id === this.props.videoConferenceConnectedRoomId
+                                                    this.props.channel.id === this.props.activeVocalChannel?.id
                                                 }
                                                 videoConferenceChangeCallback={
                                                     this.props.videoConferenceChangeCallback

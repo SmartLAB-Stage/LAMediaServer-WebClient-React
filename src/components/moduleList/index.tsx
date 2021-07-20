@@ -22,10 +22,10 @@ import {Button} from "react-bootstrap";
 import {ChannelList} from "./channelList";
 
 interface ModuleListProps {
-    currentChannelChangeCallback: (channel: Channel, mod: Module) => void,
-    selectedChannelId: string | null,
-    videoConferenceChangeCallback: (channel: Channel, mod: Module) => void,
-    videoConferenceConnectedRoomId: string | null,
+    activeTextChannelChangeCallback: (channel: Channel, mod: Module) => void,
+    activeTextChannel: Channel | null,
+    activeVocalChannel: Channel | null,
+    activeVocalChannelChangeCallback: (channel: Channel, mod: Module) => void,
 }
 
 interface ModuleListState {
@@ -117,13 +117,15 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                          aria-labelledby={`heading_${currentModule.id}`}
                          data-parent={"#accordion"}>
                         <div className={"card-body"}>
-                            <ChannelList key={"channel-list-" + currentModule.id}
+                            <ChannelList activeTextChannel={this.props.activeTextChannel}
+                                         activeVocalChannel={this.props.activeVocalChannel}
                                          currentChannelChangeCallback={
                                              (chan: Channel) => {
-                                                 this.props.currentChannelChangeCallback(chan, currentModule);
+                                                 this.props.activeTextChannelChangeCallback(chan, currentModule);
                                              }
                                          }
                                          currentModule={currentModule}
+                                         key={"channel-list-" + currentModule.id}
                                          openDeleteChannelModal={(channel: Channel, callback: () => void) => {
                                              this.setState({
                                                  selectedChannelToDeleteInfos: {
@@ -133,7 +135,6 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                                                  },
                                              });
                                          }}
-                                         selectedChannelId={this.props.selectedChannelId}
                                          selectedModuleFound={() => {
                                              this.setState({
                                                  currentSelectedModule: currentModule,
@@ -141,10 +142,9 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                                          }}
                                          videoConferenceChangeCallback={
                                              (chan: Channel) => {
-                                                 this.props.videoConferenceChangeCallback(chan, currentModule);
+                                                 this.props.activeVocalChannelChangeCallback(chan, currentModule);
                                              }
                                          }
-                                         videoConferenceConnectedRoomId={this.props.videoConferenceConnectedRoomId}
                             />
                         </div>
                     </div>
