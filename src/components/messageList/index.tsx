@@ -1,30 +1,28 @@
-import {DeleteModal} from "components/messageList/deleteModal";
-import {SingleMessage} from "components/messageList/singleMessage";
+import {ConfirmationModal} from "components/shared/confirmationModal";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
+import {Channel} from "model/channel";
 import {
     Message,
     RawMessage,
 } from "model/message";
 import React from "react";
 import "./messageList.scss";
+import {SingleMessage} from "./singleMessage";
 
 interface MessageListProps {
-    roomId: string,
+    channel: Channel,
 }
 
 interface MessageListState {
-    deletedMessage: Message | null,
-    deleteModalOpen: boolean,
-    editedMessage: Message | null,
     messages: Message[],
+    selectedMessageToDelete: Message | null,
+    selectedMessageToEdit: Message | null,
 }
 
 class MessageList extends React.Component<MessageListProps, MessageListState> {
-    private static _currentUpdateVersion = NaN;
     private _active: boolean;
     private _alreadyScrolledDown: boolean;
-    private _currentUpdateVersion: number;
     private readonly _sockets: APIWebSocket[];
 
     public constructor(props: MessageListProps) {
@@ -33,41 +31,25 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         this._active = false;
 
         this._alreadyScrolledDown = false;
-        this._currentUpdateVersion = NaN;
         this._sockets = [];
 
         this.state = {
-            deletedMessage: null,
-            deleteModalOpen: false,
-            editedMessage: null,
+            selectedMessageToDelete: null,
+            selectedMessageToEdit: null,
             messages: [],
         };
     }
 
     public render(): React.ReactNode {
-        const handleClose = () => this.setState({
-            deletedMessage: null,
-            deleteModalOpen: false,
-        });
-
-        const handleDeleteMessage = () => {
-            const deletedMessage = this.state.deletedMessage;
-            this.setState({
-                deletedMessage: null,
-                deleteModalOpen: false,
-            });
-
-            if (deletedMessage !== null) {
-                this._deleteMessage(deletedMessage);
-            }
-        };
-
         return (
             <>
-                <DeleteModal closeModalAction={() => handleClose()}
-                             deleteMessageAction={() => handleDeleteMessage()}
-                             deleteModalOpen={this.state.deleteModalOpen}
-                />
+                <ConfirmationModal body={"Voulez-vous vraiment supprimer ce message ?"}
+                                   modalClosedCallback={() => this.setState({
+                                       selectedMessageToDelete: null,
+                                   })}
+                                   modalActionCallback={() => this._deleteMessage()}
+                                   open={this.state.selectedMessageToDelete !== null}
+                                   title={"Supprimer ce message"}/>
                 {this._renderMessageList()}
             </>
         );
@@ -75,9 +57,6 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
     public componentDidMount(): void {
         this._active = true;
-
-        MessageList._currentUpdateVersion = Math.random();
-        this._currentUpdateVersion = MessageList._currentUpdateVersion;
 
         this._getAllMessages();
 
@@ -101,7 +80,6 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
     }
 
     public componentWillUnmount(): void {
-        MessageList._currentUpdateVersion = Math.random();
         for (const sock of this._sockets) {
             sock.close();
         }
@@ -109,24 +87,44 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         this._active = false;
     }
 
+    private _deleteMessage(): void {
+        if (this.state.selectedMessageToDelete !== null) {
+            APIRequest
+                .delete("/module/channel/message/delete")
+                .authenticate()
+                .canceledWhen(() => !this._active)
+                .withPayload({
+                    messageId: this.state.selectedMessageToDelete.id,
+                    channelId: this.props.channel.id, // Ou `message.channelId` ?
+                })
+                .send()
+                .then();
+        }
+    }
+
     private _getAllMessages() {
         APIRequest
-            .get("/group/room/message/list")
+            .get("/module/channel/message/list")
             .authenticate()
             .canceledWhen(() => !this._active)
             .withPayload({
-                roomId: this.props.roomId,
+                channelId: this.props.channel.id,
             })
-            .onSuccess((status, data) => {
+            .onSuccess((payload) => {
                 const messages: Message[] = [];
 
-                for (const message of data.payload) {
-                    messages.unshift(Message.fromFullMessage(message));
+                for (const message of payload.messages as RawMessage[]) {
+                    messages.unshift(Message.fromObject(message));
                 }
 
                 this.setState({
                     messages,
                 });
+            })
+            .onFailure((status) => {
+                if (status === 404) {
+                    window.location.replace("/channel");
+                }
             })
             .send()
             .then();
@@ -134,16 +132,16 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
     private _setSocketMessagesSent() {
         this._sockets.push(APIWebSocket
-            .getSocket("/group/room/message/sent")
+            .getSocket("/module/channel/message/sent")
             .withToken()
             .withPayload({
-                roomId: this.props.roomId,
+                channelId: this.props.channel.id,
             })
             .onResponse((data: unknown) => {
                 this.setState({
                     messages: [
                         ...this.state.messages,
-                        Message.fromFullMessage(data as RawMessage),
+                        Message.fromObject(data as RawMessage),
                     ],
                 });
             }),
@@ -152,10 +150,10 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
     private _setSocketMessagesDeleted() {
         this._sockets.push(APIWebSocket
-            .getSocket("/group/room/message/deleted")
+            .getSocket("/module/channel/message/deleted")
             .withToken()
             .withPayload({
-                roomId: this.props.roomId,
+                channelId: this.props.channel.id,
             })
             .onResponse((data: unknown) => {
                 const messages = this.state.messages;
@@ -188,10 +186,10 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         }
 
         this._sockets.push(APIWebSocket
-            .getSocket("/group/room/message/edited")
+            .getSocket("/module/channel/message/edited")
             .withToken()
             .withPayload({
-                roomId: this.props.roomId,
+                channelId: this.props.channel.id,
             })
             .onResponse((data: unknown) => {
                 const messages = this.state.messages;
@@ -199,7 +197,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
                 for (let i = 0; i < messages.length; ++i) {
                     if (messages[i].id === editedMessage.message.id) {
-                        messages[i] = Message.fromFullMessage(editedMessage.message);
+                        messages[i] = Message.fromObject(editedMessage.message);
                         break;
                     }
                 }
@@ -231,37 +229,15 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                 <SingleMessage key={message.id}
                                message={message}
                                concatenate={concatenate}
-                               editMessage={(evt) => this._editMessage(evt)}
-                               openModalDeleteMessage={() => this._openModalDeleteMessage(message)}
+                               editMessage={(evt) => void null} /* TODO: Gérer cet event */
+                               openModalDeleteMessage={() => this.setState({
+                                   selectedMessageToDelete: message,
+                               })}
                 />,
             );
         }
 
         return messages;
-    }
-
-    private _openModalDeleteMessage(message: Message): void {
-        this.setState({
-            deletedMessage: message,
-            deleteModalOpen: true,
-        });
-    }
-
-    private _editMessage(evt: any): void {
-
-    }
-
-    private _deleteMessage(message: Message): void {
-        APIRequest
-            .delete("/group/room/message/delete")
-            .authenticate()
-            .canceledWhen(() => this._currentUpdateVersion !== MessageList._currentUpdateVersion)
-            .withPayload({
-                messageId: message.id,
-                roomId: this.props.roomId, // Ou `message.roomId` ?
-            })
-            .send()
-            .then();
     }
 }
 

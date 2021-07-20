@@ -1,4 +1,4 @@
-import {ProfilePicture} from "components/profilePicture";
+import {ProfilePicture} from "components/shared/profilePicture";
 import {Message} from "model/message";
 import React from "react";
 import {ActionButtons} from "./actionButtons";
@@ -7,7 +7,7 @@ import "./singleMessage.scss";
 
 interface SingleMessageProps {
     concatenate: boolean,
-    editMessage: (evt: any) => void,
+    editMessage: (evt: React.MouseEvent<HTMLElement, MouseEvent>) => void,
     message: Message,
     openModalDeleteMessage: () => void,
 }

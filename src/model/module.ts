@@ -1,4 +1,4 @@
-type RawFullGroup = {
+type RawModule = {
     createdAt: Date,
     id: string,
     name: string,
@@ -8,7 +8,7 @@ type RawFullGroup = {
     usersCount: number,
 };
 
-class Group {
+class Module {
     private readonly _createdAt: Date;
     private readonly _id: string;
     private readonly _name: string;
@@ -62,7 +62,7 @@ class Group {
         return this._usersCount;
     }
 
-    public static fromFullObject(obj: RawFullGroup): Group {
+    public static fromObject(obj: RawModule): Module {
         return new this(
             obj.id,
             obj.name,
@@ -87,5 +87,5 @@ class Group {
     }
 }
 
-export {Group};
-export type {RawFullGroup};
+export {Module};
+export type {RawModule};

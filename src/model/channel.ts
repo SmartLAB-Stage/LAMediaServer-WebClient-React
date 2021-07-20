@@ -7,9 +7,9 @@ import {
 } from "./message";
 
 /**
- * Room raw
+ * Canal raw
  */
-interface RawFullRoom {
+interface RawChannel {
     id: string,
     isDefault: boolean,
     lastMessage: RawMessage,
@@ -22,7 +22,7 @@ interface RawFullRoom {
 /**
  * Canal
  */
-class Room {
+class Channel {
     /**
      * ID
      * @private
@@ -108,12 +108,12 @@ class Room {
         return this._usersCount;
     }
 
-    public static fromFullObject(obj: RawFullRoom): Room {
+    public static fromObject(obj: RawChannel): Channel {
         return new this(
             obj.id,
             obj.name,
             obj.isDefault,
-            obj.lastMessage ? Message.fromFullMessage(obj.lastMessage) : null,
+            obj.lastMessage ? Message.fromObject(obj.lastMessage) : null,
             obj.parentRoomId,
             obj.usersCount,
             obj.messagesCount,
@@ -136,5 +136,5 @@ class Room {
     }
 }
 
-export {Room};
-export type {RawFullRoom};
+export {Channel};
+export type {RawChannel};

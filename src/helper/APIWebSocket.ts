@@ -6,12 +6,12 @@ interface APIResponseData {
         type: string,
     },
     message: string,
-    payload: unknown | unknown[],
+    payload: Record<string, unknown>,
 }
 
-type ResponseCallback = (data: unknown) => void;
+type ResponseCallback = (data: Record<string, unknown>) => void;
 
-type OpenCallback = () => void;
+type OpenCallback = (socket: APIWebSocket) => void;
 
 class APIWebSocket {
     private readonly _endpoint: string;
@@ -76,7 +76,7 @@ class APIWebSocket {
         return this;
     }
 
-    public onOpen(openCallback: () => void): APIWebSocket {
+    public onOpen(openCallback: OpenCallback): APIWebSocket {
         this._openCallback = openCallback;
         return this;
     }
@@ -100,7 +100,7 @@ class APIWebSocket {
                 this._responseCallback(data.payload);
             }
         };
-        this._webSocket.onopen = () => this._openCallback();
+        this._webSocket.onopen = () => this._openCallback(this);
     }
 
     public send(msg: Record<string, unknown>): void {

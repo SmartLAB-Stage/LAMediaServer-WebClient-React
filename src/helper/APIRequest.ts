@@ -37,6 +37,16 @@ enum RequestMethod {
     PUT = "PUT",
 }
 
+type APIResponsePayload = Record<string, unknown>;
+
+interface APIResponseData {
+    error?: {
+        type: string,
+    },
+    message: string,
+    payload: APIResponsePayload,
+}
+
 /**
  * Informations de requête
  */
@@ -44,20 +54,12 @@ type RequestInfos = {
     /**
      * Data
      */
-    data: any | null,
+    data: APIResponseData | null,
 
     /**
      * Statut HTTP
      */
     status: number,
-}
-
-interface APIResponseData {
-    error?: {
-        type: string,
-    },
-    message: string,
-    payload: any | any[],
 }
 
 /**
@@ -68,12 +70,12 @@ type ProgressCallback = (loaded: number, total: number, evt: ProgressEvent) => v
 /**
  * Callback de succès
  */
-type SuccessCallback = (status: number, data: APIResponseData) => any | void;
+type SuccessCallback = (payload: APIResponsePayload, data: APIResponseData, status: number) => unknown | void;
 
 /**
  * Callback d'échec
  */
-type FailureCallback = (status: number, data: APIResponseData | null, evt: ProgressEvent) => any | void;
+type FailureCallback = (status: number, data: APIResponseData | null, evt: ProgressEvent) => unknown | void;
 
 /**
  * Requête API
@@ -109,7 +111,7 @@ class APIRequest {
      * Requête
      * @private
      */
-    private _request: XMLHttpRequest;
+    private readonly _request: XMLHttpRequest;
 
     private _token: string | null;
 
@@ -152,6 +154,15 @@ class APIRequest {
      */
     public static get(route: string): APIRequest {
         return new APIRequest(RequestMethod.GET, route);
+    }
+
+    /**
+     * Effectue une requête PATCH
+     * @param route Route
+     */
+
+    public static patch(route: string): APIRequest {
+        return new APIRequest(RequestMethod.PATCH, route);
     }
 
     /**
@@ -199,27 +210,28 @@ class APIRequest {
      * @param evt Event
      * @private
      */
-    private static _getRequestInfos(evt: any): RequestInfos {
+    private static _getRequestInfos(evt: ProgressEvent<XMLHttpRequestEventTarget>): RequestInfos {
         let status;
         let data;
+        // @ts-ignore
         const target: XMLHttpRequest | null = evt.target;
 
         if (target === null) {
             console.debug(evt);
-            status = 500;
             data = null;
+            status = 500;
         } else {
-            status = target.status;
             try {
                 data = JSON.parse(target.response);
             } catch (e) {
                 data = null;
             }
+            status = target.status;
         }
 
         return {
-            status,
             data,
+            status,
         };
     }
 
@@ -290,22 +302,25 @@ class APIRequest {
     /**
      * Envoie la requête
      */
-    public async send(): Promise<any | void> {
+    public async send(): Promise<unknown | void> {
         const start = Date.now();
 
-        const onFailure = (status: number, data: APIResponseData | null, evt: ProgressEvent): any => {
+        const onFailure = (status: number, data: APIResponseData | null, evt: ProgressEvent): unknown => {
             if (status === 401 && !this._unauthorizedErrorsAllowed) {
                 console.debug("Vous avez été déconnecté");
-                Authentication.clearToken();
+                Authentication.clearInfos();
                 window.location.href = "/";
             }
+
+            console.warn(`Erreur de requête: code ${status}, data:`, data);
 
             return this._onFailure(status, data, evt);
         };
 
-        const res = await new Promise<any | void>((resolve) => {
-            this._request.addEventListener("progress", (evt) => {
+        const res = await new Promise<unknown | void>((resolve) => {
+            this._request.addEventListener("progress", (evt: ProgressEvent<XMLHttpRequestEventTarget>) => {
                 if (this._canceledFunction()) {
+                    console.info("Requête annulée après succès:", this._route)
                     return;
                 }
 
@@ -316,8 +331,9 @@ class APIRequest {
                 }
             });
 
-            this._request.addEventListener("load", (evt: any) => {
+            this._request.addEventListener("load", (evt: ProgressEvent<XMLHttpRequestEventTarget>) => {
                 if (this._canceledFunction()) {
+                    console.info("Requête annulée après chargement:", this._route)
                     return;
                 }
 
@@ -325,12 +341,13 @@ class APIRequest {
                 if (infos.data === null || !APIRequest._isGoodStatusCode(infos.status)) {
                     resolve(onFailure(infos.status, infos.data, evt));
                 } else {
-                    resolve(this._onSuccess(infos.status, infos.data));
+                    resolve(this._onSuccess(infos.data.payload, infos.data, infos.status));
                 }
             });
 
-            this._request.addEventListener("error", (evt) => {
+            this._request.addEventListener("error", (evt: ProgressEvent<XMLHttpRequestEventTarget>) => {
                 if (this._canceledFunction()) {
+                    console.info("Requête annulée après erreur:", this._route)
                     return;
                 }
 
@@ -365,11 +382,11 @@ class APIRequest {
         return res;
     }
 
-    private _onProgress: ProgressCallback = (_loaded, _total, _evt) => (void null);
+    private _onProgress: ProgressCallback = () => (void null);
 
-    private _onSuccess: SuccessCallback = (_status, _data) => (void null);
+    private _onSuccess: SuccessCallback = () => (void null);
 
-    private _onFailure: FailureCallback = (_status, _data, _evt) => (void null);
+    private _onFailure: FailureCallback = () => (void null);
 }
 
 export {APIRequest};

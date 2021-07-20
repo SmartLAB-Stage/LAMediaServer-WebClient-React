@@ -16,7 +16,13 @@ body {
 }
 
 button:disabled {
-    // Bug Bootstrap, les boutons disabled gardent un curseur de souris normal
+    // Les boutons disabled gardent un curseur de souris normal
+    cursor: not-allowed;
+    pointer-events: all !important;
+}
+
+input:disabled {
+    // Les input disabled gardent un curseur de souris normal
     cursor: not-allowed;
     pointer-events: all !important;
 }

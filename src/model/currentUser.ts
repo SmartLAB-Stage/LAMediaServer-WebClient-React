@@ -1,7 +1,7 @@
 import {Presence} from "model/presence";
 import {Role} from "model/role";
 import {
-    RawFullUser,
+    RawUser,
     User,
 } from "model/user";
 
@@ -10,7 +10,7 @@ interface EMail {
     verified: boolean,
 }
 
-interface RawCurrentUser extends RawFullUser {
+interface RawCurrentUser extends RawUser {
     email: string,
     emails: EMail[],
     utcOffset: number,
@@ -57,7 +57,7 @@ class CurrentUser extends User {
         return this._utcTimezoneOffset;
     }
 
-    public static fromFullUser(rawUser: RawCurrentUser): CurrentUser {
+    public static fromObject(rawUser: RawCurrentUser): CurrentUser {
         return new this(
             rawUser.id,
             rawUser.username,

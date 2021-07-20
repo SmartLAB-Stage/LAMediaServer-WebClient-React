@@ -1,16 +1,18 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import colors from "colors.module.scss";
-import {GroupList} from "components/groupList";
 import {MessageList} from "components/messageList";
+import {ModuleList} from "components/moduleList";
 import {PersonalInfos} from "components/personalInfos";
 import {UserList} from "components/userList";
 import {APIRequest} from "helper/APIRequest";
-import {CurrentUser} from "model/currentUser";
 import {
-    Group,
-    RawFullGroup,
-} from "model/group";
-import {Room} from "model/room";
+    Channel,
+    RawChannel,
+} from "model/channel";
+import {
+    CurrentUser,
+    RawCurrentUser,
+} from "model/currentUser";
 import {User} from "model/user";
 import {
     VideoconferencePublisher,
@@ -21,30 +23,29 @@ import {
     Session,
     StreamEvent,
 } from "openvidu-browser";
+import "pages/channel/channel.scss";
 import React, {FormEvent} from "react";
 import {Form} from "react-bootstrap";
-import "./room.scss";
 
-interface RoomProps {
-    currentRoomId: string | null,
+interface ChannelProps {
+    currentChannelId: string | null,
     fullURL: string,
 }
 
-interface RoomState {
+interface ChannelState {
+    activeTextChannel: Channel | null,
+    activeVocalChannel: Channel | null,
     currentMessageContent: string,
-    currentRoomId: string | null,
-    groups: Group[],
     meUser: CurrentUser | null,
     openViduSessionInfos: null | {
         sessionId: string,
         targetWebSocketURL: string,
     },
-    selectedGroup: Group | null,
     videoconferencePublisher: VideoconferencePublisher | null,
     videoconferenceSubscribersConnections: VideoconferenceSubscriber[],
 }
 
-class RoomPage extends React.Component<RoomProps, RoomState> {
+class ChannelPage extends React.Component<ChannelProps, ChannelState> {
     /**
      * Permet d'annuler les Promise asynchrones une fois l'élément React courant recyclé / la vue changée.
      * @private
@@ -54,7 +55,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
     private _openVidu: OpenVidu;
     private _openViduSession: Session;
 
-    public constructor(props: RoomProps) {
+    public constructor(props: ChannelProps) {
         super(props);
 
         this._openVidu = new OpenVidu();
@@ -62,11 +63,10 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
         this.state = {
             currentMessageContent: "",
-            currentRoomId: this.props.currentRoomId,
-            groups: [],
+            activeTextChannel: null,
+            activeVocalChannel: null,
             meUser: null,
             openViduSessionInfos: null,
-            selectedGroup: null,
             videoconferencePublisher: null,
             videoconferenceSubscribersConnections: [],
         };
@@ -74,35 +74,25 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
     public render(): React.ReactNode {
         return (
-            <main className={"rooms container-fluid py-5 px-4"}>
+            <main className={"channels container-fluid py-5 px-4"}>
                 <div className={"row rounded-lg overflow-hidden shadow"}>
                     <div className={"col-2 px-0"}>
                         <div className={"row"}>
                             <div className={"col-sm-12"}>
-                                <GroupList
-                                    currentRoomChangeCallback={(room: Room, group: Group) => {
-                                        this._currentRoomChangeCallback(room, group);
+                                <ModuleList
+                                    activeTextChannel={this.state.activeTextChannel}
+                                    activeTextChannelChangeCallback={(channel: Channel) => {
+                                        this._activeTextChannelChangeCallback(channel);
                                     }}
-                                    groups={this.state.groups}
-                                    newGroupCreatedCallback={() => this._createNewGroup("monGroupe")} // TODO: Set ce nom
-                                    selectedRoomFound={(group: Group) => {
-                                        this.setState({
-                                            selectedGroup: group,
-                                        });
+                                    activeVocalChannel={this.state.activeVocalChannel}
+                                    activeVocalChannelChangeCallback={(channel: Channel) => {
+                                        this._activeVocalChannelChangeCallback(channel);
                                     }}
-                                    selectedRoomId={this.state.currentRoomId}
-                                    videoConferenceChangeCallback={(room: Room, _group: Group) => {
-                                        this._videoConferenceChangeCallback(room);
-                                    }}
-                                    videoConferenceConnectedRoomId={
-                                        this.state.openViduSessionInfos === null
-                                            ? null
-                                            : this.state.openViduSessionInfos.sessionId
-                                    }
                                 />
                             </div>
                             <div className={"col personal-infos"}>
                                 <PersonalInfos
+                                    activeVocalChannel={this.state.activeVocalChannel}
                                     user={this.state.meUser}
                                     videoconferenceDisconnectCallback={() => this._disconnectVideoconference()}
                                     videoconferencePublisher={this.state.videoconferencePublisher}
@@ -117,17 +107,16 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                             "py-5 " +
                             "chat-box " +
                             "bg-white " +
-                            (this.state.currentRoomId === null ? null : "message-list ")
+                            (this.state.activeTextChannel === null ? null : "message-list ")
                         }>
-                            {this.state.currentRoomId === null
+                            {this.state.activeTextChannel === null
                                 ? (
                                     <i>
                                         Choisissez une discussion depuis la liste de gauche
                                     </i>
                                 ) : (
-                                    <MessageList
-                                        key={`message-list-${this.state.currentRoomId}`}
-                                        roomId={this.state.currentRoomId}
+                                    <MessageList channel={this.state.activeTextChannel}
+                                                 key={`message-list-${this.state.activeTextChannel.id}`}
                                     />
                                 )
                             }
@@ -140,7 +129,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                                        placeholder={"Entrez votre message"}
                                        aria-describedby={"button-send-message"}
                                        className={"form-control rounded-0 border-0 py-4 bg-light"}
-                                       disabled={this.state.currentRoomId === null}
+                                       disabled={this.state.activeTextChannel === null}
                                        value={this.state.currentMessageContent}
                                        onChange={(e) => {
                                            this.setState({
@@ -163,7 +152,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
                         </Form>
                     </div>
                     <div className={"col-2 px-0"}>
-                        <UserList selectedGroup={this.state.selectedGroup}/>
+                        <UserList currentChannel={this.state.activeTextChannel}/>
                     </div>
                 </div>
             </main>
@@ -172,15 +161,15 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
     public componentDidMount(): void {
         this._active = true;
-        this._updateGroupsFromAPI();
         this._updateMyInfos();
+        this._fetchCurrentChannel();
 
-        if (this.state.currentRoomId !== null) {
-            window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.currentRoomId));
+        if (this.state.activeTextChannel !== null) {
+            window.history.replaceState(null, "", this.props.fullURL.replace(/:[^/]*/, this.state.activeTextChannel.id));
         }
     }
 
-    public componentDidUpdate(_prevProps: RoomProps, prevState: RoomState): void {
+    public componentDidUpdate(_prevProps: ChannelProps, prevState: ChannelState): void {
         const curInfos = this.state.openViduSessionInfos;
         const prevInfos = prevState.openViduSessionInfos;
         if (curInfos !== prevInfos && curInfos !== null && curInfos?.sessionId !== prevInfos?.sessionId) {
@@ -201,104 +190,86 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
             .get("/me/get")
             .authenticate()
             .canceledWhen(() => !this._active)
-            .onSuccess((status, data) => {
+            .onSuccess((payload) => {
                 this.setState({
-                    meUser: CurrentUser.fromFullUser(data.payload),
+                    meUser: CurrentUser.fromObject(payload as unknown as RawCurrentUser),
                 });
             })
             .send()
             .then();
     }
 
-    private _currentRoomChangeCallback(newRoom: Room, newGroup: Group): void {
+    private _fetchCurrentChannel(): void {
+        if (this.props.currentChannelId === null) {
+            return;
+        }
+
+        APIRequest
+            .get("/module/channel/get")
+            .authenticate()
+            .canceledWhen(() => !this._active)
+            .withPayload({
+                channelId: this.props.currentChannelId,
+            })
+            .onSuccess((payload) => {
+                this.setState({
+                    activeTextChannel: Channel.fromObject(payload as unknown as RawChannel),
+                });
+            })
+            .send()
+            .then();
+    }
+
+    private _activeTextChannelChangeCallback(newChannel: Channel): void {
         this.setState({
-            currentRoomId: newRoom.id,
-            selectedGroup: newGroup,
+            activeTextChannel: newChannel,
         });
 
-        let state: any = {
+        let state: Record<string, unknown> = {
             ...this.state,
         };
         state.openViduSession = undefined;
         state.videoconferencePublisher = undefined;
 
-        window.history.pushState(state, "", this.props.fullURL.replace(/:[^/]*/, newRoom.id));
+        window.history.pushState(state, "", this.props.fullURL.replace(/:[^/]*/, newChannel.id));
     }
 
     private _disconnectVideoconference(): void {
         if (this.state.openViduSessionInfos !== null) {
             this._openViduSession.disconnect();
             this.setState({
+                activeVocalChannel: null,
                 openViduSessionInfos: null,
                 videoconferencePublisher: null,
             });
         }
     }
 
-    private _videoConferenceChangeCallback(newRoom: Room): void {
-        const streamId = newRoom.id;
-
-        if (streamId !== this.state.openViduSessionInfos?.sessionId) {
+    private _activeVocalChannelChangeCallback(channel: Channel): void {
+        if (channel.id !== this.state.openViduSessionInfos?.sessionId) {
             if (this.state.openViduSessionInfos !== null) {
                 this._openViduSession.disconnect();
             }
 
-            this._connectToVideoConference(streamId);
+            this._connectToVideoConference(channel);
         }
-    }
-
-    private _updateGroupsFromAPI(): void {
-        APIRequest
-            .get("/group/list")
-            .authenticate()
-            .canceledWhen(() => !this._active)
-            .onSuccess((status, data) => {
-                const groups: Group[] = [];
-
-                for (const group of data.payload) {
-                    groups.push(Group.fromFullObject(group));
-                }
-
-                this.setState({
-                    groups,
-                });
-            })
-            .send()
-            .then();
-    }
-
-    private _createNewGroup(name: string): void {
-        APIRequest
-            .post("/group/create")
-            .authenticate()
-            .canceledWhen(() => !this._active)
-            .withPayload({
-                name,
-            })
-            .onSuccess((status, data) => {
-                this.setState({
-                    groups: [...this.state.groups, Group.fromFullObject(data.payload as RawFullGroup)],
-                });
-            })
-            .send()
-            .then();
     }
 
     private async _handleSendMessage(evt: FormEvent): Promise<void> {
         evt.preventDefault();
 
-        if (this.state.currentMessageContent.length === 0 || this.state.currentRoomId === null) {
+        if (this.state.currentMessageContent.length === 0 || this.state.activeTextChannel === null) {
             return;
         }
 
         await APIRequest
-            .post("/group/room/message/send")
+            .post("/module/channel/message/send")
             .authenticate()
             .canceledWhen(() => !this._active)
             .minTime(100)
             .withPayload({
                 message: this.state.currentMessageContent,
-                roomId: this.state.currentRoomId,
+                channelId: this.state.activeTextChannel.id,
             })
             .send()
             .then();
@@ -310,7 +281,7 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
 
     private _onStreamCreated(evt: StreamEvent) {
         const connection = evt.stream.connection;
-        const user = User.fromFullUser(JSON.parse(connection.data));
+        const user = User.fromObject(JSON.parse(connection.data));
 
         if (user.username !== this.state.meUser?.username) {
             console.warn(user);
@@ -432,21 +403,24 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
         }
     }
 
-    private _connectToVideoConference(id: string): void {
+    private _connectToVideoConference(channel: Channel): void {
         APIRequest
             .post("/videoconference/session/connect")
             .canceledWhen(() => !this._active)
             .authenticate()
             .withPayload({
-                sessionId: id,
+                sessionId: channel.id,
             })
-            .onSuccess((status, data) => {
-                this.setState({
-                    openViduSessionInfos: {
-                        sessionId: data.payload.sessionId,
-                        targetWebSocketURL: data.payload.targetWebSocketURL,
-                    },
-                });
+            .onSuccess((payload) => {
+                if (payload !== null) {
+                    this.setState({
+                        activeVocalChannel: channel,
+                        openViduSessionInfos: {
+                            sessionId: payload.sessionId as string,
+                            targetWebSocketURL: payload.targetWebSocketURL as string,
+                        },
+                    });
+                }
             })
             .onFailure((status, data) => {
                 console.warn("connect nok", status, data);
@@ -456,4 +430,4 @@ class RoomPage extends React.Component<RoomProps, RoomState> {
     }
 }
 
-export {RoomPage};
+export {ChannelPage};

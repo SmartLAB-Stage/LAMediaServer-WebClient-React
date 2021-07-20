@@ -1,15 +1,18 @@
-import {UserInfosModal} from "components/userInfosModal";
-import {SingleUser} from "components/userList/singleUser";
+import {UserInfosModal} from "components/shared/userInfosModal";
 import {APIRequest} from "helper/APIRequest";
 import {APIWebSocket} from "helper/APIWebSocket";
-import {Group} from "model/group";
+import {Channel} from "model/channel";
 import {Presence} from "model/presence";
-import {User} from "model/user";
+import {
+    RawUser,
+    User,
+} from "model/user";
 import React from "react";
+import {SingleUser} from "./singleUser";
 import "./userList.scss";
 
 interface UserListProps {
-    selectedGroup: Group | null,
+    currentChannel: Channel | null,
 }
 
 interface UserListState {
@@ -41,13 +44,17 @@ class UserList extends React.Component<UserListProps, UserListState> {
         this._setSocketNameUpdated();
         this._setSocketPresenceUpdated();
 
+        if (this.props.currentChannel !== null) {
+            this._updateUsersFromAPI();
+        }
+
         for (const sock of this._sockets) {
             sock.open();
         }
     }
 
     public componentDidUpdate(prevProps: UserListProps): void {
-        if (this.props.selectedGroup !== null && prevProps.selectedGroup !== this.props.selectedGroup) {
+        if (this.props.currentChannel !== null && prevProps.currentChannel?.id !== this.props.currentChannel.id) {
             this._updateUsersFromAPI();
         }
     }
@@ -85,7 +92,7 @@ class UserList extends React.Component<UserListProps, UserListState> {
                                                         modalUserInfosOpen: false,
                                                     });
                                                 }}
-                                                userInfosModalOpen={this.state.modalUserInfosOpen}/>
+                                                modalOpen={this.state.modalUserInfosOpen}/>
                             ) : null
                     }
                 </ul>
@@ -97,11 +104,13 @@ class UserList extends React.Component<UserListProps, UserListState> {
         APIRequest
             .get("/user/get")
             .authenticate()
-            .withPayload({userId: user.id})
+            .withPayload({
+                userId: user.id,
+            })
             .canceledWhen(() => !this._active)
-            .onSuccess((status, data) => {
+            .onSuccess((payload) => {
                 this.setState({
-                    selectedUserForInfos: User.fromFullUser(data.payload),
+                    selectedUserForInfos: User.fromObject(payload as unknown as RawUser),
                     modalUserInfosOpen: true,
                 });
             })
@@ -110,22 +119,22 @@ class UserList extends React.Component<UserListProps, UserListState> {
     }
 
     private _updateUsersFromAPI(): void {
-        if (this.props.selectedGroup === null) {
+        if (this.props.currentChannel === null) {
             return;
         }
 
         APIRequest
-            .get("/group/user/list")
+            .get("/module/channel/user/list")
             .authenticate()
             .withPayload({
-                groupId: this.props.selectedGroup.id,
+                channelId: this.props.currentChannel.id,
             })
             .canceledWhen(() => !this._active)
-            .onSuccess((status, data) => {
+            .onSuccess((payload) => {
                 const users: User[] = [];
 
-                for (const user of data.payload) {
-                    users.push(User.fromFullUser(user));
+                for (const user of payload.users as RawUser[]) {
+                    users.push(User.fromObject(user));
                 }
 
                 this.setState({

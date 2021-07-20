@@ -1,6 +1,6 @@
-import {ProfilePicture} from "components/profilePicture";
+import {PresenceBadge} from "components/shared/presenceBadge";
+import {ProfilePicture} from "components/shared/profilePicture";
 import {CurrentUser} from "model/currentUser";
-import {presenceToReadableInfos} from "model/presence";
 import {User} from "model/user";
 import React from "react";
 import {
@@ -12,15 +12,26 @@ import "./userInfosModal.scss";
 interface OtherUserInfosModalProps {
     user: User | CurrentUser,
     closeModalAction: () => void,
-    userInfosModalOpen: boolean,
+    modalOpen: boolean,
 }
 
 class UserInfosModal extends React.Component<OtherUserInfosModalProps, {}> {
     public render(): React.ReactNode {
-        const infos = presenceToReadableInfos(this.props.user.status);
+        let roles: string | null = null;
+
+        if (this.props.user.roles !== null) {
+            roles = "";
+
+            for (const role of this.props.user.roles) {
+                roles += role.name + ", ";
+            }
+
+            roles = roles.slice(0, -2);
+        }
+
         return (
             <Modal className={"user-infos-modal"}
-                   show={this.props.userInfosModalOpen}
+                   show={this.props.modalOpen}
                    onHide={this.props.closeModalAction}>
                 <Modal.Header closeButton={true}>
                     <Modal.Title>
@@ -55,16 +66,14 @@ class UserInfosModal extends React.Component<OtherUserInfosModalProps, {}> {
                             <tr>
                                 <th scope={"row"}>Statut</th>
                                 <td>
-                                    <span className={"badge badge-outline badge-sm badge-pill badge-" + infos.badgeColor}>
-                                        {infos.status}
-                                    </span>
+                                    <PresenceBadge presence={this.props.user.status}/>
                                 </td>
                             </tr>
                             <tr>
                                 <th scope={"row"}>Rôles</th>
                                 <td>{
-                                    this.props.user.roles
-                                        ? this.props.user.roles
+                                    roles !== null
+                                        ? roles
                                         : <i>Inconnus</i>
                                 }</td>
                             </tr>
