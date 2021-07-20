@@ -278,9 +278,6 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
         this._sockets.push(APIWebSocket
             .getSocket("/module/channel/deleted")
             .withToken()
-            .onOpen(() => {
-                console.log("bien ouvert !");
-            })
             .onResponse((data: unknown) => {
                 const channelId = (data as { channelId: string }).channelId;
                 const channels: Channel[] = [];
