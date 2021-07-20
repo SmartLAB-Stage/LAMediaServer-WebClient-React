@@ -49,7 +49,10 @@ class ChannelComponent extends React.Component<ChannelComponentProps, {}> {
                                         />
                                     </div>
                                     <Button className={"btn btn-sm m-0 mt-5 btn-danger"}
-                                            onClick={() => this.props.deleteChannel()}>
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                this.props.deleteChannel();
+                                            }}>
                                         <FontAwesomeIcon icon={faTrash}/>
                                     </Button>
                                 </div>
