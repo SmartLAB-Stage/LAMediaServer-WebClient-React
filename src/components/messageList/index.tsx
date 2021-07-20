@@ -120,6 +120,11 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                     messages,
                 });
             })
+            .onFailure((status) => {
+                if (status === 404) {
+                    window.location.replace("/channel");
+                }
+            })
             .send()
             .then();
     }
