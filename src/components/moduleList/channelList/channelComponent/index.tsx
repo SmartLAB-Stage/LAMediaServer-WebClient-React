@@ -21,7 +21,6 @@ interface ChannelComponentProps {
 
 class ChannelComponent extends React.Component<ChannelComponentProps, {}> {
     public render(): React.ReactNode {
-
         return (
             <>
                 <div className={"col"}>
