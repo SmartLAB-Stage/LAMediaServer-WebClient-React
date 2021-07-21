@@ -231,6 +231,7 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
         };
         state.openViduSession = undefined;
         state.videoconferencePublisher = undefined;
+        state.videoconferenceSubscribers = undefined;
 
         window.history.pushState(state, "", this.props.fullURL.replace(/:[^/]*/, newChannel.id));
     }
