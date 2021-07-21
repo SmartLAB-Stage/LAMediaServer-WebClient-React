@@ -51,8 +51,8 @@ class PersonalVideoControls extends React.Component<PersonalVideoControlsProps, 
                         onClick={() => this._triggerAudio()}
                         title={
                             this.state.audioActive
-                                ? "Réactiver le micro"
-                                : "Se rendre muet"
+                                ? "Se rendre muet"
+                                : "Réactiver le micro"
                         }>
                     <FontAwesomeIcon icon={this.state.audioActive ? faMicrophone : faMicrophoneSlash}/>
                 </Button>
@@ -66,8 +66,8 @@ class PersonalVideoControls extends React.Component<PersonalVideoControlsProps, 
                         onClick={() => this._triggerVideo()}
                         title={
                             this.state.audioActive
-                                ? "Réactiver la caméra"
-                                : "Désactiver la caméra"
+                                ? "Désactiver la caméra"
+                                : "Réactiver la caméra"
                         }>
                     <FontAwesomeIcon icon={this.state.videoActive ? faVideo : faVideoSlash}/>
                 </Button>
