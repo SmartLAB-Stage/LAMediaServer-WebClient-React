@@ -349,7 +349,7 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
         // @ts-ignore
         const publisher = this._openVidu.initPublisher(null, {
             publishAudio: false,
-            publishVideo: videoType === VideoconferenceType.SCREEN_SHARE,
+            publishVideo: true,
             videoSource,
         });
 

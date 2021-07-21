@@ -21,7 +21,7 @@ class ChannelOrModuleCreationModal extends React.Component<ChannelOrModuleCreati
     private readonly _mainInputRef: React.RefObject<HTMLInputElement>;
     private readonly _nameInputRef: React.RefObject<HTMLInputElement>;
 
-    constructor(props: ChannelOrModuleCreationModalProps) {
+    public constructor(props: ChannelOrModuleCreationModalProps) {
         super(props);
         this._idPrefix = "room-creation-form-user-" + String(Math.floor(Math.random() * Math.pow(10, 8)));
         this._inputRefs = {};
@@ -155,7 +155,7 @@ class ChannelOrModuleCreationModal extends React.Component<ChannelOrModuleCreati
         }
     }
 
-    private _triggerCreation() {
+    private _triggerCreation(): void {
         const ids: string[] = [];
         for (const key of Object.keys(this._inputRefs)) {
             const ref = this._inputRefs[key];

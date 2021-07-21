@@ -2,7 +2,6 @@ import {faTrash} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import "components/moduleList/channelList/channelComponent/channelComponent.scss";
 import {Channel} from "model/channel";
-import {VideoconferenceType} from "model/videoconference";
 import React from "react";
 import {
     Button,
@@ -17,7 +16,7 @@ interface ChannelComponentProps {
     channel: Channel,
     deleteChannel: () => void,
     selected: boolean,
-    videoConferenceChangeCallback: (videoType: VideoconferenceType) => void,
+    videoConferenceChangeCallback: () => void,
 }
 
 class ChannelComponent extends React.Component<ChannelComponentProps, {}> {
@@ -67,8 +66,8 @@ class ChannelComponent extends React.Component<ChannelComponentProps, {}> {
                                                 selected={
                                                     this.props.channel.id === this.props.activeVocalChannel?.id
                                                 }
-                                                videoConferenceChangeCallback={(videoType: VideoconferenceType) => {
-                                                    this.props.videoConferenceChangeCallback(videoType);
+                                                videoConferenceChangeCallback={() => {
+                                                    this.props.videoConferenceChangeCallback();
                                                 }}
                                             />
                                         </div>

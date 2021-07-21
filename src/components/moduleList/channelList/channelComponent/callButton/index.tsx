@@ -1,12 +1,11 @@
 import {faPhoneAlt} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {VideoconferenceType} from "model/videoconference";
 import React from "react";
 import {Button} from "react-bootstrap";
 
 interface CallButtonProps {
     selected: boolean,
-    videoConferenceChangeCallback: (videoType: VideoconferenceType) => void,
+    videoConferenceChangeCallback: () => void,
 }
 
 class CallButton extends React.Component<CallButtonProps, {}> {
@@ -22,7 +21,7 @@ class CallButton extends React.Component<CallButtonProps, {}> {
                     }
                     onClick={(e) => {
                         e.stopPropagation();
-                        this.props.videoConferenceChangeCallback(VideoconferenceType.SCREEN_SHARE);
+                        this.props.videoConferenceChangeCallback();
                     }}>
                 <FontAwesomeIcon icon={faPhoneAlt}/>
             </Button>

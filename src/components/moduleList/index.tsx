@@ -3,6 +3,7 @@ import {
     faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {VideoSourceModal} from "components/moduleList/videoSourceModal";
 import {ChannelOrModuleCreationModal} from "components/shared/channelOrModuleCreationModal";
 import {ConfirmationModal} from "components/shared/confirmationModal";
 import {InformationModal} from "components/shared/informationModal";
@@ -44,6 +45,7 @@ interface ModuleListState {
         deleteChannelCallback: () => void,
     },
     selectedModuleToDelete: Module | null,
+    vocalChannelVideoSourceCallback: null | ((videoType: VideoconferenceType) => void),
 }
 
 class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
@@ -64,6 +66,7 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
             modules: [],
             selectedChannelToDeleteInfos: null,
             selectedModuleToDelete: null,
+            vocalChannelVideoSourceCallback: null,
         };
     }
 
@@ -142,9 +145,11 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                                              });
                                          }}
                                          videoConferenceChangeCallback={
-                                             (chan: Channel, videoType: VideoconferenceType) => {
-                                                 this.props.activeVocalChannelChangeCallback(chan, videoType);
-                                             }
+                                             (channel: Channel) => this.setState({
+                                                 vocalChannelVideoSourceCallback: (videoType: VideoconferenceType) => {
+                                                     this.props.activeVocalChannelChangeCallback(channel, videoType);
+                                                 },
+                                             })
                                          }
                             />
                         </div>
@@ -212,6 +217,13 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                                           ? null
                                           : this.state.informationsModal.title
                                   }/>
+                <VideoSourceModal open={this.state.vocalChannelVideoSourceCallback !== null}
+                                  changeSourceAction={(videoType: VideoconferenceType) => {
+                                      this.state.vocalChannelVideoSourceCallback!(videoType);
+                                  }}
+                                  modalClosedCallback={() => this.setState({
+                                      vocalChannelVideoSourceCallback: null,
+                                  })}/>
             </div>
         );
     }
