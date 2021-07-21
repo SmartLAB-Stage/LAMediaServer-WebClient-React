@@ -1,4 +1,8 @@
+import {faTrash} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import "components/moduleList/channelList/channelComponent/channelComponent.scss";
 import {Channel} from "model/channel";
+import {VideoconferenceType} from "model/videoconference";
 import React from "react";
 import {
     Button,
@@ -6,9 +10,6 @@ import {
     Tooltip,
 } from "react-bootstrap";
 import {CallButton} from "./callButton";
-import "components/moduleList/channelList/channelComponent/channelComponent.scss";
-import {faTrash} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 interface ChannelComponentProps {
     activeVocalChannel: Channel | null,
@@ -16,7 +17,7 @@ interface ChannelComponentProps {
     channel: Channel,
     deleteChannel: () => void,
     selected: boolean,
-    videoConferenceChangeCallback: () => void,
+    videoConferenceChangeCallback: (videoType: VideoconferenceType) => void,
 }
 
 class ChannelComponent extends React.Component<ChannelComponentProps, {}> {
@@ -66,9 +67,9 @@ class ChannelComponent extends React.Component<ChannelComponentProps, {}> {
                                                 selected={
                                                     this.props.channel.id === this.props.activeVocalChannel?.id
                                                 }
-                                                videoConferenceChangeCallback={
-                                                    this.props.videoConferenceChangeCallback
-                                                }
+                                                videoConferenceChangeCallback={(videoType: VideoconferenceType) => {
+                                                    this.props.videoConferenceChangeCallback(videoType);
+                                                }}
                                             />
                                         </div>
                                         <small className={"small font-weight-bold"}>

@@ -13,6 +13,7 @@ import {
     RawUser,
     User,
 } from "model/user";
+import {VideoconferenceType} from "model/videoconference";
 import React from "react";
 import {Button} from "react-bootstrap";
 import {ChannelComponent} from "./channelComponent";
@@ -24,7 +25,7 @@ interface ChannelListProps {
     currentModule: Module,
     openDeleteChannelModal: (channel: Channel, callback: () => void) => void,
     selectedModuleFound: () => void,
-    videoConferenceChangeCallback: (channel: Channel) => void,
+    videoConferenceChangeCallback: (channel: Channel, videoType: VideoconferenceType) => void,
 }
 
 interface ChannelListState {
@@ -91,9 +92,9 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
                                   }}
                                   key={"channel-list-element-" + channel.id}
                                   selected={this.props.activeTextChannel?.id === channel.id}
-                                  videoConferenceChangeCallback={
-                                      () => this.props.videoConferenceChangeCallback(channel)
-                                  }
+                                  videoConferenceChangeCallback={(videoType: VideoconferenceType) => {
+                                      this.props.videoConferenceChangeCallback(channel, videoType);
+                                  }}
                 />,
             );
         }

@@ -17,15 +17,16 @@ import {
     RawUser,
     User,
 } from "model/user";
+import {VideoconferenceType} from "model/videoconference";
 import React from "react";
 import {Button} from "react-bootstrap";
 import {ChannelList} from "./channelList";
 
 interface ModuleListProps {
-    activeTextChannelChangeCallback: (channel: Channel, mod: Module) => void,
+    activeTextChannelChangeCallback: (channel: Channel) => void,
     activeTextChannel: Channel | null,
     activeVocalChannel: Channel | null,
-    activeVocalChannelChangeCallback: (channel: Channel, mod: Module) => void,
+    activeVocalChannelChangeCallback: (channel: Channel, videoType: VideoconferenceType) => void,
 }
 
 interface ModuleListState {
@@ -121,7 +122,7 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                                          activeVocalChannel={this.props.activeVocalChannel}
                                          currentChannelChangeCallback={
                                              (chan: Channel) => {
-                                                 this.props.activeTextChannelChangeCallback(chan, currentModule);
+                                                 this.props.activeTextChannelChangeCallback(chan);
                                              }
                                          }
                                          currentModule={currentModule}
@@ -141,8 +142,8 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                                              });
                                          }}
                                          videoConferenceChangeCallback={
-                                             (chan: Channel) => {
-                                                 this.props.activeVocalChannelChangeCallback(chan, currentModule);
+                                             (chan: Channel, videoType: VideoconferenceType) => {
+                                                 this.props.activeVocalChannelChangeCallback(chan, videoType);
                                              }
                                          }
                             />
