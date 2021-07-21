@@ -2,6 +2,8 @@ import {
     faMicrophone,
     faMicrophoneSlash,
     faPhoneSlash,
+    faVideo,
+    faVideoSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {VideoconferencePublisher} from "model/videoconference";
@@ -14,16 +16,25 @@ interface PersonalVideoControlsProps {
 }
 
 interface PersonalVideoControlsState {
-    muted: boolean,
+    audioActive: boolean,
+    videoActive: boolean,
 }
 
 class PersonalVideoControls extends React.Component<PersonalVideoControlsProps, PersonalVideoControlsState> {
     constructor(props: PersonalVideoControlsProps) {
         super(props);
 
-        this.state = {
-            muted: false,
-        };
+        if (this.props.videoconferencePublisher === null) {
+            this.state = {
+                audioActive: false,
+                videoActive: false,
+            };
+        } else {
+            this.state = {
+                audioActive: this.props.videoconferencePublisher.publisher.stream.audioActive,
+                videoActive: this.props.videoconferencePublisher.publisher.stream.videoActive,
+            };
+        }
     }
 
     public render(): React.ReactNode {
@@ -31,20 +42,36 @@ class PersonalVideoControls extends React.Component<PersonalVideoControlsProps, 
             <>
                 <Button type={"button"}
                         className={
-                            "btn ml-4 mr-1 pb-0 pt-0 pl-1 pr-1 btn-"
-                            + (this.state.muted ? "danger" : "primary")
+                            "btn ml-3 mr-1 p-0 " +
+                            "btn-" + (this.state.audioActive ? "primary" : "danger") + " " +
+                            (this.state.audioActive ? "pl-1 pr-1" : null)
                         }
                         data-toggle={"tooltip"}
                         data-placement={"top"}
-                        onClick={() => this._triggerMute()}
+                        onClick={() => this._triggerAudio()}
                         title={
-                            this.state.muted
+                            this.state.audioActive
                                 ? "Réactiver le micro"
                                 : "Se rendre muet"
                         }>
-                    <FontAwesomeIcon icon={this.state.muted ? faMicrophoneSlash : faMicrophone}/>
+                    <FontAwesomeIcon icon={this.state.audioActive ? faMicrophone : faMicrophoneSlash}/>
                 </Button>
-                <Button className={"btn btn-primary ml-1 mr-0 p-0"}
+                <Button type={"button"}
+                        className={
+                            "btn ml-1 mr-1 pl-1 pr-1 p-0 btn-"
+                            + (this.state.videoActive ? "primary" : "danger")
+                        }
+                        data-toggle={"tooltip"}
+                        data-placement={"top"}
+                        onClick={() => this._triggerVideo()}
+                        title={
+                            this.state.audioActive
+                                ? "Réactiver la caméra"
+                                : "Désactiver la caméra"
+                        }>
+                    <FontAwesomeIcon icon={this.state.videoActive ? faVideo : faVideoSlash}/>
+                </Button>
+                <Button className={"btn btn-warning ml-1 mr-0 p-0"}
                         data-toggle={"tooltip"}
                         data-placement={"right"}
                         onClick={() => this.props.videoconferenceDisconnectCallback()}
@@ -56,16 +83,22 @@ class PersonalVideoControls extends React.Component<PersonalVideoControlsProps, 
         );
     }
 
-    private _triggerMute(): void {
+    private _triggerAudio(): void {
+        console.log("audio");
         if (this.props.videoconferencePublisher !== null) {
-            if (this.state.muted) {
-                this.props.videoconferencePublisher.publisher.publishAudio(true);
-            } else {
-                this.props.videoconferencePublisher.publisher.publishAudio(false);
-            }
-
+            this.props.videoconferencePublisher.publisher.publishAudio(!this.state.audioActive);
             this.setState({
-                muted: !this.state.muted,
+                audioActive: !this.state.audioActive,
+            });
+        }
+    }
+
+    private _triggerVideo(): void {
+        console.log("video");
+        if (this.props.videoconferencePublisher !== null) {
+            this.props.videoconferencePublisher.publisher.publishVideo(!this.state.videoActive);
+            this.setState({
+                videoActive: !this.state.videoActive,
             });
         }
     }
