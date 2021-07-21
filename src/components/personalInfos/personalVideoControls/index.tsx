@@ -84,7 +84,6 @@ class PersonalVideoControls extends React.Component<PersonalVideoControlsProps, 
     }
 
     private _triggerAudio(): void {
-        console.log("audio");
         if (this.props.videoconferencePublisher !== null) {
             this.props.videoconferencePublisher.publisher.publishAudio(!this.state.audioActive);
             this.setState({
@@ -94,7 +93,6 @@ class PersonalVideoControls extends React.Component<PersonalVideoControlsProps, 
     }
 
     private _triggerVideo(): void {
-        console.log("video");
         if (this.props.videoconferencePublisher !== null) {
             this.props.videoconferencePublisher.publisher.publishVideo(!this.state.videoActive);
             this.setState({
