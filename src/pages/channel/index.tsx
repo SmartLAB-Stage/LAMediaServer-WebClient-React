@@ -329,8 +329,8 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
     private _onConnected(): void {
         // @ts-ignore
         const publisher = this._openVidu.initPublisher(null, {
-            publishAudio: true,
-            publishVideo: true,
+            publishAudio: false,
+            publishVideo: false,
         });
 
         this._openViduSession.publish(publisher).then(() => {
