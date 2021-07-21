@@ -238,7 +238,11 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
 
     private _disconnectVideoconference(): void {
         if (this.state.openViduSessionInfos !== null) {
-            this._openViduSession.disconnect();
+            try {
+                this._openViduSession.disconnect();
+            } catch (e) {
+                console.warn("Disconnect error", e);
+            }
             this.setState({
                 activeVocalChannel: null,
                 openViduSessionInfos: null,
