@@ -3,7 +3,10 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {ChannelOrModuleCreationModal} from "components/shared/channelOrModuleCreationModal";
 import {InformationModal} from "components/shared/informationModal";
 import {APIRequest} from "helper/APIRequest";
-import {APIWebSocket} from "helper/APIWebSocket";
+import {
+    APIWebSocket,
+    WebSocketServerEvent,
+} from "helper/APIWebSocket";
 import {
     Channel,
     RawChannel,
@@ -39,13 +42,11 @@ interface ChannelListState {
 
 class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
     private _active = false;
-    private readonly _sockets: APIWebSocket[];
 
     public constructor(props: ChannelListProps) {
         super(props);
 
         this._active = false;
-        this._sockets = [];
 
         this.state = {
             channels: [],
@@ -62,18 +63,10 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
         this._fetchModuleUsers();
         this._openSocketChannelCreated();
         this._openSocketChannelDeleted();
-
-        for (const sock of this._sockets) {
-            sock.open();
-        }
     }
 
     public componentWillUnmount(): void {
         this._active = false;
-
-        for (const sock of this._sockets) {
-            sock.close();
-        }
     }
 
     public render(): React.ReactNode {
@@ -260,25 +253,23 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
     }
 
     private _openSocketChannelCreated(): void {
-        this._sockets.push(APIWebSocket
-            .getSocket("/module/channel/created")
-            .withToken()
-            .withPayload({
+        APIWebSocket.addListener(
+            WebSocketServerEvent.CHANNEL_CREATED, {
                 moduleRoomId: this.props.currentModule.roomId,
-            })
-            .onResponse((data: unknown) => {
+            },
+            (data: unknown) => {
                 this.setState({
                     channels: [...this.state.channels, Channel.fromObject(data as unknown as RawChannel)],
                 });
-            }),
+            },
         );
     }
 
     private _openSocketChannelDeleted(): void {
-        this._sockets.push(APIWebSocket
-            .getSocket("/module/channel/deleted")
-            .withToken()
-            .onResponse((data: unknown) => {
+        APIWebSocket.addListener(
+            WebSocketServerEvent.CHANNEL_DELETED,
+            null,
+            (data: unknown) => {
                 const channelId = (data as { channelId: string }).channelId;
                 const channels: Channel[] = [];
                 for (const channel of this.state.channels) {
@@ -291,7 +282,7 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
                 this.setState({
                     channels,
                 });
-            }),
+            },
         );
     }
 }

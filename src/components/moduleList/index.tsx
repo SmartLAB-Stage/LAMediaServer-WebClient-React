@@ -8,7 +8,10 @@ import {ChannelOrModuleCreationModal} from "components/shared/channelOrModuleCre
 import {ConfirmationModal} from "components/shared/confirmationModal";
 import {InformationModal} from "components/shared/informationModal";
 import {APIRequest} from "helper/APIRequest";
-import {APIWebSocket} from "helper/APIWebSocket";
+import {
+    APIWebSocket,
+    WebSocketServerEvent,
+} from "helper/APIWebSocket";
 import {Channel} from "model/channel";
 import {
     Module,
@@ -50,13 +53,11 @@ interface ModuleListState {
 
 class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
     private _active;
-    private readonly _sockets: APIWebSocket[];
 
     public constructor(props: ModuleListProps) {
         super(props);
 
         this._active = false;
-        this._sockets = [];
 
         this.state = {
             allUsers: [],
@@ -77,18 +78,10 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
 
         this._openSocketModuleCreated();
         this._openSocketModuleDeleted();
-
-        for (const sock of this._sockets) {
-            sock.open();
-        }
     }
 
     public componentWillUnmount(): void {
         this._active = false;
-
-        for (const sock of this._sockets) {
-            sock.close();
-        }
     }
 
     public render(): React.ReactNode {
@@ -329,22 +322,22 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
     }
 
     private _openSocketModuleCreated(): void {
-        this._sockets.push(APIWebSocket
-            .getSocket("/module/created")
-            .withToken()
-            .onResponse((data: unknown) => {
+        APIWebSocket.addListener(
+            WebSocketServerEvent.MODULE_CREATED,
+            null,
+            (data: unknown) => {
                 this.setState({
                     modules: [...this.state.modules, Module.fromObject(data as unknown as RawModule)],
                 });
-            }),
+            },
         );
     }
 
     private _openSocketModuleDeleted(): void {
-        this._sockets.push(APIWebSocket
-            .getSocket("/module/deleted")
-            .withToken()
-            .onResponse((data: unknown) => {
+        APIWebSocket.addListener(
+            WebSocketServerEvent.MODULE_DELETED,
+            null,
+            (data: unknown) => {
                 const moduleRoomId = (data as { moduleRoomId: string }).moduleRoomId;
                 const modules: Module[] = [];
                 for (const mod of this.state.modules) {
@@ -357,7 +350,7 @@ class ModuleList extends React.Component<ModuleListProps, ModuleListState> {
                 this.setState({
                     modules: modules,
                 });
-            }),
+            },
         );
     }
 }

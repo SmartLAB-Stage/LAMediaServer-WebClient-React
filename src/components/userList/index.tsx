@@ -1,6 +1,9 @@
 import {UserInfosModal} from "components/shared/userInfosModal";
 import {APIRequest} from "helper/APIRequest";
-import {APIWebSocket} from "helper/APIWebSocket";
+import {
+    APIWebSocket,
+    WebSocketServerEvent,
+} from "helper/APIWebSocket";
 import {Channel} from "model/channel";
 import {Presence} from "model/presence";
 import {
@@ -25,13 +28,11 @@ interface UserListState {
 
 class UserList extends React.Component<UserListProps, UserListState> {
     private _active: boolean;
-    private readonly _sockets: APIWebSocket[];
 
     public constructor(props: UserListProps) {
         super(props);
 
         this._active = false;
-        this._sockets = [];
 
         this.state = {
             modalUserInfosOpen: false,
@@ -49,10 +50,6 @@ class UserList extends React.Component<UserListProps, UserListState> {
         if (this.props.currentChannel !== null) {
             this._updateUsersFromAPI();
         }
-
-        for (const sock of this._sockets) {
-            sock.open();
-        }
     }
 
     public componentDidUpdate(prevProps: UserListProps): void {
@@ -63,10 +60,6 @@ class UserList extends React.Component<UserListProps, UserListState> {
 
     public componentWillUnmount(): void {
         this._active = false;
-
-        for (const sock of this._sockets) {
-            sock.close();
-        }
     }
 
     public render(): React.ReactNode {
@@ -157,11 +150,11 @@ class UserList extends React.Component<UserListProps, UserListState> {
     }
 
     private _setSocketNameUpdated() {
-        this._sockets.push(APIWebSocket
-            .getSocket("/user/updated")
-            .withToken()
-            .onResponse((data) => {
-            }),
+        APIWebSocket.addListener(
+            WebSocketServerEvent.USER_UPDATED,
+            null,
+            () => {
+            },
         );
     }
 
@@ -175,10 +168,10 @@ class UserList extends React.Component<UserListProps, UserListState> {
             },
         }
 
-        this._sockets.push(APIWebSocket
-            .getSocket("/user/presence/updated")
-            .withToken()
-            .onResponse((data: unknown) => {
+        APIWebSocket.addListener(
+            WebSocketServerEvent.PRESENCE_UPDATED,
+            null,
+            (data: unknown) => {
                 const users = this.state.users;
                 const updatedUser = data as WebSocketData;
 
@@ -192,7 +185,7 @@ class UserList extends React.Component<UserListProps, UserListState> {
                 this.setState({
                     users,
                 });
-            }),
+            },
         );
     }
 }
