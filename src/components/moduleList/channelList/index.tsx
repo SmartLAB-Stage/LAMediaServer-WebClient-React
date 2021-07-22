@@ -91,9 +91,9 @@ class ChannelList extends React.Component<ChannelListProps, ChannelListState> {
                                   }}
                                   key={"channel-list-element-" + channel.id}
                                   selected={this.props.activeTextChannel?.id === channel.id}
-                                  videoConferenceChangeCallback={
-                                      () => this.props.videoConferenceChangeCallback(channel)
-                                  }
+                                  videoConferenceChangeCallback={() => {
+                                      this.props.videoConferenceChangeCallback(channel);
+                                  }}
                 />,
             );
         }

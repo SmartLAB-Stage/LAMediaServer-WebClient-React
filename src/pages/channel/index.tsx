@@ -17,6 +17,7 @@ import {User} from "model/user";
 import {
     VideoconferencePublisher,
     VideoconferenceSubscriber,
+    VideoconferenceType,
 } from "model/videoconference";
 import {
     OpenVidu,
@@ -40,9 +41,10 @@ interface ChannelState {
     openViduSessionInfos: null | {
         sessionId: string,
         targetWebSocketURL: string,
+        videoType: VideoconferenceType,
     },
     videoconferencePublisher: VideoconferencePublisher | null,
-    videoconferenceSubscribersConnections: VideoconferenceSubscriber[],
+    videoconferenceSubscribers: VideoconferenceSubscriber[],
 }
 
 class ChannelPage extends React.Component<ChannelProps, ChannelState> {
@@ -68,7 +70,7 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
             meUser: null,
             openViduSessionInfos: null,
             videoconferencePublisher: null,
-            videoconferenceSubscribersConnections: [],
+            videoconferenceSubscribers: [],
         };
     }
 
@@ -85,9 +87,11 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
                                         this._activeTextChannelChangeCallback(channel);
                                     }}
                                     activeVocalChannel={this.state.activeVocalChannel}
-                                    activeVocalChannelChangeCallback={(channel: Channel) => {
-                                        this._activeVocalChannelChangeCallback(channel);
-                                    }}
+                                    activeVocalChannelChangeCallback={
+                                        (channel: Channel, videoType: VideoconferenceType) => {
+                                            this._activeVocalChannelChangeCallback(channel, videoType);
+                                        }
+                                    }
                                 />
                             </div>
                             <div className={"col personal-infos"}>
@@ -152,7 +156,8 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
                         </Form>
                     </div>
                     <div className={"col-2 px-0"}>
-                        <UserList currentChannel={this.state.activeTextChannel}/>
+                        <UserList currentChannel={this.state.activeTextChannel}
+                                  videoconferenceSubscribers={this.state.videoconferenceSubscribers}/>
                     </div>
                 </div>
             </main>
@@ -230,13 +235,18 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
         };
         state.openViduSession = undefined;
         state.videoconferencePublisher = undefined;
+        state.videoconferenceSubscribers = undefined;
 
         window.history.pushState(state, "", this.props.fullURL.replace(/:[^/]*/, newChannel.id));
     }
 
     private _disconnectVideoconference(): void {
         if (this.state.openViduSessionInfos !== null) {
-            this._openViduSession.disconnect();
+            try {
+                this._openViduSession.disconnect();
+            } catch (e) {
+                console.warn("Disconnect error", e);
+            }
             this.setState({
                 activeVocalChannel: null,
                 openViduSessionInfos: null,
@@ -245,13 +255,13 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
         }
     }
 
-    private _activeVocalChannelChangeCallback(channel: Channel): void {
+    private _activeVocalChannelChangeCallback(channel: Channel, videoType: VideoconferenceType): void {
         if (channel.id !== this.state.openViduSessionInfos?.sessionId) {
             if (this.state.openViduSessionInfos !== null) {
                 this._openViduSession.disconnect();
             }
 
-            this._connectToVideoConference(channel);
+            this._connectToVideoConference(channel, videoType);
         }
     }
 
@@ -281,35 +291,38 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
 
     private _onStreamCreated(evt: StreamEvent) {
         const connection = evt.stream.connection;
+        const DOM_id = `video-subscriber_${connection.connectionId}`;
         const user = User.fromObject(JSON.parse(connection.data));
 
         if (user.username !== this.state.meUser?.username) {
             console.warn(user);
+            // @ts-ignore
+            const subscriber = this._openViduSession.subscribe(evt.stream, null);
             this.setState({
-                videoconferenceSubscribersConnections: [
-                    ...this.state.videoconferenceSubscribersConnections,
+                videoconferenceSubscribers: [
+                    ...this.state.videoconferenceSubscribers,
                     {
-                        user,
                         connection,
+                        DOM_id,
+                        subscriber,
+                        user,
                     },
                 ],
             });
-
-            this._openViduSession.subscribe(evt.stream, `video-subscriber_${connection.connectionId}`);
         }
     }
 
     private _onStreamDestroyed(evt: StreamEvent) {
         const subscribersConnections: VideoconferenceSubscriber[] = [];
 
-        for (const subscriber of this.state.videoconferenceSubscribersConnections) {
+        for (const subscriber of this.state.videoconferenceSubscribers) {
             if (subscriber.connection.connectionId !== evt.stream.connection.connectionId) {
                 subscribersConnections.push(subscriber);
             }
         }
 
         this.setState({
-            videoconferenceSubscribersConnections: subscribersConnections,
+            videoconferenceSubscribers: subscribersConnections,
         });
 
         /*
@@ -317,19 +330,36 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
         */
     }
 
-    private _onConnected(): void {
+    private _onConnected(videoType: VideoconferenceType): void {
+        let videoSource;
+        switch (videoType) {
+            case VideoconferenceType.AUDIO_ONLY:
+                videoSource = null;
+                break;
+
+            case VideoconferenceType.SCREEN_SHARE:
+                videoSource = "screen";
+                break;
+
+            case VideoconferenceType.WEBCAM:
+            default:
+                videoSource = undefined;
+        }
+
         // @ts-ignore
         const publisher = this._openVidu.initPublisher(null, {
-            publishAudio: true,
+            publishAudio: false,
             publishVideo: true,
+            videoSource,
         });
 
         this._openViduSession.publish(publisher).then(() => {
             this.setState({
                 videoconferencePublisher: {
                     connection: publisher.stream.connection,
-                    publisher,
                     DOM_id: `video-publisher-${this._openViduSession.sessionId}`,
+                    publisher,
+                    videoType,
                 },
             });
         });
@@ -372,9 +402,10 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
         });*/
 
         const userData = this.state.meUser?.toJSON();
+        const videoType = this.state.openViduSessionInfos.videoType;
 
         this._openViduSession.connect(this.state.openViduSessionInfos.targetWebSocketURL, userData)
-            .then(() => this._onConnected())
+            .then(() => this._onConnected(videoType))
             .catch((error) => {
                 console.error("An error occurred while connecting to the session: " + error.code + " " + error.message);
             });
@@ -403,7 +434,7 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
         }
     }
 
-    private _connectToVideoConference(channel: Channel): void {
+    private _connectToVideoConference(channel: Channel, videoType: VideoconferenceType): void {
         APIRequest
             .post("/videoconference/session/connect")
             .canceledWhen(() => !this._active)
@@ -418,6 +449,7 @@ class ChannelPage extends React.Component<ChannelProps, ChannelState> {
                         openViduSessionInfos: {
                             sessionId: payload.sessionId as string,
                             targetWebSocketURL: payload.targetWebSocketURL as string,
+                            videoType,
                         },
                     });
                 }

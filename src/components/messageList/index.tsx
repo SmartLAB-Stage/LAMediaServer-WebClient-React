@@ -23,15 +23,14 @@ interface MessageListState {
 class MessageList extends React.Component<MessageListProps, MessageListState> {
     private _active: boolean;
     private _alreadyScrolledDown: boolean;
-    private readonly _sockets: APIWebSocket[];
+    private _messageSocket: APIWebSocket | null;
 
     public constructor(props: MessageListProps) {
         super(props);
 
         this._active = false;
-
         this._alreadyScrolledDown = false;
-        this._sockets = [];
+        this._messageSocket = null;
 
         this.state = {
             selectedMessageToDelete: null,
@@ -59,14 +58,9 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
         this._active = true;
 
         this._getAllMessages();
+        this._setSocketMessages();
 
-        this._setSocketMessagesSent();
-        this._setSocketMessagesDeleted();
-        this._setSocketMessagesEdited();
-
-        for (const sock of this._sockets) {
-            sock.open();
-        }
+        this._messageSocket?.open();
     }
 
     public componentDidUpdate(): void {
@@ -80,10 +74,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
     }
 
     public componentWillUnmount(): void {
-        for (const sock of this._sockets) {
-            sock.close();
-        }
-
+        this._messageSocket?.close();
         this._active = false;
     }
 
@@ -130,83 +121,62 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             .then();
     }
 
-    private _setSocketMessagesSent() {
-        this._sockets.push(APIWebSocket
-            .getSocket("/module/channel/message/sent")
+    private _setSocketMessages() {
+        this._messageSocket = APIWebSocket
+            .getSocket("/module/channel/message")
             .withToken()
             .withPayload({
                 channelId: this.props.channel.id,
             })
-            .onResponse((data: unknown) => {
-                this.setState({
-                    messages: [
-                        ...this.state.messages,
-                        Message.fromObject(data as RawMessage),
-                    ],
-                });
-            }),
-        );
-    }
-
-    private _setSocketMessagesDeleted() {
-        this._sockets.push(APIWebSocket
-            .getSocket("/module/channel/message/deleted")
-            .withToken()
-            .withPayload({
-                channelId: this.props.channel.id,
-            })
-            .onResponse((data: unknown) => {
-                const messages = this.state.messages;
-                const deletedMessage = data as { id: string };
-
-                for (let i = messages.length - 1; i >= 0; --i) {
-                    if (messages[i].id === deletedMessage.id) {
-                        messages.splice(i, 1);
-                        break;
+            .onResponse((data: unknown, evt?: string) => {
+                if (evt === "created") {
+                    this.setState({
+                        messages: [
+                            ...this.state.messages,
+                            Message.fromObject(data as RawMessage),
+                        ],
+                    });
+                } else if (evt === "edited") {
+                    interface EditedMessage {
+                        editor: {
+                            timestamp: Date,
+                            user: {
+                                id: string,
+                                username: string,
+                            },
+                        }
+                        message: RawMessage,
                     }
-                }
 
-                this.setState({
-                    messages,
-                });
-            }),
-        );
-    }
+                    const messages = this.state.messages;
+                    const editedMessage = data as EditedMessage;
 
-    private _setSocketMessagesEdited() {
-        interface EditedMessage {
-            editor: {
-                timestamp: Date,
-                user: {
-                    id: string,
-                    username: string,
-                },
-            }
-            message: RawMessage,
-        }
-
-        this._sockets.push(APIWebSocket
-            .getSocket("/module/channel/message/edited")
-            .withToken()
-            .withPayload({
-                channelId: this.props.channel.id,
-            })
-            .onResponse((data: unknown) => {
-                const messages = this.state.messages;
-                const editedMessage = data as EditedMessage;
-
-                for (let i = 0; i < messages.length; ++i) {
-                    if (messages[i].id === editedMessage.message.id) {
-                        messages[i] = Message.fromObject(editedMessage.message);
-                        break;
+                    for (let i = 0; i < messages.length; ++i) {
+                        if (messages[i].id === editedMessage.message.id) {
+                            messages[i] = Message.fromObject(editedMessage.message);
+                            break;
+                        }
                     }
-                }
 
-                this.setState({
-                    messages,
-                });
-            }),
-        );
+                    this.setState({
+                        messages,
+                    });
+                } else if (evt === "deleted") {
+                    const messages = this.state.messages;
+                    const deletedMessage = data as { id: string };
+
+                    for (let i = messages.length - 1; i >= 0; --i) {
+                        if (messages[i].id === deletedMessage.id) {
+                            messages.splice(i, 1);
+                            break;
+                        }
+                    }
+
+                    this.setState({
+                        messages,
+                    });
+                }
+            });
     }
 
     private _renderMessageList(): React.ReactNode[] {

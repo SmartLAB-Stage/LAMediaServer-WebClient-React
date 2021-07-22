@@ -1,3 +1,6 @@
+import {faTrash} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import "components/moduleList/channelList/channelComponent/channelComponent.scss";
 import {Channel} from "model/channel";
 import React from "react";
 import {
@@ -6,9 +9,6 @@ import {
     Tooltip,
 } from "react-bootstrap";
 import {CallButton} from "./callButton";
-import "components/moduleList/channelList/channelComponent/channelComponent.scss";
-import {faTrash} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 interface ChannelComponentProps {
     activeVocalChannel: Channel | null,
@@ -66,9 +66,9 @@ class ChannelComponent extends React.Component<ChannelComponentProps, {}> {
                                                 selected={
                                                     this.props.channel.id === this.props.activeVocalChannel?.id
                                                 }
-                                                videoConferenceChangeCallback={
-                                                    this.props.videoConferenceChangeCallback
-                                                }
+                                                videoConferenceChangeCallback={() => {
+                                                    this.props.videoConferenceChangeCallback();
+                                                }}
                                             />
                                         </div>
                                         <small className={"small font-weight-bold"}>

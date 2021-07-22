@@ -2,6 +2,8 @@ import {
     faMicrophone,
     faMicrophoneSlash,
     faPhoneSlash,
+    faVideo,
+    faVideoSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {VideoconferencePublisher} from "model/videoconference";
@@ -13,40 +15,65 @@ interface PersonalVideoControlsProps {
     videoconferencePublisher: VideoconferencePublisher | null,
 }
 
-class PersonalVideoControls extends React.Component<PersonalVideoControlsProps, {}> {
-    public render(): React.ReactNode {
-        let muted = true;
-        let connected = false;
+interface PersonalVideoControlsState {
+    audioActive: boolean,
+    videoActive: boolean,
+}
 
-        if (this.props.videoconferencePublisher !== null) {
-            // TODO: Gérer la demande de coupure de son
-            muted = false;
-            connected = true;
+class PersonalVideoControls extends React.Component<PersonalVideoControlsProps, PersonalVideoControlsState> {
+    constructor(props: PersonalVideoControlsProps) {
+        super(props);
+
+        if (this.props.videoconferencePublisher === null) {
+            this.state = {
+                audioActive: false,
+                videoActive: false,
+            };
+        } else {
+            this.state = {
+                audioActive: this.props.videoconferencePublisher.publisher.stream.audioActive,
+                videoActive: this.props.videoconferencePublisher.publisher.stream.videoActive,
+            };
         }
+    }
 
+    public render(): React.ReactNode {
         return (
             <>
-                <Button className={"btn btn-primary ml-4 mr-1 pb-0 pt-0 pl-1 pr-1"}
+                <Button type={"button"}
+                        className={
+                            "btn ml-3 mr-1 p-0 " +
+                            "btn-" + (this.state.audioActive ? "primary" : "danger") + " " +
+                            (this.state.audioActive ? "pl-1 pr-1" : null)
+                        }
                         data-toggle={"tooltip"}
                         data-placement={"top"}
-                        disabled={!connected}
-                        onClick={() => void null}
+                        onClick={() => this._triggerAudio()}
                         title={
-                            muted
-                                ? "Réactiver le micro"
-                                : "Se rendre muet"
-                        }
-                        type={"button"}>
-                    <FontAwesomeIcon icon={
-                        muted || !connected
-                            ? faMicrophoneSlash
-                            : faMicrophone
-                    }/>
+                            this.state.audioActive
+                                ? "Se rendre muet"
+                                : "Réactiver le micro"
+                        }>
+                    <FontAwesomeIcon icon={this.state.audioActive ? faMicrophone : faMicrophoneSlash}/>
                 </Button>
-                <Button className={"btn btn-primary ml-1 mr-0 p-0"}
+                <Button type={"button"}
+                        className={
+                            "btn ml-1 mr-1 pl-1 pr-1 p-0 btn-"
+                            + (this.state.videoActive ? "primary" : "danger")
+                        }
+                        data-toggle={"tooltip"}
+                        data-placement={"top"}
+                        onClick={() => this._triggerVideo()}
+                        title={
+                            this.state.audioActive
+                                ? "Désactiver la caméra"
+                                : "Réactiver la caméra"
+                        }>
+                    <FontAwesomeIcon icon={this.state.videoActive ? faVideo : faVideoSlash}/>
+                </Button>
+                <Button className={"btn btn-warning ml-1 mr-0 p-0"}
                         data-toggle={"tooltip"}
                         data-placement={"right"}
-                        disabled={!connected}
                         onClick={() => this.props.videoconferenceDisconnectCallback()}
                         title={"Se déconnecter du canal audio actuel"}
                         type={"button"}>
@@ -54,6 +81,24 @@ class PersonalVideoControls extends React.Component<PersonalVideoControlsProps, 
                 </Button>
             </>
         );
+    }
+
+    private _triggerAudio(): void {
+        if (this.props.videoconferencePublisher !== null) {
+            this.props.videoconferencePublisher.publisher.publishAudio(!this.state.audioActive);
+            this.setState({
+                audioActive: !this.state.audioActive,
+            });
+        }
+    }
+
+    private _triggerVideo(): void {
+        if (this.props.videoconferencePublisher !== null) {
+            this.props.videoconferencePublisher.publisher.publishVideo(!this.state.videoActive);
+            this.setState({
+                videoActive: !this.state.videoActive,
+            });
+        }
     }
 }
 
