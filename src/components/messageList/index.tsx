@@ -132,7 +132,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
 
     private _setSocketMessagesSent() {
         this._sockets.push(APIWebSocket
-            .getSocket("/module/channel/message/sent")
+            .getSocket("/module/channel/message/send")
             .withToken()
             .withPayload({
                 channelId: this.props.channel.id,
