@@ -5,11 +5,12 @@ interface APIResponseData {
     error?: {
         type: string,
     },
+    event?: string,
     message: string,
     payload: Record<string, unknown>,
 }
 
-type ResponseCallback = (data: Record<string, unknown>) => void;
+type ResponseCallback = (data: Record<string, unknown>, evt?: string) => void;
 
 type OpenCallback = (socket: APIWebSocket) => void;
 
@@ -97,7 +98,7 @@ class APIWebSocket {
             }
 
             if (data !== null) {
-                this._responseCallback(data.payload);
+                this._responseCallback(data.payload, data.event);
             }
         };
         this._webSocket.onopen = () => this._openCallback(this);
