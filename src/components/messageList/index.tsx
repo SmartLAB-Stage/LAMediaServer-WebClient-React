@@ -128,15 +128,15 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
             .withPayload({
                 channelId: this.props.channel.id,
             })
-            .onResponse((data: unknown, evt?: string) => {
-                if (evt === "created") {
+            .onResponse((data: unknown, evt: string) => {
+                if (evt === "messageCreated") {
                     this.setState({
                         messages: [
                             ...this.state.messages,
                             Message.fromObject(data as RawMessage),
                         ],
                     });
-                } else if (evt === "edited") {
+                } else if (evt === "messageEdited") {
                     interface EditedMessage {
                         editor: {
                             timestamp: Date,
@@ -161,7 +161,7 @@ class MessageList extends React.Component<MessageListProps, MessageListState> {
                     this.setState({
                         messages,
                     });
-                } else if (evt === "deleted") {
+                } else if (evt === "messageDeleted") {
                     const messages = this.state.messages;
                     const deletedMessage = data as { id: string };
 
