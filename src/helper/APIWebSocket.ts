@@ -5,12 +5,12 @@ interface APIResponseData {
     error?: {
         type: string,
     },
-    event?: string,
+    event: string,
     message: string,
     payload: Record<string, unknown>,
 }
 
-type ResponseCallback = (data: Record<string, unknown>, evt?: string) => void;
+type ResponseCallback = (data: Record<string, unknown>, evt: string) => void;
 
 type OpenCallback = (socket: APIWebSocket) => void;
 
