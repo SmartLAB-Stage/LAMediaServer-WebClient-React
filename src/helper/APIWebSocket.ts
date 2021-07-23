@@ -5,14 +5,24 @@ interface APIResponseData {
     error?: {
         type: string,
     },
-    event: string,
+    event: WebSocketServerEvent | WebSocketClientEvent,
     message: string,
     payload: Record<string, unknown>,
 }
 
-type ResponseCallback = (data: Record<string, unknown>, evt: string) => void;
+type ServerResponseCallback = (data: Record<string, unknown>, evt: WebSocketServerEvent) => void;
+
+type ClientCallResponseCallback = (data: Record<string, unknown>, evt: WebSocketClientEvent) => void;
 
 type OpenCallback = () => void;
+
+enum WebSocketClientEvent {
+    ERROR = "error",
+    LIST_CHANNELS = "listChannels",
+    LIST_MODULES = "listModules",
+    LIST_ROLES = "listRoles",
+    SEND_MESSAGE = "sendMessage",
+}
 
 enum WebSocketServerEvent {
     CHANNEL_CREATED = "channelCreated",
@@ -37,7 +47,10 @@ class APIWebSocket {
 
     private readonly _webSocket: WebSocket;
     private readonly _openCallbacks: OpenCallback[];
-    private readonly _messageCallbacks: { event: WebSocketServerEvent, callback: ResponseCallback }[];
+    private readonly _messageCallbacks: {
+        event: WebSocketServerEvent | WebSocketClientEvent,
+        callback: ServerResponseCallback | ClientCallResponseCallback,
+    }[];
 
     private constructor() {
         let tokenSanitized: string = "";
@@ -65,13 +78,24 @@ class APIWebSocket {
 
     public static addListener(event: WebSocketServerEvent,
                               args: Record<string, unknown> | null,
-                              callback: ResponseCallback,
+                              callback: ServerResponseCallback,
     ): void {
         if (this._APIWebSocket === null) {
             this._APIWebSocket = new APIWebSocket();
         }
 
         this._APIWebSocket._addListener(event, args === null ? {} : args, callback);
+    }
+
+    public static clientCall(event: WebSocketClientEvent,
+                             args: Record<string, unknown> | null,
+                             callback: ClientCallResponseCallback,
+    ): void {
+        if (this._APIWebSocket === null) {
+            this._APIWebSocket = new APIWebSocket();
+        }
+
+        this._APIWebSocket._clientCall(event, args === null ? {} : args, callback);
     }
 
     private static _getRawRoute(route: string): string {
@@ -98,7 +122,30 @@ class APIWebSocket {
 
     private _addListener(event: WebSocketServerEvent,
                          args: Record<string, unknown> | null,
-                         callback: ResponseCallback,
+                         callback: ServerResponseCallback,
+    ): void {
+        const openCallback = () => {
+            this._send({
+                event,
+                args,
+            });
+        };
+
+        if (this._webSocket.readyState === WebSocket.OPEN) {
+            openCallback();
+        } else {
+            this._openCallbacks.push(openCallback);
+        }
+
+        this._messageCallbacks.push({
+            event,
+            callback,
+        });
+    }
+
+    private _clientCall(event: WebSocketClientEvent,
+                        args: Record<string, unknown> | null,
+                        callback: ClientCallResponseCallback,
     ): void {
         const openCallback = () => {
             this._send({
@@ -139,6 +186,7 @@ class APIWebSocket {
         if (data !== null) {
             for (const messageCallback of this._messageCallbacks) {
                 if (data.event === messageCallback.event) {
+                    // @ts-ignore
                     messageCallback.callback(data.payload, data.event);
                 }
             }
@@ -154,5 +202,6 @@ class APIWebSocket {
 
 export {
     APIWebSocket,
+    WebSocketClientEvent,
     WebSocketServerEvent,
 };
