@@ -38,6 +38,7 @@ enum WebSocketServerEvent {
     MODULE_LIST = "moduleList",
     MODULE_UPDATED = "moduleUpdated",
     PRESENCE_UPDATED = "presenceUpdated",
+    READY = "ready",
     ROLE_LIST = "roleList",
     USER_UPDATED = "userUpdated",
 }
@@ -45,14 +46,17 @@ enum WebSocketServerEvent {
 class APIWebSocket {
     private static _APIWebSocket: APIWebSocket | null = null;
 
-    private readonly _webSocket: WebSocket;
+    private _connectionAllowed: boolean;
     private readonly _openCallbacks: OpenCallback[];
     private readonly _messageCallbacks: {
         event: WebSocketServerEvent | WebSocketClientEvent,
         callback: ServerResponseCallback | ClientCallResponseCallback,
     }[];
+    private readonly _webSocket: WebSocket;
 
     private constructor() {
+        this._connectionAllowed = false;
+
         let tokenSanitized: string = "";
         let token = Authentication.getToken();
         if (token !== null) {
@@ -66,10 +70,6 @@ class APIWebSocket {
         this._webSocket = new WebSocket(uri);
         this._webSocket.addEventListener("message", (evt) => {
             this._onMessage(evt.data);
-        });
-
-        this._webSocket.addEventListener("open", (evt) => {
-            this._onOpen();
         });
 
         this._openCallbacks = [];
@@ -131,7 +131,7 @@ class APIWebSocket {
             });
         };
 
-        if (this._webSocket.readyState === WebSocket.OPEN) {
+        if (this._connectionAllowed) {
             openCallback();
         } else {
             this._openCallbacks.push(openCallback);
@@ -154,7 +154,7 @@ class APIWebSocket {
             });
         };
 
-        if (this._webSocket.readyState === WebSocket.OPEN) {
+        if (this._connectionAllowed) {
             openCallback();
         } else {
             this._openCallbacks.push(openCallback);
@@ -184,11 +184,16 @@ class APIWebSocket {
         }
 
         if (data !== null) {
-            for (const messageCallback of this._messageCallbacks) {
-                if (data.event === messageCallback.event) {
-                    // @ts-ignore
-                    messageCallback.callback(data.payload, data.event);
+            if (this._connectionAllowed) {
+                for (const messageCallback of this._messageCallbacks) {
+                    if (data.event === messageCallback.event) {
+                        // @ts-ignore
+                        messageCallback.callback(data.payload, data.event);
+                    }
                 }
+            } else if (data.event === WebSocketServerEvent.READY) {
+                this._connectionAllowed = true;
+                this._onOpen();
             }
         }
     }
