@@ -67,21 +67,20 @@ class OAuthUserProfilePage extends React.Component<RouteProps, OAuthUserProfileP
             })
             .canceledWhen(() => !this._active)
             .unauthorizedErrorsAllowed()
-            .onSuccess((status, data) => {
-                if (!this._active) {
+            .onSuccess((payload) => {
+                if (!this._active || payload === null || Array.isArray(payload)) {
                     return;
                 }
 
-                if (status === 200 && data.payload.token) {
-                    Authentication.setToken(data.payload.token);
-                    this.setState({
-                        connected: true,
-                    });
-                } else {
-                    this.setState({
-                        errorMessage: data.message,
-                    });
-                }
+                Authentication.setInfos(payload.userId as string, payload.token as string);
+                this.setState({
+                    connected: true,
+                });
+            })
+            .onFailure((status, data) => {
+                this.setState({
+                    errorMessage: data === null ? "(inconnu)" : data.message,
+                });
             })
             .send()
             .then();

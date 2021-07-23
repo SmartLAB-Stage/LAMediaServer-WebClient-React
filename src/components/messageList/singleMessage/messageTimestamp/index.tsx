@@ -13,7 +13,7 @@ class MessageTimestamp extends React.Component<MessageTimestampProps, {}> {
                 Le {this.props.message.timestamp.toLocaleDateString()},
                 à {this.props.message.timestamp.toLocaleTimeString()}
 
-                {this.props.message.parentUser.isMe ? "" : <UserInfos message={this.props.message}/>}
+                {this.props.message.parentUser.isMe ? null : <UserInfos message={this.props.message}/>}
             </p>
         );
     }

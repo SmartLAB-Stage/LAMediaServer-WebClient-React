@@ -1,6 +1,9 @@
-@import "../../colors";
+.channel-list {
+    .channel-button {
+        cursor: pointer;
+        pointer-events: all !important;
+    }
 
-.room-list {
     .svg-align {
         text-align: center;
     }

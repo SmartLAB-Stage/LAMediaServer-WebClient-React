@@ -1,7 +1,7 @@
 import {Attachment} from "./attachement";
 import {Reaction} from "./reaction";
 import {
-    RawPartialUser,
+    RawUser,
     User,
 } from "./user";
 
@@ -11,7 +11,7 @@ import {
 interface RawMessage {
     content: string,
     id: string,
-    parentUser: RawPartialUser,
+    parentUser: RawUser,
     roomId: string,
     timestamp: Date,
 }
@@ -111,16 +111,11 @@ class Message {
      * Depuis un room complet
      * @param rawMessage Message
      */
-    public static fromFullMessage(rawMessage: RawMessage): Message {
+    public static fromObject(rawMessage: RawMessage): Message {
         return new this(
             rawMessage.id,
             rawMessage.content,
-            User.fromPartialUser(
-                rawMessage.parentUser.id,
-                rawMessage.parentUser.isMe,
-                rawMessage.parentUser.username,
-                rawMessage.parentUser.name,
-            ),
+            User.fromObject(rawMessage.parentUser),
             rawMessage.roomId,
             new Date(rawMessage.timestamp),
             undefined,

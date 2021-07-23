@@ -1,4 +1,4 @@
-import {ProfilePicture} from "components/profilePicture";
+import {ProfilePicture} from "components/shared/profilePicture";
 import {Message} from "model/message";
 import React from "react";
 import {ActionButtons} from "./actionButtons";
@@ -7,7 +7,7 @@ import "./singleMessage.scss";
 
 interface SingleMessageProps {
     concatenate: boolean,
-    editMessage: (evt: any) => void,
+    editMessage: (evt: React.MouseEvent<HTMLElement, MouseEvent>) => void,
     message: Message,
     openModalDeleteMessage: () => void,
 }
@@ -20,16 +20,16 @@ class SingleMessage extends React.Component<SingleMessageProps, {}> {
                      "media " +
                      "w-50 " +
                      "mb-" + (this.props.concatenate ? "1" : "0") + " " +
-                     (this.props.message.parentUser.isMe ? "ml-auto" : "")
+                     (this.props.message.parentUser.isMe ? "ml-auto" : null)
                  }
             >
                 {this.props.message.parentUser.isMe
-                    ? ""
+                    ? null
                     : (
                         <div className={"svg-align-container"}>
                             <div className={"svg-align-center"}>
                                 {this.props.concatenate
-                                    ? ""
+                                    ? null
                                     : <ProfilePicture user={this.props.message.parentUser}/>
                                 }
                             </div>
@@ -39,7 +39,7 @@ class SingleMessage extends React.Component<SingleMessageProps, {}> {
 
                 <div className={
                     "media-body " +
-                    "" + (this.props.message.parentUser.isMe ? "ml-3" : "") + " "
+                    (this.props.message.parentUser.isMe ? "ml-3" : null)
                 }>
                     <div className={
                         "rounded " +
@@ -60,7 +60,7 @@ class SingleMessage extends React.Component<SingleMessageProps, {}> {
 
                     {
                         this.props.concatenate
-                            ? ""
+                            ? null
                             : <MessageTimestamp message={this.props.message}/>
                     }
                 </div>
@@ -68,7 +68,7 @@ class SingleMessage extends React.Component<SingleMessageProps, {}> {
                     this.props.message.parentUser.isMe
                         ? <ActionButtons editMessage={(evt) => this.props.editMessage(evt)}
                                          openModalDeleteMessage={() => this.props.openModalDeleteMessage()}/>
-                        : ""
+                        : null
                 }
             </div>
         );
